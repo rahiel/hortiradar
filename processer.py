@@ -120,16 +120,6 @@ def start_streaming(tweetQueue,keywords):
 
 	print "Streaming stopped at " + datetime.datetime.utcnow().strftime("%a %b %d %H:%M:%S +0000 %Y")
 
-def union(keywords, tokens):
-    """ return the union of two lists """
-    union = []
-    for t in tokens:
-    	if t in keywords:
-    		union.append(t)
-    	elif t.strip('#') in keywords:
-    		union.append(t.strip('#'))
-    return union
-
 def main():
 	threadList = ["Worker-1", "Worker-2", "Worker-3"]
 	tweetQueue = Queue.Queue(100000)
