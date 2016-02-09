@@ -10,14 +10,16 @@ Param.read('parameters.ini')
 Twitdata = ConfigParser.ConfigParser()
 Twitdata.read('twitdata.ini')
 
-print "Split this file into seperate files and split config into twitter config and parameter config"
-
 ## authentication
 auth = tweepy.OAuthHandler(Twitdata.get('Tweepy','consumer_key'), Twitdata.get('Tweepy','consumer_secret'))
 auth.set_access_token(Twitdata.get('Tweepy','access_key'), Twitdata.get('Tweepy','access_secret'))
 
 ## initialize API
 api = tweepy.API(auth)
+
+global keywords
+with open("keywords_bloemen_top10app.txt") as doc:
+	keywords = unicode(doc.read()).lower().split(',')
 
 exitFlag = 0
 queueLock = threading.Lock()
@@ -36,7 +38,16 @@ class Top10Streamer(StreamListener):
 	def on_status(self, status):
 		
 		# save tweet to file
-		if status.lang == "nl":
+		if "lievelingsbloem" in status.text.lower():
+			with open(self.output + "lievelingsbloem/" + status.created_at.strftime("%Y-%m-%d.%H.00.00") + ".json", "a") as doc:
+				doc.write(json.dumps(status._json) + "\n")
+		# if "twuinbijt" in status.text.lower():
+			# with open(self.output + "twuinbijt/" + status.created_at.strftime("%Y-%m-%d.%H.00.00") + ".json", "a") as doc:
+				# doc.write(json.dumps(status._json) + "\n")
+		if "tulpendag" in status.text.lower():
+			with open(self.output + "tulpendag/" + status.created_at.strftime("%Y-%m-%d.%H.00.00") + ".json", "a") as doc:
+				doc.write(json.dumps(status._json) + "\n")
+		else:
 			with open(self.output + status.created_at.strftime("%Y-%m-%d.%H.00.00") + ".json", "a") as doc:
 				doc.write(json.dumps(status._json) + "\n")
 
@@ -44,6 +55,7 @@ class Top10Streamer(StreamListener):
 			queueLock.acquire()
 			self.q.put(status)
 			queueLock.release()
+				
 		return 
 
 	def on_delete(self, status_id, user_id):
@@ -124,9 +136,6 @@ def main():
 	threadList = ["Worker-1", "Worker-2", "Worker-3"]
 	tweetQueue = Queue.Queue(100000)
 	threads = []
-	
-	with open("keywords_top10app.txt") as doc:
-		keywords = unicode(doc.read()).lower().split(',')
 
 	count = tokenCounts(keywords,Param.getint('Parameters','min_interval'))
  	

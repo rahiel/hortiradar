@@ -2,3 +2,4 @@ twitdata.ini
 /tweets
 /results
 *.pyc
+make_conf.py
