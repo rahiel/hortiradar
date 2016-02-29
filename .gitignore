@@ -1,5 +1,6 @@
 twitdata.ini
 /tweets
 /results
+/z_other
+/www
 *.pyc
-make_conf.py
