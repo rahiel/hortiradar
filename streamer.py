@@ -4,7 +4,9 @@ from time import sleep
 from sys import stderr
 from os import makedirs
 from os.path import exists, abspath, dirname
+
 from tweepy import StreamListener, API
+from pymongo import MongoClient 
 
 from tokencounts import tokenCounts
 
@@ -35,8 +37,14 @@ class Top10Streamer(StreamListener):
 		status: 	status object received from Twitter
 		"""
 
-		with open(self.output + status.created_at.strftime("%Y-%m-%d.%H.00.00") + ".json", "a") as doc:
-			doc.write(dumps(status._json) + "\n")
+		# with open(self.output + status.created_at.strftime("%Y-%m-%d.%H.00.00") + ".json", "a") as doc:
+		# 	doc.write(dumps(status._json) + "\n")
+
+		print status.text
+
+		client = MongoClient('localhost', 27017)
+		db = client.test_database
+		db.tweets.insert_one(status._json)
 
 		__queueLock.acquire()
 		self.q.put(status)

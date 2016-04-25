@@ -115,6 +115,9 @@ def main():
 	global __countsLock
 	global __tCounts
 
+	with open("data/keywords_groentefruit_top10app.txt") as doc:
+		keywords = unicode(doc.read()).lower().split(',')
+	
 	__exitFlag = 0
 	__tweetQueue = Queue(100000)
 	__queueLock = Lock()
@@ -122,9 +125,6 @@ def main():
 	__tCounts = tokenCounts(keywords,Param.getint('Parameters','min_interval'))
 
 	try:
-		with open("data/keywords_groentefruit_top10app.txt") as doc:
-			keywords = unicode(doc.read()).lower().split(',')
-
 		# Create listener thread
 		thread = listenerThread("Listener",queue=__tweetQueue,conf="data/twitdata.ini",track=keywords)
 		thread.start()
