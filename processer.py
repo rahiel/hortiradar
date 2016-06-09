@@ -116,7 +116,7 @@ def main():
     global __countsLock
     global __tCounts
 
-    with open("data/keywords_groentefruit_top10app.txt") as doc:
+    with open("data/keywords_bloemen_top10app.txt") as doc:
         keywords = unicode(doc.read()).lower().split(',')
 
     __exitFlag = 0
