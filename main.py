@@ -1,8 +1,11 @@
 from __future__ import division, print_function
 from ConfigParser import ConfigParser
+from time import sleep
 
 import pymongo
 import tweepy
+from requests.packages.urllib3.exceptions import ProtocolError
+from requests import ConnectionError
 
 from twokenize import tokenizeRawTweetText
 
@@ -58,13 +61,13 @@ class StreamListener(tweepy.StreamListener):
 
 
 def get_keywords(tokens, keywords):
-        """Returns a list of the keywords that occur in tokens."""
-        kw = []
-        for t in tokens:
-            a = keywords.get(t, None)
-            if a is not None:
-                kw.append(t)
-        return kw
+    """Returns a list of the keywords that occur in tokens."""
+    kw = []
+    for t in tokens:
+        a = keywords.get(t, None)
+        if a is not None:
+            kw.append(t)
+    return kw
 
 
 def main():
@@ -85,7 +88,11 @@ def main():
     with open("data/stoplist_nl_extended.txt") as f:
         track = [unicode(l.split()[0]) for l in f.readlines()]   # list of most common Dutch words
 
-    stream.filter(track=track, languages=["nl"])
+    while True:
+        try:
+            stream.filter(track=track, languages=["nl"])
+        except (ProtocolError, ConnectionError) as e:
+            sleep(1)
 
 
 if __name__ == "__main__":
