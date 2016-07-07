@@ -2,6 +2,7 @@ from __future__ import division, print_function
 from ConfigParser import ConfigParser
 from time import sleep
 
+from logbook import Logger, RotatingFileHandler
 import pymongo
 import tweepy
 from requests.packages.urllib3.exceptions import ProtocolError
@@ -11,6 +12,10 @@ from twokenize import tokenizeRawTweetText
 
 
 DATABASE = None
+
+RotatingFileHandler("twitter.log", backup_count=5).push_application()
+log = Logger("main")
+log.info("Started")
 
 
 def get_db():
@@ -34,8 +39,7 @@ class StreamListener(tweepy.StreamListener):
     def on_status(self, status):
         """Handle arrival of a new tweet."""
         tokens = tokenizeRawTweetText(status.text)
-        print(tokens)
-        keywords = get_keywords(tokens, self.keywords)
+        keywords = find_keywords(tokens, self.keywords)
         tweets = self.db.tweets
         tweets.insert_one({
             "tweet": status._json,
@@ -47,8 +51,8 @@ class StreamListener(tweepy.StreamListener):
         """A user deleted a tweet, respect their decision by also deleting it
         on our end.
         """
-        # TODO: not tested, rare event
         status_id, user_id = unicode(status_id), unicode(user_id)
+        log.notice("on_delete: status_id = {}, user_id = {}".format(status_id, user_id))
         tweets = self.db.tweets
         tweets.delete_one({"tweet.id_str": status_id, "tweet.user.id_str": user_id})
 
@@ -56,11 +60,12 @@ class StreamListener(tweepy.StreamListener):
         """This does the Twitter-recommended exponential backoff when it
         returns non-False and disconnects on False.
         """
+        log.error("on_error: status_code = {}".format(status_code))
         if status_code == 420:  # rate limit
             return False
 
 
-def get_keywords(tokens, keywords):
+def find_keywords(tokens, keywords):
     """Returns a list of the keywords that occur in tokens."""
     kw = []
     for t in tokens:
@@ -68,6 +73,12 @@ def get_keywords(tokens, keywords):
         if a is not None:
             kw.append(t)
     return kw
+
+
+def get_keywords():
+    """Gets keywords from the file."""
+    with open("data/keywords_bloemen_top10app.txt") as doc:
+        return unicode(doc.read()).lower().split(',')
 
 
 def main():
@@ -78,8 +89,7 @@ def main():
     auth.set_access_token(config.get("twitter", "access_key"), config.get("twitter", "access_secret"))
     api = tweepy.API(auth, compression=True, wait_on_rate_limit=True)
 
-    with open("data/keywords_bloemen_top10app.txt") as doc:
-        keywords = unicode(doc.read()).lower().split(',')
+    keywords = get_keywords()
     keyword_dict = {key: 1 for key in keywords}
 
     listener = StreamListener(api, keyword_dict)
@@ -93,6 +103,8 @@ def main():
             stream.filter(track=track, languages=["nl"])
         except (ProtocolError, ConnectionError) as e:
             sleep(1)
+        except Exception as e:
+            log.critical("Exception: {}".format(str(e)))
 
 
 if __name__ == "__main__":

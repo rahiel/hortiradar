@@ -1,4 +1,3 @@
-pandas
+logbook
 pymongo
-seaborn
 tweepy
