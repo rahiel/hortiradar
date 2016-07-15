@@ -5,3 +5,5 @@
 /z_other
 /www
 *.pyc
+*.log
+*.ini

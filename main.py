@@ -23,6 +23,8 @@ def get_db():
     global DATABASE
     if DATABASE is None:
         mongo = pymongo.MongoClient()
+        # check info so we quit early if we can't connect to mongo
+        print(mongo.server_info())
         DATABASE = mongo.twitter
     return DATABASE
 
@@ -34,14 +36,14 @@ class StreamListener(tweepy.StreamListener):
     def __init__(self, api, keywords):
         self.api = api
         self.db = get_db()
+        self.tweets = self.db.tweets  # Mongo collection
         self.keywords = keywords
 
     def on_status(self, status):
         """Handle arrival of a new tweet."""
         tokens = tokenizeRawTweetText(status.text)
         keywords = find_keywords(tokens, self.keywords)
-        tweets = self.db.tweets
-        tweets.insert_one({
+        self.tweets.insert_one({
             "tweet": status._json,
             "keywords": keywords,
             "num_keywords": len(keywords)
@@ -53,8 +55,7 @@ class StreamListener(tweepy.StreamListener):
         """
         status_id, user_id = unicode(status_id), unicode(user_id)
         log.notice("on_delete: status_id = {}, user_id = {}".format(status_id, user_id))
-        tweets = self.db.tweets
-        tweets.delete_one({"tweet.id_str": status_id, "tweet.user.id_str": user_id})
+        self.tweets.delete_one({"tweet.id_str": status_id, "tweet.user.id_str": user_id})
 
     def on_error(self, status_code):
         """This does the Twitter-recommended exponential backoff when it
@@ -90,7 +91,7 @@ def main():
     api = tweepy.API(auth, compression=True, wait_on_rate_limit=True)
 
     keywords = get_keywords()
-    keyword_dict = {key: 1 for key in keywords}
+    keyword_dict = {key: 1 for key in keywords}  # for O(1) checking of keywords
 
     listener = StreamListener(api, keyword_dict)
     stream = tweepy.Stream(auth=auth, listener=listener)
