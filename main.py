@@ -92,7 +92,7 @@ def get_keywords():
 
 def main():
     config = ConfigParser()
-    config.read("twitter.ini")
+    config.read("config.ini")
 
     auth = tweepy.OAuthHandler(config.get("twitter", "consumer_key"), config.get("twitter", "consumer_secret"))
     auth.set_access_token(config.get("twitter", "access_key"), config.get("twitter", "access_secret"))
