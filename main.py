@@ -1,5 +1,6 @@
 from __future__ import division, print_function
 from ConfigParser import ConfigParser
+from datetime import datetime
 from time import sleep
 
 from logbook import Logger, RotatingFileHandler
@@ -35,9 +36,11 @@ class StreamListener(tweepy.StreamListener):
     """
     def __init__(self, api, keywords):
         self.api = api
+        self.keywords = keywords
+        # these below should be class attributes if we had more than 1 instance
         self.db = get_db()
         self.tweets = self.db.tweets  # Mongo collection
-        self.keywords = keywords
+        self.time_format = "%a %b %d %H:%M:%S +0000 %Y"  # 'Tue Jun 28 15:01:54 +0000 2016'
 
     def on_status(self, status):
         """Handle arrival of a new tweet."""
@@ -46,7 +49,8 @@ class StreamListener(tweepy.StreamListener):
         self.tweets.insert_one({
             "tweet": status._json,
             "keywords": keywords,
-            "num_keywords": len(keywords)
+            "num_keywords": len(keywords),
+            "datetime": datetime.strptime(status.tweet.created_at, self.time_format)
         })
 
     def on_delete(self, status_id, user_id):
