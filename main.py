@@ -1,13 +1,13 @@
 from __future__ import division, print_function
 from ConfigParser import ConfigParser
-from datetime import datetime
 from time import sleep
+import traceback
 
 from logbook import Logger, RotatingFileHandler
 import pymongo
 import tweepy
-from requests.packages.urllib3.exceptions import ProtocolError
-from requests import ConnectionError
+from requests import ConnectionError, Timeout
+from requests.packages.urllib3.exceptions import ProtocolError, ReadTimeoutError
 
 from twokenize import tokenizeRawTweetText
 
@@ -25,7 +25,11 @@ def get_db():
     if DATABASE is None:
         mongo = pymongo.MongoClient()
         # check info so we quit early if we can't connect to mongo
-        print(mongo.server_info())
+        try:
+            mongo.server_info()
+        except pymongo.errors.ServerSelectionTimeoutError as e:
+            raise Exception("Can't connect to MongoDB at " + str(e))
+        print("Connected to MongoDB")
         DATABASE = mongo.twitter
     return DATABASE
 
@@ -50,7 +54,7 @@ class StreamListener(tweepy.StreamListener):
             "tweet": status._json,
             "keywords": keywords,
             "num_keywords": len(keywords),
-            "datetime": datetime.strptime(status.tweet.created_at, self.time_format)
+            "datetime": status.created_at
         })
 
     def on_delete(self, status_id, user_id):
@@ -67,7 +71,7 @@ class StreamListener(tweepy.StreamListener):
         """
         log.error("on_error: status_code = {}".format(status_code))
         if status_code == 420:  # rate limit
-            return False
+            return True
 
 
 def find_keywords(tokens, keywords):
@@ -106,10 +110,12 @@ def main():
     while True:
         try:
             stream.filter(track=track, languages=["nl"])
-        except (ProtocolError, ConnectionError) as e:
+        except (ProtocolError, ConnectionError, Timeout, ReadTimeoutError) as e:
             sleep(1)
         except Exception as e:
-            log.critical("Exception: {}".format(str(e)))
+            tb = traceback.format_exc()
+            log.critical(tb)
+            sleep(1)
 
 
 if __name__ == "__main__":
