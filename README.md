@@ -20,6 +20,16 @@ The database is cleaned periodically by running:
 python clean.py
 ```
 
+The indexes for the API are made with:
+``` shell
+python indexes.py
+```
+
+The API is started with:
+``` shell
+gunicorn api -k gevent -w 2 --threads 2
+```
+
 # Installation
 
 Requirements:
