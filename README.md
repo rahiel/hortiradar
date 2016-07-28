@@ -31,13 +31,13 @@ Requirements:
 sudo apt install python-pip mongodb-server
 ```
 
+Python dependencies:
+``` shell
+pip install -r requirements.txt --upgrade
+```
+
 Install cythonized Falcon:
 ``` shell
 pip install cython --upgrade
 pip install --no-binary :all: falcon --upgrade
-```
-
-Python dependencies:
-``` shell
-pip install -r requirements.txt
 ```

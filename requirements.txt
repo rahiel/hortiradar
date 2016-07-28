@@ -1,3 +1,5 @@
+gevent
+gunicorn
 logbook
 pymongo
 tweepy
