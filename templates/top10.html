@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block body %}
+<script type="text/javascript">
+
+  window.onload = function() {
+
+    var contents = [];
+    $.getJSON($SCRIPT_ROOT+'/_add_top_k',{k: 10})
+      .done(function( data) {
+        $.each (data.result, function (idx) {
+          console.log(data.result[idx]);
+          contents.push({ label: data.result[idx].label, y: data.result[idx].y });
+        });
+        var chart = new CanvasJS.Chart("chartContainer", {
+          theme: "theme2",//theme1
+          title:{
+            text: "Top 10 groenten en fruit - Voorbeeld"              
+          },
+          animationEnabled: true,   // change to true
+          data: [              
+          {
+            // Change type to "bar", "area", "spline", "pie",etc.
+            type: "column",
+            dataPoints: contents,
+            click: onClick
+          }
+          ],
+          axisX: {
+            labelFontSize: 24,
+          },
+          axisY:{
+            valueFormatString: "##%",
+            labelFontSize: 24,
+          }
+        });
+        chart.render();
+      })
+      .fail( function(jqXHR, textStatus, errorThrown) { console.log("There was an error:", textStatus, errorThrown)})
+      .always( function() { console.log("Completed")});
+
+    function onClick(e) {
+      window.open("details.html?product="+e.dataPoint.label)
+      // window.open("details/_get?product="+e.dataPoint.label);
+    }
+    
+  }
+</script>
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+
+{% endblock %}
