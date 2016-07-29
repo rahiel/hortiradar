@@ -40,9 +40,9 @@ def show_top():
     start = end + timedelta(days=-1)
     params = {"token": TOKEN, "start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format)}
     API_response = requests.get("{APIurl}/keywords/".format(APIurl=_API_location),params=params)
-    counts = json.loads(API_response)
+    counts = json.loads(API_response.content)
 
-    {"keyword": kw, "count": c}
+    # {"keyword": kw, "count": c}
     total = 0
     for entry in counts:
     	total += entry["count"]
@@ -67,8 +67,8 @@ def show_details():
     end = round_time(datetime.utcnow())
     start = end + timedelta(weeks=-1)
     params = {"token": TOKEN, "start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format)}
-    API_response = requests.get("{APIurl}/keywords/{keyword}".format(APIurl=_API_location,keyword=prod),params=params)
-    tweets = json.loads(API_response)
+    API_response = requests.get("{APIurl}/keywords/{keyword}".format(APIurl=_API_location, keyword=prod), params=params)
+    tweets = json.loads(API_response.content)
 
     tweetList = []
     imagesList = []
@@ -159,7 +159,7 @@ if __name__ == '__main__':
         _stop_words = {w: 1 for w in _stop_words}  # stop words to filter out in word cloud
 
     global _API_location
-    _API_location = "http://bigtu.q-ray.nl/" ## CHANGE FOR ACTUAL ADRESS
+    _API_location = "http://127.0.0.1:8000"  ## CHANGE FOR ACTUAL ADDRESS
     global _API_time_format
     _API_time_format = "%Y-%m-%d-%H-%M-%S"
 
