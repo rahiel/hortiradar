@@ -1,6 +1,7 @@
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
+from math import ceil
 
 import falcon
 
@@ -10,6 +11,7 @@ from secret import TOKEN
 
 
 tweets = get_db().tweets
+time_format = "%Y-%m-%d-%H-%M-%S"
 
 with open("data/stoplist-nl.txt") as f:
     stop_words = [w.decode("utf-8").strip() for w in f.readlines()]
@@ -18,7 +20,6 @@ with open("data/stoplist-nl.txt") as f:
 
 def get_dates(req, resp, resource, params):
     """Parse the 'start' and 'end' datetime parameters."""
-    time_format = "%Y-%m-%d-%H-%M-%S"
     try:
         start = req.get_param("start")
         start = datetime.strptime(start, time_format) if start else datetime(2001, 1, 1)
@@ -127,7 +128,7 @@ class KeywordUsersResource(object):
 class KeywordWordcloudResource(object):
     @falcon.before(get_dates)
     def on_get(self, req, resp, keyword, start, end):
-        """Returns a """
+        """Returns words and their counts in all tweets for keyword."""
         tw = tweets.find({
             "keywords": keyword,
             "datetime": {"$gte": start, "$lt": end},
@@ -137,6 +138,45 @@ class KeywordWordcloudResource(object):
             tokens = tokenizeRawTweetText(t["tweet"]["text"])
             words.update([w for w in tokens if w.lower() not in stop_words])
         data = [{"word": w, "count": c} for w, c in words.most_common()]
+        resp.body = json.dumps(data)
+
+class KeywordTimeSeriesResource(object):
+    @falcon.before(get_dates)
+    def on_get(self, req, resp, keyword, start, end):
+        """Returns a time series with number of tweets from start to end in bins of step.
+        Step is mandatory GET parameters: number of seconds as an integer.
+
+        Returns an object where:
+            - start is the beginning of the first bin
+            - end is the end of the last bin (so nothing was counted after this time)
+            - step is the requested time bin size
+            - bins is the number of filled bins
+            - series is an object where the keys are the bin numbers and the values the counts
+        """
+        tw = tweets.find({
+            "keywords": keyword,
+            "datetime": {"$gte": start, "$lt": end},
+        }, projection={"datetime": True, "_id": False}).sort("datetime")
+        step = req.get_param("step")
+        try:
+            dt = timedelta(seconds=int(step))
+        except (ValueError, TypeError):
+            msg = "Invalid step: step is an integer of the number of seconds."
+            raise falcon.HTTPBadRequest("Bad request", msg)
+        first = tw[0]["datetime"]
+        steps_until_first = int((first - start).total_seconds() // dt.total_seconds())
+        start = start + steps_until_first * dt
+        i = 0
+        series = Counter()
+        for t in tw:
+            while not t["datetime"] < start + (i + 1) * dt:
+                i += 1
+            series[i] += 1
+        last = max(series.keys())
+        data = {
+            "start": start.strftime(time_format), "end": (start + (last + 1) * dt).strftime(time_format),
+            "step": int(step), "bins": len(series), "series": series
+        }
         resp.body = json.dumps(data)
 
 
@@ -156,3 +196,4 @@ app.add_route("/keywords/{keyword}/urls", KeywordUrlsResource())
 app.add_route("/keywords/{keyword}/texts", KeywordTextsResource())
 app.add_route("/keywords/{keyword}/users", KeywordUsersResource())
 app.add_route("/keywords/{keyword}/wordcloud", KeywordWordcloudResource())
+app.add_route("/keywords/{keyword}/series", KeywordTimeSeriesResource())
