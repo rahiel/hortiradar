@@ -42,7 +42,6 @@ def show_top():
     API_response = requests.get("{APIurl}/keywords/".format(APIurl=_API_location),params=params)
     counts = json.loads(API_response.content)
 
-    # {"keyword": kw, "count": c}
     total = 0
     for entry in counts:
     	total += entry["count"]
