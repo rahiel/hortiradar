@@ -151,16 +151,12 @@ def show_details():
 
     return jsonify(result=data)
 
+with open("data/stoplist-nl.txt", "rb") as f:
+    _stop_words = [w.decode("utf-8").strip() for w in f]
+    _stop_words = {w: 1 for w in _stop_words}  # stop words to filter out in word cloud
+
+_API_location = "http://127.0.0.1:8000"  ## CHANGE FOR ACTUAL ADDRESS
+_API_time_format = "%Y-%m-%d-%H-%M-%S"
+
 if __name__ == '__main__':
-    global _stop_words
-    with open("data/stoplist-nl.txt","rb") as f:
-        _stop_words = [w.decode("utf-8").strip() for w in f]
-        _stop_words = {w: 1 for w in _stop_words}  # stop words to filter out in word cloud
-
-    global _API_location
-    _API_location = "http://127.0.0.1:8000"  ## CHANGE FOR ACTUAL ADDRESS
-    global _API_time_format
-    _API_time_format = "%Y-%m-%d-%H-%M-%S"
-
-    # app.run(host='0.0.0.0')
     app.run(debug=True)

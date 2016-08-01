@@ -25,9 +25,14 @@ The indexes for the API are made with:
 python indexes.py
 ```
 
-The API is started with:
+The API is started on Unix with:
 ``` shell
 gunicorn api -k gevent -w 2 --threads 2
+```
+
+And on Windows with:
+``` shell
+waitress-serve --listen=127.0.0.1:8000 api:app
 ```
 
 # Installation
@@ -50,4 +55,14 @@ Install cythonized Falcon:
 ``` shell
 pip install cython --upgrade
 pip install --no-binary :all: falcon --upgrade
+```
+
+On Unix we use gunicorn + gevent:
+``` shell
+pip install gevent gunicorn
+```
+
+And on Windows waitress:
+``` shell
+pip install waitress
 ```
