@@ -17,6 +17,11 @@ with open("data/stoplist-nl.txt") as f:
     stop_words = [w.decode("utf-8").strip() for w in f.readlines()]
     stop_words = {w: 1 for w in stop_words}  # stop words to filter out in word cloud
 
+with open("data/fruitsandveg.txt") as f:
+    fruitsandveg_words = [w.decode("utf-8").strip() for w in f.readlines()]
+
+with open("data/flowers.txt") as f:
+    flowers_words = [w.decode("utf-8").strip() for w in f.readlines()]
 
 def get_dates(req, resp, resource, params):
     """Parse the 'start' and 'end' datetime parameters."""
@@ -45,6 +50,40 @@ class KeywordsResource(object):
         counts = Counter()
         for t in tw:
             counts.update(t["keywords"])
+        data = [{"keyword": kw, "count": c} for kw, c in counts.most_common()]
+        resp.body = json.dumps(data)
+
+class KeywordsFlowersResource(object):
+    @falcon.before(get_dates)
+    def on_get(self, req, resp, start, end):
+        """All tracked keywords in the database.
+        Returns a sorted list with the flower keywords and their counts.
+        """
+        tw = tweets.find({
+            "num_keywords": {"$gt": 0},
+            "datetime": {"$gte": start, "$lt": end}
+        }, projection={"keywords": True, "_id": False})
+        counts = Counter()
+        for t in tw:
+            filt_keywords = [kw for kw in t["keywords"] if kw in flowers_words]
+            counts.update(filt_keywords)
+        data = [{"keyword": kw, "count": c} for kw, c in counts.most_common()]
+        resp.body = json.dumps(data)
+
+class KeywordsFruitsResource(object):
+    @falcon.before(get_dates)
+    def on_get(self, req, resp, start, end):
+        """All tracked keywords in the database.
+        Returns a sorted list with the fruit and veg keywords and their counts.
+        """
+        tw = tweets.find({
+            "num_keywords": {"$gt": 0},
+            "datetime": {"$gte": start, "$lt": end}
+        }, projection={"keywords": True, "_id": False})
+        counts = Counter()
+        for t in tw:
+            filt_keywords = [kw for kw in t["keywords"] if kw in fruitsandveg_words]
+            counts.update(filt_keywords)
         data = [{"keyword": kw, "count": c} for kw, c in counts.most_common()]
         resp.body = json.dumps(data)
 
@@ -189,6 +228,8 @@ class AuthenticationMiddleware(object):
 
 app = application = falcon.API(middleware=AuthenticationMiddleware())
 app.add_route("/keywords", KeywordsResource())
+app.add_route("/keywords/flowers", KeywordsFlowersResource())
+app.add_route("/keywords/fruits", KeywordsFruitsResource())
 app.add_route("/keywords/{keyword}", KeywordResource())
 app.add_route("/keywords/{keyword}/ids", KeywordIdsResource())
 app.add_route("/keywords/{keyword}/media", KeywordMediaResource())

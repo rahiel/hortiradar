@@ -85,9 +85,14 @@ def find_keywords(tokens, keywords):
 
 
 def get_keywords():
-    """Gets keywords from the file."""
-    with open("data/keywords_bloemen_top10app.txt") as doc:
-        return unicode(doc.read()).lower().split(',')
+    """Gets keywords from the source files."""
+    with open("data/fruitsandveg.txt") as f:
+        fruitsandveg_words = [w.decode("utf-8").strip() for w in f.readlines()]
+
+    with open("data/flowers.txt") as f:
+        flowers_words = [w.decode("utf-8").strip() for w in f.readlines()]
+    
+    return fruitsandveg_words+flowers_words
 
 
 def main():

@@ -5,16 +5,16 @@
   window.onload = function() {
 
     var contents = [];
-    $.getJSON($SCRIPT_ROOT+'/_add_top_k',{k: 10})
+    $.getJSON($SCRIPT_ROOT+'/_add_top_k/fruits',{k: 10})
       .done(function( data) {
         $.each (data.result, function (idx) {
           console.log(data.result[idx]);
           contents.push({ label: data.result[idx].label, y: data.result[idx].y });
         });
-        var chart = new CanvasJS.Chart("chartContainer", {
+        var chart = new CanvasJS.Chart("chartContainer_fruit", {
           theme: "theme2",//theme1
           title:{
-            text: "Top 10 groenten en fruit - Voorbeeld"              
+            text: "Top 10 groenten en fruit"              
           },
           animationEnabled: true,   // change to true
           data: [              
@@ -38,6 +38,40 @@
       .fail( function(jqXHR, textStatus, errorThrown) { console.log("There was an error:", textStatus, errorThrown)})
       .always( function() { console.log("Completed")});
 
+    var contents2 = [];
+    $.getJSON($SCRIPT_ROOT+'/_add_top_k/flowers',{k: 10})
+      .done(function( data) {
+        $.each (data.result, function (idx) {
+          console.log(data.result[idx]);
+          contents2.push({ label: data.result[idx].label, y: data.result[idx].y });
+        });
+        var chart = new CanvasJS.Chart("chartContainer_flower", {
+          theme: "theme2",//theme1
+          title:{
+            text: "Top 10 bloemen en planten"              
+          },
+          animationEnabled: true,   // change to true
+          data: [              
+          {
+            // Change type to "bar", "area", "spline", "pie",etc.
+            type: "column",
+            dataPoints: contents2,
+            click: onClick
+          }
+          ],
+          axisX: {
+            labelFontSize: 24,
+          },
+          axisY:{
+            valueFormatString: "##%",
+            labelFontSize: 24,
+          }
+        });
+        chart.render();
+      })
+      .fail( function(jqXHR, textStatus, errorThrown) { console.log("There was an error:", textStatus, errorThrown)})
+      .always( function() { console.log("Completed")});
+
     function onClick(e) {
       window.open("details.html?product="+e.dataPoint.label)
       // window.open("details/_get?product="+e.dataPoint.label);
@@ -45,6 +79,9 @@
     
   }
 </script>
-<div id="chartContainer" style="height: 300px; width: 100%;"></div>
-
+<div id="chartContainer_fruit" style="height: 300px; width: 100%;"></div>
+<br />
+<br />
+<br />
+<div id="chartContainer_flower" style="height: 300px; width: 100%;"></div>
 {% endblock %}

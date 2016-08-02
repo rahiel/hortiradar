@@ -31,7 +31,7 @@ def unshorten_url(url):
 def index():
     return render_template('top10.html')
 
-@app.route('/_add_top_k')
+@app.route('/_add_top_k/fruits')
 def show_top():
     """Visualize a top k result file"""
     max_amount = request.args.get('k', 10, type=int)
@@ -39,7 +39,30 @@ def show_top():
     end = round_time(datetime.utcnow())
     start = end + timedelta(days=-1)
     params = {"token": TOKEN, "start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format)}
-    API_response = requests.get("{APIurl}/keywords/".format(APIurl=_API_location),params=params)
+    API_response = requests.get("{APIurl}/keywords/fruits/".format(APIurl=_API_location),params=params)
+    counts = json.loads(API_response.content)
+
+    total = 0
+    for entry in counts:
+        total += entry["count"]
+
+    topkArray = []
+    for i,entry in enumerate(counts):
+        if i < max_amount:
+            if entry["count"] > 0:
+              topkArray.append({"label": entry["keyword"], "y": entry["count"]/total})
+    
+    return jsonify(result=topkArray)
+
+@app.route('/_add_top_k/flowers')
+def show_top():
+    """Visualize a top k result file"""
+    max_amount = request.args.get('k', 10, type=int)
+
+    end = round_time(datetime.utcnow())
+    start = end + timedelta(days=-1)
+    params = {"token": TOKEN, "start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format)}
+    API_response = requests.get("{APIurl}/keywords/flowers/".format(APIurl=_API_location),params=params)
     counts = json.loads(API_response.content)
 
     total = 0
