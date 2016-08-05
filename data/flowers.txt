@@ -60,7 +60,6 @@ Bloemistnieuw
 #Bloemistenklok
 #klok
 Presentatieruimte
-#Presentatieruimte
 FloraHolland 2020 strategie
 #FH2020
 #sierteeltsector

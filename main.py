@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+from collections import defaultdict
 from ConfigParser import ConfigParser
 from time import sleep
 import traceback
@@ -13,6 +14,10 @@ from twokenize import tokenizeRawTweetText
 
 
 DATABASE = None
+GROUPS = {
+    "bloemen": "data/flowers.txt",
+    "groente_en_fruit": "data/fruitsandveg.txt"
+}
 
 RotatingFileHandler("twitter.log", backup_count=5).push_application()
 log = Logger("main")
@@ -49,11 +54,12 @@ class StreamListener(tweepy.StreamListener):
     def on_status(self, status):
         """Handle arrival of a new tweet."""
         tokens = tokenizeRawTweetText(status.text)
-        keywords = find_keywords(tokens, self.keywords)
+        keywords, groups = find_keywords_and_groups(tokens, self.keywords)
         self.tweets.insert_one({
             "tweet": status._json,
             "keywords": keywords,
             "num_keywords": len(keywords),
+            "groups": groups,
             "datetime": status.created_at
         })
 
@@ -74,25 +80,42 @@ class StreamListener(tweepy.StreamListener):
             return True
 
 
-def find_keywords(tokens, keywords):
-    """Returns a list of the keywords that occur in tokens."""
+def find_keywords_and_groups(tokens, keywords):
+    """Returns a list of the keywords and a list of associated groups that occur in tokens."""
     kw = []
+    groups = []
     for t in tokens:
-        a = keywords.get(t, None)
-        if a is not None:
+        if t[0] == '#':  # hashtags
+            t = t[1:]
+        t = t.lower()
+        g = keywords.get(t, None)
+        if g is not None:
             kw.append(t)
-    return kw
+            groups += g
+    return list(set(kw)), list(set(groups))
 
 
 def get_keywords():
-    """Gets keywords from the source files."""
-    with open("data/fruitsandveg.txt") as f:
-        fruitsandveg_words = [w.decode("utf-8").strip() for w in f.readlines()]
+    """Gets keywords from the source files. keywords is a dictionary where the keys are the
+    keywords and the values a list of the groups that keyword is in.
+    """
+    keywords = defaultdict(set)
+    for group_name in GROUPS:
+        words = read_keywords(GROUPS[group_name])
+        for k in words:
+            keywords[k].add(group_name)
+    return {k: list(v) for k, v in keywords.items()}
 
-    with open("data/flowers.txt") as f:
-        flowers_words = [w.decode("utf-8").strip() for w in f.readlines()]
-    
-    return fruitsandveg_words+flowers_words
+
+def read_keywords(filename):
+    keywords = []
+    with open(filename) as f:
+        for line in f:
+            word = line.decode("utf-8").strip().lower()
+            if word[0] == '#':
+                word = word[1:]
+            keywords.append(word)
+    return keywords
 
 
 def main():
@@ -104,9 +127,8 @@ def main():
     api = tweepy.API(auth, compression=True, wait_on_rate_limit=True)
 
     keywords = get_keywords()
-    keyword_dict = {key: 1 for key in keywords}  # for O(1) checking of keywords
 
-    listener = StreamListener(api, keyword_dict)
+    listener = StreamListener(api, keywords)
     stream = tweepy.Stream(auth=auth, listener=listener)
 
     with open("data/stoplist_nl_extended.txt") as f:
