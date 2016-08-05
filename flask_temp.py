@@ -32,14 +32,18 @@ def index():
     return render_template('top10.html')
 
 @app.route('/_add_top_k/fruits')
-def show_top():
+def show_top_fruits():
     """Visualize a top k result file"""
     max_amount = request.args.get('k', 10, type=int)
 
     end = round_time(datetime.utcnow())
     start = end + timedelta(days=-1)
-    params = {"token": TOKEN, "start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format)}
-    API_response = requests.get("{APIurl}/keywords/fruits/".format(APIurl=_API_location),params=params)
+    params = {
+            "token": TOKEN,
+            "start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format),
+            "group": "groente_en_fruit"
+    }
+    API_response = requests.get("{APIurl}/keywords".format(APIurl=_API_location), params=params)
     counts = json.loads(API_response.content)
 
     total = 0
@@ -55,14 +59,18 @@ def show_top():
     return jsonify(result=topkArray)
 
 @app.route('/_add_top_k/flowers')
-def show_top():
+def show_top_flowers():
     """Visualize a top k result file"""
     max_amount = request.args.get('k', 10, type=int)
 
     end = round_time(datetime.utcnow())
     start = end + timedelta(days=-1)
-    params = {"token": TOKEN, "start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format)}
-    API_response = requests.get("{APIurl}/keywords/flowers/".format(APIurl=_API_location),params=params)
+    params = {
+            "token": TOKEN,
+            "start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format),
+            "group": "bloemen"
+    }
+    API_response = requests.get("{APIurl}/keywords".format(APIurl=_API_location), params=params)
     counts = json.loads(API_response.content)
 
     total = 0
