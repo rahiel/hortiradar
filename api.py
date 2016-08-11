@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from collections import Counter
 from datetime import datetime, timedelta
 import json
@@ -202,6 +203,43 @@ class TweetResource(object):
             resp.status = falcon.HTTP_204
         else:
             raise falcon.HTTPNotFound()
+
+    def on_patch(self, req, resp, id_str):
+        """Update value of tweet document. Only allows (un)setting top-level attributes for now."""
+        data = req.stream.read()
+        try:
+            patch = json.loads(data)
+        except ValueError as e:
+            msg = "Invalid JSON: " + str(e)
+            raise falcon.HTTPBadRequest("Bad request", msg)
+        t = tweets.find_one({"tweet.id_str": id_str}, projection={"_id": True})
+        if not t:
+            raise falcon.HTTPNotFound()
+        update = json_merge_patch_to_mongo_update(patch)
+        try:
+            tweets.update_one({"_id": t["_id"]}, update)
+            resp.status = falcon.HTTP_204
+        except Exception as e:
+            msg = ("Error: {}. ".format(str(e)) +
+                   "This endpoint accepts JSON merge patches as specified in https://tools.ietf.org/html/rfc7396")
+            raise falcon.HTTPBadRequest("Bad request", msg)
+
+
+def json_merge_patch_to_mongo_update(patch):
+    update = {}
+    set_values = []
+    unset = []
+    for key, value in patch.items():
+        if value is not None:
+            set_values.append((key, value))
+        else:
+            unset.append(key)
+    if set_values:
+        update["$set"] = dict(set_values)
+    if unset:
+        update["$unset"] = {k: True for k in unset}
+    return update
+
 
 class AuthenticationMiddleware(object):
     def process_request(self, req, resp):
