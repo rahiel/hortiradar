@@ -188,6 +188,20 @@ class KeywordTimeSeriesResource(object):
         }
         resp.body = json.dumps(data)
 
+class TweetResource(object):
+    def on_get(self, req, resp, id_str):
+        t = tweets.find_one({"tweet.id_str": id_str}, projection={"tweet": True, "_id": False})
+        if t:
+            resp.body = json.dumps(t["tweet"])
+        else:
+            raise falcon.HTTPNotFound()
+
+    def on_delete(self, req, resp, id_str):
+        t = tweets.delete_one({"tweet.id_str": id_str})
+        if t.deleted_count > 0:
+            resp.status = falcon.HTTP_204
+        else:
+            raise falcon.HTTPNotFound()
 
 class AuthenticationMiddleware(object):
     def process_request(self, req, resp):
@@ -206,3 +220,4 @@ app.add_route("/keywords/{keyword}/texts", KeywordTextsResource())
 app.add_route("/keywords/{keyword}/users", KeywordUsersResource())
 app.add_route("/keywords/{keyword}/wordcloud", KeywordWordcloudResource())
 app.add_route("/keywords/{keyword}/series", KeywordTimeSeriesResource())
+app.add_route("/tweet/{id_str}", TweetResource())
