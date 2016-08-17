@@ -32,6 +32,13 @@ def get_dates(req, resp, resource, params):
         msg = "Invalid datetime format string, use: %s" % time_format
         raise falcon.HTTPBadRequest("Bad request", msg)
 
+def want_spam(req):
+    return req.get_param("spam") == '1'
+
+def is_spam(t):
+    spam_level = 0.9
+    return t.get("spam") is not None and t["spam"] > spam_level
+
 
 class KeywordsResource(object):
     @falcon.before(get_dates)
@@ -67,9 +74,12 @@ class KeywordResource(object):
             "datetime": {"$gte": start, "$lt": end}
         }, projection={
             "tweet.id_str": True, "tweet.text": True, "tweet.entities": True, "tweet.created_at": True,
-            "_id": False
+            "spam": True, "_id": False
         })
-        data = [t["tweet"] for t in tw]
+        if want_spam(req):
+            data = [t["tweet"] for t in tw]
+        else:
+            data = [t["tweet"] for t in tw if not is_spam(t)]
         resp.body = json.dumps(data)
 
 class KeywordIdsResource(object):
@@ -79,8 +89,11 @@ class KeywordIdsResource(object):
         tw = tweets.find({
             "keywords": keyword,
             "datetime": {"$gte": start, "$lt": end}
-        }, projection={"tweet.id_str": True, "_id": False})
-        data = [t["tweet"]["id_str"] for t in tw]
+        }, projection={"tweet.id_str": True, "spam": True, "_id": False})
+        if want_spam(req):
+            data = [t["tweet"]["id_str"] for t in tw]
+        else:
+            data = [t["tweet"]["id_str"] for t in tw if not is_spam(t)]
         resp.body = json.dumps(data)
 
 class KeywordMediaResource(object):
@@ -90,9 +103,12 @@ class KeywordMediaResource(object):
         tw = tweets.find({
             "keywords": keyword,
             "datetime": {"$gte": start, "$lt": end}
-        }, projection={"tweet.id_str": True, "tweet.entities.media": True, "_id": False})
+        }, projection={"tweet.id_str": True, "tweet.entities.media": True, "spam": True, "_id": False})
         # alternative:  "tweet.entities.media": {"$ne": None} in query
-        data = [t["tweet"] for t in tw if "media" in t["tweet"]["entities"]]
+        if want_spam(req):
+            data = [t["tweet"] for t in tw if "media" in t["tweet"]["entities"]]
+        else:
+            data = [t["tweet"] for t in tw if "media" in t["tweet"]["entities"] if not is_spam(t)]
         resp.body = json.dumps(data)
 
 class KeywordUrlsResource(object):
@@ -102,9 +118,12 @@ class KeywordUrlsResource(object):
         tw = tweets.find({
             "keywords": keyword,
             "datetime": {"$gte": start, "$lt": end}
-        }, projection={"tweet.entities.urls": True, "tweet.id_str": True, "_id": False})
+        }, projection={"tweet.entities.urls": True, "tweet.id_str": True, "spam": True, "_id": False})
         # "tweet.entities.urls": {"$ne": []}
-        data = [t["tweet"] for t in tw if t["tweet"]["entities"]["urls"]]
+        if want_spam(req):
+            data = [t["tweet"] for t in tw if t["tweet"]["entities"]["urls"]]
+        else:
+            data = [t["tweet"] for t in tw if t["tweet"]["entities"]["urls"] if not is_spam(t)]
         resp.body = json.dumps(data)
 
 
@@ -115,8 +134,11 @@ class KeywordTextsResource(object):
         tw = tweets.find({
             "keywords": keyword,
             "datetime": {"$gte": start, "$lt": end},
-        }, projection={"tweet.text": True, "tweet.id_str": True, "_id": False})
-        data = [t["tweet"] for t in tw]
+        }, projection={"tweet.text": True, "tweet.id_str": True, "spam": True, "_id": False})
+        if want_spam(req):
+            data = [t["tweet"] for t in tw]
+        else:
+            data = [t["tweet"] for t in tw if not is_spam(t)]
         resp.body = json.dumps(data)
 
 class KeywordUsersResource(object):
@@ -128,9 +150,12 @@ class KeywordUsersResource(object):
         tw = tweets.find({
             "keywords": keyword,
             "datetime": {"$gte": start, "$lt": end},
-        }, projection={"tweet.user.id_str": True, "_id": False})
+        }, projection={"tweet.user.id_str": True, "spam": True, "_id": False})
         counts = Counter()
+        skip_spam = not want_spam(req)
         for t in tw:
+            if skip_spam and is_spam(t):
+                continue
             counts[t["tweet"]["user"]["id_str"]] += 1
         data = [{"id_str": id_str, "count": c} for id_str, c in counts.most_common()]
         resp.body = json.dumps(data)
@@ -142,9 +167,12 @@ class KeywordWordcloudResource(object):
         tw = tweets.find({
             "keywords": keyword,
             "datetime": {"$gte": start, "$lt": end},
-        }, projection={"tweet.text": True, "_id": False})
+        }, projection={"tweet.text": True, "spam": True, "_id": False})
         words = Counter()
+        skip_spam = not want_spam(req)
         for t in tw:
+            if skip_spam and is_spam(t):
+                continue
             tokens = tokenizeRawTweetText(t["tweet"]["text"])
             words.update([w for w in tokens if w.lower() not in stop_words])
         data = [{"word": w, "count": c} for w, c in words.most_common()]
@@ -178,7 +206,10 @@ class KeywordTimeSeriesResource(object):
         start = start + steps_until_first * dt
         i = 0
         series = Counter()
+        skip_spam = not want_spam(req)
         for t in tw:
+            if skip_spam and is_spam(t):
+                continue
             while not t["datetime"] < start + (i + 1) * dt:
                 i += 1
             series[i] += 1
@@ -191,9 +222,9 @@ class KeywordTimeSeriesResource(object):
 
 class TweetResource(object):
     def on_get(self, req, resp, id_str):
-        t = tweets.find_one({"tweet.id_str": id_str}, projection={"tweet": True, "_id": False})
+        t = tweets.find_one({"tweet.id_str": id_str}, projection={"datetime": False, "_id": False})
         if t:
-            resp.body = json.dumps(t["tweet"])
+            resp.body = json.dumps(t)
         else:
             raise falcon.HTTPNotFound()
 
