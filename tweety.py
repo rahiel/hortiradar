@@ -37,5 +37,5 @@ class Tweety(object):
         self.get_keyword_series = _wrap_api("get", "/keywords/{}/series")
         self.get_tweet = _wrap_api("get", "/tweet/{}")
         self.delete_tweet = _wrap_api("delete", "/tweet/{}")
-        # tweety.patch_tweet, required kwargs: data
+        #  tweety.patch_tweet(id_str, data=json.dumps({"spam": 1.0}))
         self.patch_tweet = _wrap_api("patch", "/tweet/{}")
