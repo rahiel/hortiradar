@@ -55,12 +55,13 @@ class StreamListener(tweepy.StreamListener):
         """Handle arrival of a new tweet."""
         tokens = tokenizeRawTweetText(status.text)
         keywords, groups = find_keywords_and_groups(tokens, self.keywords)
+        # spam = getattr(status, "possibly_sensitive", False)
         self.tweets.insert_one({
             "tweet": status._json,
             "keywords": keywords,
             "num_keywords": len(keywords),
             "groups": groups,
-            "datetime": status.created_at
+            "datetime": status.created_at,
         })
 
     def on_delete(self, status_id, user_id):
