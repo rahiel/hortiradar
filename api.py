@@ -36,7 +36,7 @@ def want_spam(req):
     return req.get_param("spam") == '1'
 
 def is_spam(t):
-    spam_level = 0.9
+    spam_level = 0.6
     return t.get("spam") is not None and t["spam"] > spam_level
 
 
