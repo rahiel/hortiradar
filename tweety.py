@@ -1,5 +1,3 @@
-import json
-
 import requests
 
 
@@ -18,7 +16,7 @@ class Tweety(object):
                 data = params.pop("data", None)
                 r = request(url, params=params, data=data)
                 if r.content:
-                    return json.loads(r.content)
+                    return r.content
                 else:
                     return r.status_code
 

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 from datetime import datetime, timedelta
-import json
 from time import sleep
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, Response, render_template, request
 from redis import StrictRedis
+import ujson as json
 
 from twokenize import tokenizeRawTweetText
 from tweety import Tweety
@@ -42,6 +42,10 @@ def cache(func, *args, **kwargs):
         response = func(*args, **kwargs)
         r.set(key, response, ex=CACHE_TIME)
         return json.loads(response)
+
+
+def jsonify(**kwargs):
+    return Response(json.dumps(kwargs), status=200, mimetype="application/json")
 
 def round_time(dt):
     return dt + timedelta(minutes=-dt.minute, seconds=-dt.second, microseconds=-dt.microsecond)
