@@ -9,7 +9,7 @@ class Tweety(object):
         self.token = token
         self.s = requests.Session()
 
-        def _wrap_api(method, uri_template):
+        def _wrap_api(method, uri_template, name=None):
             request = eval("self.s." + method)
 
             def call(*uri_params, **params):
@@ -22,20 +22,21 @@ class Tweety(object):
                 else:
                     return r.status_code
 
+            call.__name__ = name
             return call
 
-        self.get_keywords = _wrap_api("get", "/keywords")
+        self.get_keywords = _wrap_api("get", "/keywords", name="get_keywords")
         # tweety.get_keyword("bloemen", start=datetime..., end=datetime...)
-        self.get_keyword = _wrap_api("get", "/keywords/{}")
-        self.get_keyword_id = _wrap_api("get", "/keywords/{}/ids")
-        self.get_keyword_media = _wrap_api("get", "/keywords/{}/media")
-        self.get_keyword_urls = _wrap_api("get", "/keywords/{}/urls")
-        self.get_keyword_texts = _wrap_api("get", "/keywords/{}/texts")
-        self.get_keyword_users = _wrap_api("get", "/keywords/{}/users")
-        self.get_keyword_wordcloud = _wrap_api("get", "/keywords/{}/wordcloud")
+        self.get_keyword = _wrap_api("get", "/keywords/{}", name="get_keyword")
+        self.get_keyword_id = _wrap_api("get", "/keywords/{}/ids", name="get_keyword_id")
+        self.get_keyword_media = _wrap_api("get", "/keywords/{}/media", name="get_keyword_media")
+        self.get_keyword_urls = _wrap_api("get", "/keywords/{}/urls", name="get_keyword_urls")
+        self.get_keyword_texts = _wrap_api("get", "/keywords/{}/texts", name="get_keyword_texts")
+        self.get_keyword_users = _wrap_api("get", "/keywords/{}/users", name="get_keyword_users")
+        self.get_keyword_wordcloud = _wrap_api("get", "/keywords/{}/wordcloud", name="get_keyword_wordcloud")
         # tweety.get_keyword_series("meloen", step=3600)
-        self.get_keyword_series = _wrap_api("get", "/keywords/{}/series")
-        self.get_tweet = _wrap_api("get", "/tweet/{}")
-        self.delete_tweet = _wrap_api("delete", "/tweet/{}")
+        self.get_keyword_series = _wrap_api("get", "/keywords/{}/series", name="get_keyword_series")
+        self.get_tweet = _wrap_api("get", "/tweet/{}", name="get_tweet")
+        self.delete_tweet = _wrap_api("delete", "/tweet/{}", name="delete_tweet")
         #  tweety.patch_tweet(id_str, data=json.dumps({"spam": 1.0}))
-        self.patch_tweet = _wrap_api("patch", "/tweet/{}")
+        self.patch_tweet = _wrap_api("patch", "/tweet/{}", name="patch_tweet")
