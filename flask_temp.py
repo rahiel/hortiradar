@@ -72,15 +72,12 @@ def show_top_fruits(group):
     }
     counts = cache(tweety.get_keywords, **params)
 
-    total = 0
-    for entry in counts:
-        total += entry["count"]
+    total = sum([entry["count"] for entry in counts])
 
     topkArray = []
     for i, entry in enumerate(counts):
         if i < max_amount:
-            if entry["count"] > 0:
-                topkArray.append({"label": entry["keyword"], "y": entry["count"] / total})
+            topkArray.append({"label": entry["keyword"], "y": entry["count"] / total})
         else:
             break
 
