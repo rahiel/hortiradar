@@ -5,7 +5,7 @@
   window.onload = function() {
 
     var contents = [];
-    $.getJSON($SCRIPT_ROOT+'/_add_top_k/fruits',{k: 10})
+      $.getJSON($SCRIPT_ROOT+'/_add_top_k/groente_en_fruit',{k: 10})
       .done(function( data) {
         $.each (data.result, function (idx) {
           console.log(data.result[idx]);
@@ -14,10 +14,10 @@
         var chart = new CanvasJS.Chart("chartContainer_fruit", {
           theme: "theme2",//theme1
           title:{
-            text: "Top 10 groenten en fruit"              
+            text: "Top 10 groenten en fruit"
           },
           animationEnabled: true,   // change to true
-          data: [              
+          data: [
           {
             // Change type to "bar", "area", "spline", "pie",etc.
             type: "column",
@@ -39,7 +39,7 @@
       .always( function() { console.log("Completed")});
 
     var contents2 = [];
-    $.getJSON($SCRIPT_ROOT+'/_add_top_k/flowers',{k: 10})
+      $.getJSON($SCRIPT_ROOT+'/_add_top_k/bloemen',{k: 10})
       .done(function( data) {
         $.each (data.result, function (idx) {
           console.log(data.result[idx]);
@@ -48,10 +48,10 @@
         var chart = new CanvasJS.Chart("chartContainer_flower", {
           theme: "theme2",//theme1
           title:{
-            text: "Top 10 bloemen en planten"              
+            text: "Top 10 bloemen en planten"
           },
           animationEnabled: true,   // change to true
-          data: [              
+          data: [
           {
             // Change type to "bar", "area", "spline", "pie",etc.
             type: "column",
@@ -76,7 +76,7 @@
       window.open("details.html?product="+e.dataPoint.label)
       // window.open("details/_get?product="+e.dataPoint.label);
     }
-    
+
   }
 </script>
 <div id="chartContainer_fruit" style="height: 300px; width: 100%;"></div>

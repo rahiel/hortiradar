@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
-import json
 from datetime import datetime, timedelta
-import requests
 
-from twokenize import tokenizeRawTweetText
 from flask import Flask, jsonify, render_template, request
 
-
+from twokenize import tokenizeRawTweetText
+from tweety import Tweety
 from secret import TOKEN
 
 
 app = Flask(__name__)
+
+local = "http://127.0.0.1:8000"
+qray = "http://bigtu.q-ray.nl"
+tweety = Tweety(local, TOKEN)
+
 
 def round_time(dt):
     return dt + timedelta(minutes=-dt.minute, seconds=-dt.second, microseconds=-dt.microsecond)
@@ -20,47 +23,18 @@ def round_time(dt):
 def index():
     return render_template('top10.html')
 
-@app.route('/_add_top_k/fruits')
-def show_top_fruits():
+@app.route("/_add_top_k/<group>")
+def show_top_fruits(group):
     """Visualize a top k result file"""
     max_amount = request.args.get('k', 10, type=int)
 
     end = round_time(datetime.utcnow())
     start = end + timedelta(days=-1)
     params = {
-        "token": TOKEN,
         "start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format),
-        "group": "groente_en_fruit"
+        "group": group
     }
-    API_response = requests.get("{APIurl}/keywords".format(APIurl=_API_location), params=params)
-    counts = json.loads(API_response.content)
-
-    total = 0
-    for entry in counts:
-        total += entry["count"]
-
-    topkArray = []
-    for i, entry in enumerate(counts):
-        if i < max_amount:
-            if entry["count"] > 0:
-                topkArray.append({"label": entry["keyword"], "y": entry["count"]/total})
-
-    return jsonify(result=topkArray)
-
-@app.route('/_add_top_k/flowers')
-def show_top_flowers():
-    """Visualize a top k result file"""
-    max_amount = request.args.get('k', 10, type=int)
-
-    end = round_time(datetime.utcnow())
-    start = end + timedelta(days=-1)
-    params = {
-        "token": TOKEN,
-        "start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format),
-        "group": "bloemen"
-    }
-    API_response = requests.get("{APIurl}/keywords".format(APIurl=_API_location), params=params)
-    counts = json.loads(API_response.content)
+    counts = tweety.get_keywords(**params)
 
     total = 0
     for entry in counts:
@@ -71,6 +45,8 @@ def show_top_flowers():
         if i < max_amount:
             if entry["count"] > 0:
                 topkArray.append({"label": entry["keyword"], "y": entry["count"] / total})
+        else:
+            break
 
     return jsonify(result=topkArray)
 
@@ -85,9 +61,8 @@ def show_details():
 
     end = round_time(datetime.utcnow())
     start = end + timedelta(weeks=-1)
-    params = {"token": TOKEN, "start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format)}
-    API_response = requests.get("{APIurl}/keywords/{keyword}".format(APIurl=_API_location, keyword=prod), params=params)
-    tweets = json.loads(API_response.content)
+    params = {"start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format)}
+    tweets = tweety.get_keyword(prod, **params)
 
     tweetList = []
     imagesList = []
@@ -175,7 +150,6 @@ with open("data/stoplist-nl.txt", "rb") as f:
     _stop_words = [w.decode("utf-8").strip() for w in f]
     _stop_words = {w: 1 for w in _stop_words}  # stop words to filter out in word cloud
 
-_API_location = "http://127.0.0.1:8000"  # CHANGE FOR ACTUAL ADDRESS
 _API_time_format = "%Y-%m-%d-%H-%M-%S"
 
 if __name__ == '__main__':

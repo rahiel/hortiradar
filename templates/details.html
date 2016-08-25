@@ -45,7 +45,7 @@ window.onload = function () {
           interval:3,
           intervalType: "hour",
           labelAngle: 50
-          
+
         },
         data: [
         {
@@ -70,7 +70,7 @@ window.onload = function () {
           var tweet = document.getElementById(val);
           console.log(tweet)
           twttr.widgets.createTweet(
-          val, tweet, 
+          val, tweet,
           {
             conversation : 'none',    // or all
             cards        : 'hidden',  // or visible
@@ -115,7 +115,7 @@ window.onload = function () {
       var words = [];
       $.each (data.result.tagCloud, function (idx) {
         if (data.result.tagCloud[idx].text != Url.get.product) {
-          words.push({ text: data.result.tagCloud[idx].text, weight: 50*data.result.tagCloud[idx].weight^2 });  
+          words.push({ text: data.result.tagCloud[idx].text, weight: 50*data.result.tagCloud[idx].weight^2 });
         } else {
           console.log(data.result.tagCloud[idx].text)
         }
@@ -175,7 +175,7 @@ window.onload = function () {
           <div id="wordcloudDiv"></div>
         </div>
       </div>
-      
+
       <div id="wrapper" class="main">
         <div id="mapContainer">
           <div id="wrapper" class="title"> <h2> Locations </h2></div>
