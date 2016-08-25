@@ -1,3 +1,4 @@
 logbook
 pymongo
 tweepy
+ujson

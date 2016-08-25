@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import Counter
 from datetime import datetime, timedelta
-import json
+import ujson as json
 
 import falcon
 

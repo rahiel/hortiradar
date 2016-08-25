@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 from datetime import datetime, timedelta
+from time import sleep
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, Response, render_template, request
+from redis import StrictRedis
+import ujson as json
 
 from twokenize import tokenizeRawTweetText
 from tweety import Tweety
@@ -15,6 +18,34 @@ local = "http://127.0.0.1:8000"
 qray = "http://bigtu.q-ray.nl"
 tweety = Tweety(local, TOKEN)
 
+r = StrictRedis()
+
+CACHE_TIME = 60 * 60
+
+
+def cache(func, *args, **kwargs):
+    key = (
+        func.__name__,
+        str(args),
+        str(sorted(kwargs.items(), key=lambda x: x[0]))
+    )
+    key = json.dumps(':'.join(key))
+    v = r.get(key)
+    if v is not None:
+        return json.loads(v)
+    elif v == "loading":
+        # TODO: do this properly
+        sleep(0.3)
+        return cache(func, *args, **kwargs)
+    else:
+        r.set(key, "loading", ex=2 * 60)
+        response = func(*args, **kwargs)
+        r.set(key, response, ex=CACHE_TIME)
+        return json.loads(response)
+
+
+def jsonify(**kwargs):
+    return Response(json.dumps(kwargs), status=200, mimetype="application/json")
 
 def round_time(dt):
     return dt + timedelta(minutes=-dt.minute, seconds=-dt.second, microseconds=-dt.microsecond)
@@ -34,7 +65,7 @@ def show_top_fruits(group):
         "start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format),
         "group": group
     }
-    counts = tweety.get_keywords(**params)
+    counts = cache(tweety.get_keywords, **params)
 
     total = 0
     for entry in counts:
@@ -69,7 +100,7 @@ def show_details():
     end = round_time(datetime.utcnow())
     start = end + timedelta(seconds=-interval)
     params = {"start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format)}
-    tweets = tweety.get_keyword(prod, **params)
+    tweets = cache(tweety.get_keyword, prod, **params)
 
     tweetList = []
     imagesList = []
