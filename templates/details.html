@@ -25,7 +25,7 @@ window.onload = function () {
   var timeSeries = [];
   var words = [];
 
-  $.getJSON($SCRIPT_ROOT+'/_get_details',{product: Url.get.product})
+  $.getJSON($SCRIPT_ROOT+'/_get_details/',{product: Url.get.product, interval: 60*60*24*7})
     .done(function( data) {
       $.each (data.result.timeSeries, function (idx) {
         timeSeries.push({ x: new Date(

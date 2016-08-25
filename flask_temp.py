@@ -56,11 +56,18 @@ def details():
 
 @app.route('/_get_details')
 def show_details():
-    """Visualize the details of a top k product"""
+    """
+
+    Visualize the details of a top k product
+    product:    Product for which the details page should be constructed
+    interval:   Interval in seconds for which tweets should be extracted through API
+
+    """
     prod = request.args.get('product', '', type=str)
+    interval = request.args.get('interval', '', type=int)
 
     end = round_time(datetime.utcnow())
-    start = end + timedelta(weeks=-1)
+    start = end + timedelta(seconds=-interval)
     params = {"start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format)}
     tweets = tweety.get_keyword(prod, **params)
 
