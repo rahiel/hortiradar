@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 local = "http://127.0.0.1:8000"
 qray = "http://bigtu.q-ray.nl"
-tweety = Tweety(local, TOKEN)
+tweety = Tweety(qray, TOKEN)
 
 r = StrictRedis()
 
@@ -43,6 +43,11 @@ def cache(func, *args, **kwargs):
         r.set(key, response, ex=CACHE_TIME)
         return json.loads(response)
 
+# ############ TEST MARIJN
+# def cache(func, *args, **kwargs):
+#     response = func(*args, **kwargs)
+#     return json.loads(response)
+# #############
 
 def jsonify(**kwargs):
     return Response(json.dumps(kwargs), status=200, mimetype="application/json")
@@ -96,8 +101,11 @@ def show_details():
     """
     prod = request.args.get('product', '', type=str)
     interval = request.args.get('interval', '', type=int)
-
-    end = round_time(datetime.utcnow())
+    end = request.args.get('end',None,type=str)
+    if end:
+        end = datetime.strptime(end,"%Y-%m-%d %H:%M")+timedelta(hours=1)
+    else:
+        end = round_time(datetime.utcnow())
     start = end + timedelta(seconds=-interval)
     params = {"start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format)}
     tweets = cache(tweety.get_keyword, prod, **params)
