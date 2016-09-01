@@ -5,9 +5,8 @@ import ujson as json
 
 import falcon
 
-from main import get_db, get_keywords
-from twokenize import tokenizeRawTweetText
-from secret import TOKEN
+from streamer import get_db, get_keywords
+from hortiradar import tokenizeRawTweetText, TOKEN
 
 
 tweets = get_db().tweets

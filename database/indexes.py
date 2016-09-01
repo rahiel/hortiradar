@@ -1,4 +1,4 @@
-from main import get_db
+from streamer import get_db
 
 
 tweets = get_db().tweets

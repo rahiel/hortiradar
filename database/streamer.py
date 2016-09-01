@@ -10,7 +10,7 @@ import tweepy
 from requests import ConnectionError, Timeout
 from requests.packages.urllib3.exceptions import ProtocolError, ReadTimeoutError
 
-from twokenize import tokenizeRawTweetText
+from hortiradar import tokenizeRawTweetText
 
 
 DATABASE = None

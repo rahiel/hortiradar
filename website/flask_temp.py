@@ -7,9 +7,7 @@ from flask import Flask, Response, render_template, request
 from redis import StrictRedis
 import ujson as json
 
-from twokenize import tokenizeRawTweetText
-from tweety import Tweety
-from secret import TOKEN
+from hortiradar import tokenizeRawTweetText, Tweety, TOKEN
 
 
 app = Flask(__name__)

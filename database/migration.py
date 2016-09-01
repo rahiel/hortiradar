@@ -1,6 +1,6 @@
-from main import get_db, get_keywords, find_keywords_and_groups
+from streamer import get_db, get_keywords, find_keywords_and_groups
 
-from twokenize import tokenizeRawTweetText
+from hortiradar import tokenizeRawTweetText
 
 tweets = get_db().tweets
 keywords = get_keywords()

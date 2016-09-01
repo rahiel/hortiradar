@@ -8,3 +8,4 @@
 *.log
 *.ini
 secret*
+*.egg-info
