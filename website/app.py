@@ -18,10 +18,11 @@ tweety = Tweety(qray, TOKEN)
 
 r = StrictRedis()
 
-CACHE_TIME = 60 * 60
+CACHE_TIME = 66 * 60
 
 
 def cache(func, *args, **kwargs):
+    force_refresh = kwargs.pop("force_refresh", None) or False
     key = (
         func.__name__,
         str(args),
@@ -29,17 +30,19 @@ def cache(func, *args, **kwargs):
     )
     key = json.dumps(':'.join(key))
     v = r.get(key)
-    if v is not None:
-        return json.loads(v)
+    if v is not None and not force_refresh:
+        return json.loads(v) if type(v) == str else v
     elif v == "loading":
         # TODO: do this properly
         sleep(0.3)
         return cache(func, *args, **kwargs)
     else:
         r.set(key, "loading", ex=2 * 60)
-        response = func(*args, **kwargs)
+        response = func(*args, force_refresh=force_refresh, **kwargs)
+        response = response if type(response) == str else json.dumps(response)
         r.set(key, response, ex=CACHE_TIME)
-        return json.loads(response)
+        return json.loads(response) if type(response) == str else response
+
 
 # ############ TEST MARIJN
 # def cache(func, *args, **kwargs):
@@ -61,14 +64,17 @@ def index():
 def show_top_fruits(group):
     """Visualize a top k result file"""
     max_amount = request.args.get('k', 10, type=int)
+    data = cache(process_top_fruits, group, max_amount)
+    return jsonify(result=data)
 
+def process_top_fruits(group, max_amount, force_refresh=False):
     end = round_time(datetime.utcnow())
     start = end + timedelta(days=-1)
     params = {
-        "start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format),
+        "start": start.strftime(API_time_format), "end": end.strftime(API_time_format),
         "group": group
     }
-    counts = cache(tweety.get_keywords, **params)
+    counts = cache(tweety.get_keywords, force_refresh=force_refresh, **params)
 
     total = sum([entry["count"] for entry in counts])
 
@@ -79,7 +85,7 @@ def show_top_fruits(group):
         else:
             break
 
-    return jsonify(result=topkArray)
+    return topkArray
 
 @app.route('/details.html')
 def details():
@@ -95,15 +101,19 @@ def show_details():
 
     """
     prod = request.args.get('product', '', type=str)
-    interval = request.args.get('interval', '', type=int)
-    end = request.args.get('end',None,type=str)
+    interval = request.args.get('interval', 60 * 60 * 24 * 7, type=int)
+    end = request.args.get('end', None, type=str)
     if end:
-        end = datetime.strptime(end,"%Y-%m-%d %H:%M")+timedelta(hours=1)
+        end = datetime.strptime(end, "%Y-%m-%d %H:%M") + timedelta(hours=1)
     else:
         end = round_time(datetime.utcnow())
     start = end + timedelta(seconds=-interval)
-    params = {"start": start.strftime(_API_time_format), "end": end.strftime(_API_time_format)}
-    tweets = cache(tweety.get_keyword, prod, **params)
+    params = {"start": start.strftime(API_time_format), "end": end.strftime(API_time_format)}
+    details = cache(process_details, prod, params)
+    return jsonify(result=details)
+
+def process_details(prod, params, force_refresh=False):
+    tweets = cache(tweety.get_keyword, prod, force_refresh=force_refresh, **params)
 
     tweetList = []
     imagesList = []
@@ -141,7 +151,7 @@ def show_details():
             pass
 
         try:
-            if tweet["coordinates"] != None:
+            if tweet["coordinates"] is not None:
                 if tweet["coordinates"]["type"] == "Point":
                     coords = tweet["coordinates"]["coordinates"]
                     mapLocations.append({"lng": coords[0], "lat": coords[1]})
@@ -184,14 +194,13 @@ def show_details():
         "locations": mapLocations,
         "centerloc": avLoc
     }
+    return data
 
-    return jsonify(result=data)
-
-with open("data/stoplist-nl.txt", "rb") as f:
+with open("../database/data/stoplist-nl.txt", "rb") as f:
     _stop_words = [w.decode("utf-8").strip() for w in f]
     _stop_words = {w: 1 for w in _stop_words}  # stop words to filter out in word cloud
 
-_API_time_format = "%Y-%m-%d-%H-%M-%S"
+API_time_format = "%Y-%m-%d-%H-%M-%S"
 
 if __name__ == '__main__':
     app.run(debug=True)

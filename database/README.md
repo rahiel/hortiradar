@@ -1,3 +1,6 @@
+Database
+========
+
 # Usage
 
 `config.ini` is a config file with:
@@ -10,12 +13,12 @@ access_key = 321321321-PQRSTUVWXYZ
 access_secret = c3VwcmlzZWQgc29tZW9uZSBmb3VuZCB0aGlzISEhISEK
 ```
 
-The tweets are saved in MongoDB with the main script:
+The tweets are saved in MongoDB with the `streamer` script:
 ``` shell
-python main.py
+python streamer.py
 ```
 
-The database is cleaned periodically by running:
+The database is cleaned periodically (every day) by running:
 ``` shell
 python clean.py
 ```
