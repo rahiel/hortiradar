@@ -20,7 +20,8 @@ r = StrictRedis()
 
 CACHE_TIME = 66 * 60
 
-
+# tweety methods return json string
+# internal app functions return python dicts/lists
 def cache(func, *args, **kwargs):
     force_refresh = kwargs.pop("force_refresh", None) or False
     key = (
@@ -35,13 +36,14 @@ def cache(func, *args, **kwargs):
     elif v == "loading":
         # TODO: do this properly
         sleep(0.3)
+        kwargs["force_refresh"] = force_refresh
         return cache(func, *args, **kwargs)
     else:
         r.set(key, "loading", ex=2 * 60)
         response = func(*args, force_refresh=force_refresh, **kwargs)
-        response = response if type(response) == str else json.dumps(response)
-        r.set(key, response, ex=CACHE_TIME)
-        return json.loads(response) if type(response) == str else response
+        v = json.dumps(response) if type(response) != str else response
+        r.set(key, v, ex=CACHE_TIME)
+        return response if type(response) != str else json.loads(response)
 
 
 # ############ TEST MARIJN

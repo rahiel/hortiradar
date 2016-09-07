@@ -10,6 +10,7 @@ groups = ["bloemen", "groente_en_fruit"]
 max_amount = 10
 group_data = []
 for group in groups:
+    print("Caching group: {}".format(group))
     group_data.append(cache(process_top_fruits, group, max_amount, force_refresh=True))
 
 
@@ -21,4 +22,5 @@ keyword_data = []
 for group in group_data:
     for keyword in group:
         prod = keyword["label"]
+        print("Caching keyword: {}".format(prod))
         keyword_data.append(cache(process_details, prod, params, force_refresh=True))
