@@ -5,6 +5,7 @@ from time import sleep
 
 from flask import Flask, Response, render_template, request
 from redis import StrictRedis
+import requests
 import ujson as json
 
 from hortiradar import tokenizeRawTweetText, Tweety, TOKEN
@@ -57,6 +58,14 @@ def jsonify(**kwargs):
 
 def round_time(dt):
     return dt + timedelta(minutes=-dt.minute, seconds=-dt.second, microseconds=-dt.microsecond)
+
+def expand(url):
+    """Expands URLs from URL shorteners."""
+    r = requests.head(url)
+    while r.is_redirect and r.headers.get("location") is not None:
+        url = r.headers["location"]
+        r = requests.head(url)
+    return r.url
 
 @app.route('/')
 def index():
