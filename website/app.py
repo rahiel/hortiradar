@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
+from collections import Counter
 from datetime import datetime, timedelta
 from time import sleep
 
@@ -129,25 +130,27 @@ def process_details(prod, params, force_refresh=False):
     tweetList = []
     imagesList = []
     URLList = []
-    wordCloudDict = {}
-    tsDict = {}
+    wordCloudDict = Counter()
+    tsDict = Counter()
     mapLocations = []
 
     for tweet in tweets:
         tweetList.append(tweet["id_str"])
 
         tokens = tokenizeRawTweetText(tweet["text"].lower())
-        for t in tokens:
-            if t not in wordCloudDict:
-                wordCloudDict[t] = 1
-            else:
-                wordCloudDict[t] += 1
+        wordCloudDict.update(tokens)
+        # for t in tokens:
+        #     if t not in wordCloudDict:
+        #         wordCloudDict[t] = 1
+        #     else:
+        #         wordCloudDict[t] += 1
 
         dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
-        if (dt.year, dt.month, dt.day, dt.hour) in tsDict:
-            tsDict[(dt.year, dt.month, dt.day, dt.hour)] += 1
-        else:
-            tsDict[(dt.year, dt.month, dt.day, dt.hour)] = 1
+        tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
+        # if (dt.year, dt.month, dt.day, dt.hour) in tsDict:
+        #     tsDict[(dt.year, dt.month, dt.day, dt.hour)] += 1
+        # else:
+        #     tsDict[(dt.year, dt.month, dt.day, dt.hour)] = 1
 
         try:
             for obj in tweet["entities"]["media"]:
@@ -157,7 +160,7 @@ def process_details(prod, params, force_refresh=False):
 
         try:
             for obj in tweet["entities"]["urls"]:
-                URLList.append(obj["expanded_url"])
+                URLList.append(expand(obj["expanded_url"]))
         except KeyError:
             pass
 
@@ -196,11 +199,19 @@ def process_details(prod, params, force_refresh=False):
     else:
         avLoc = {"lng": 5, "lat": 52}
 
+    images = []
+    for (url,count) in Counter(imagesList).most_common():
+        images.append({"link": url, "occ": count})
+
+    urls = []
+    for (url,count) in Counter(URLList).most_common():
+        urls.append({"link": url, "occ": count})
+
     data = {
         "tweets": tweetList[::-1],
         "timeSeries": ts,
-        "URLs": URLList,
-        "photos": imagesList,
+        "URLs": urls,
+        "photos": images,
         "tagCloud": wordCloud,
         "locations": mapLocations,
         "centerloc": avLoc

@@ -87,28 +87,27 @@ window.onload = function () {
       });
 
       var urlList = $('ul#urlList')
-      $.each(data.result.URLs, function (idx,val) {
+      $.each(data.result.URLs, function (idx) {
 
         if(idx < 15) { // Display a maximum of 15 urls
-          var li = $('<li><a href="'+val+'">'+val+'</a></li>')
+          var li = $('<li>'+data.result.URLs[idx].occ+') <a href="'+data.result.URLs[idx].link+'">'+data.result.URLs[idx].link+'</a></li>')
           .appendTo(urlList);
         }
 
       });
 
-      var medList = $('div#mediaContainer')
-      $.each(data.result.photos, function (idx,val) {
+      var medList = $('div#mediaDiv')
+      $.each(data.result.photos, function (idx) {
 
         if(idx < 15) { // Display a maximum of 15 photos
 
-          // var li = $('<img class="twitImage" src="'+val+'" />')
-          // .appendTo(medList);
           if (idx%3 == 2) {
-            var li = $('<img class="twitImage" src="'+val+'" /><br />')
+            '<div id="photoContainer"><img class="twitImage" src="'+data.result.photos[idx].link+'" /><span id="text">'+data.result.photos[idx].occ+'</span></div>'
+            var li = $('<img class="twitImage" src="'+data.result.photos[idx].link+'" /><br />')
             .appendTo(medList);
           }
           else{
-            var li = $('<img class="twitImage" src="'+val+'" />')
+            var li = $('<img class="twitImage" src="'+data.result.photos[idx].link+'" />')
             .appendTo(medList);
           }
         }

@@ -161,3 +161,22 @@ ul
   height: 200px; 
   width: 250px;
 }
+
+#photoContainer
+{
+    position:relative;
+    float: left;
+}
+
+#text
+{
+    z-index:100;
+    position:absolute;
+    background: rgb(0, 0, 0); /* fallback color */
+    background: rgba(0, 0, 0, 0.7);
+    color: white; 
+    font-weight:bold;
+    left:5px;
+    top:5px;
+    padding: 10px;
+}
