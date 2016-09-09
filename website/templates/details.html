@@ -29,7 +29,7 @@ window.onload = function () {
     query_interval = 60*60
   }
 
-  $.getJSON($SCRIPT_ROOT+'/_get_details',{product: Url.get.product, interval: query_interval, end: Url.get.end})
+  $.getJSON('/_get_details', {product: Url.get.product, interval: query_interval, end: Url.get.end})
     .done(function( data) {
       $.each (data.result.timeSeries, function (idx) {
         timeSeries.push({ x: new Date(
