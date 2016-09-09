@@ -64,12 +64,12 @@ def expand(url):
     """Expands URLs from URL shorteners."""
     try:
         r = requests.head(url)
+        while r.is_redirect and r.headers.get("location") is not None:
+            url = r.headers["location"]
+            r = requests.head(url)
+        return r.url
     except:
         return url
-    while r.is_redirect and r.headers.get("location") is not None:
-        url = r.headers["location"]
-        r = requests.head(url)
-    return r.url
 
 @app.route('/')
 def index():
