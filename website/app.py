@@ -62,7 +62,10 @@ def round_time(dt):
 
 def expand(url):
     """Expands URLs from URL shorteners."""
-    r = requests.head(url)
+    try:
+        r = requests.head(url)
+    except:
+        return url
     while r.is_redirect and r.headers.get("location") is not None:
         url = r.headers["location"]
         r = requests.head(url)

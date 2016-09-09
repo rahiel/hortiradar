@@ -5,7 +5,7 @@
   window.onload = function() {
 
     var contents = [];
-      $.getJSON('/_add_top_k/groente_en_fruit', {k: 10})
+      $.getJSON(APP_ROOT + '_add_top_k/groente_en_fruit', {k: 10})
       .done(function( data) {
         $.each (data.result, function (idx) {
           contents.push({ label: data.result[idx].label, y: data.result[idx].y });
@@ -38,7 +38,7 @@
       .always( function() { console.log("Completed")});
 
     var contents2 = [];
-      $.getJSON('/_add_top_k/bloemen', {k: 10})
+      $.getJSON(APP_ROOT + '_add_top_k/bloemen', {k: 10})
       .done(function( data) {
         $.each (data.result, function (idx) {
           contents2.push({ label: data.result[idx].label, y: data.result[idx].y });
@@ -71,8 +71,7 @@
       .always( function() { console.log("Completed")});
 
     function onClick(e) {
-      window.open("details.html?product="+e.dataPoint.label)
-      // window.open("details/_get?product="+e.dataPoint.label);
+      window.open(APP_ROOT + "details.html?product=" + e.dataPoint.label);
     }
 
   }

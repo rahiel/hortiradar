@@ -29,7 +29,7 @@ window.onload = function () {
     query_interval = 60*60
   }
 
-  $.getJSON('/_get_details', {product: Url.get.product, interval: query_interval, end: Url.get.end})
+  $.getJSON(APP_ROOT + '_get_details', {product: Url.get.product, interval: query_interval, end: Url.get.end})
     .done(function( data) {
       $.each (data.result.timeSeries, function (idx) {
         timeSeries.push({ x: new Date(
@@ -149,10 +149,11 @@ window.onload = function () {
 
     function onClick(e) {
       var year = String(e.dataPoint.x.getFullYear())
-      var month = String(e.dataPoint.x.getMonth()+1)
+      var month = String(e.dataPoint.x.getMonth() + 1)
       var day = String(e.dataPoint.x.getDate())
       var hour = String(e.dataPoint.x.getHours())
-      window.open("details.html?product="+Url.get.product+"&end="+year+"-"+month+"-"+day+" "+hour+":00")
+      var end = year + "-" + month + "-" + day + " " + hour + ":00";
+      window.open(APP_ROOT + "details.html?product=" + Url.get.product + "&end=" + end)
     }
 
 }

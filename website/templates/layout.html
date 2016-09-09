@@ -1,11 +1,21 @@
-<!doctype html>
-<title>BigTU research project - Hortiradar</title>
-<script type="text/javascript"
-  src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-<script type="text/javascript" 
-  src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
-<script sync src="https://platform.twitter.com/widgets.js"></script>
-<script type="text/javascript">
-  var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-</script>
-{% block body %}{% endblock %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hortiradar - BigTU research project</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script type="text/javascript" src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <script sync src="https://platform.twitter.com/widgets.js"></script>
+    <script type="text/javascript">
+     var APP_ROOT;
+     if (window.location.host.slice(0, 4) === "acba") {
+         APP_ROOT = "/hortiradar";
+     } else {
+         APP_ROOT = "/";
+     }
+    </script>
+  </head>
+
+  <body>
+    {% block body %}{% endblock %}
+  </body>
+</html>
