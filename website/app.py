@@ -20,12 +20,13 @@ tweety = Tweety(qray, TOKEN)
 
 r = StrictRedis()
 
-CACHE_TIME = 66 * 60
+CACHE_TIME = 60 * 60
 
 # tweety methods return json string
 # internal app functions return python dicts/lists
 def cache(func, *args, **kwargs):
     force_refresh = kwargs.pop("force_refresh", None) or False
+    cache_time = kwargs.pop("cache_time", None) or CACHE_TIME
     key = (
         func.__name__,
         str(args),
@@ -37,14 +38,15 @@ def cache(func, *args, **kwargs):
         return json.loads(v) if type(v) == str else v
     elif v == "loading":
         # TODO: do this properly
-        sleep(0.3)
+        sleep(0.5)
         kwargs["force_refresh"] = force_refresh
+        kwargs["cache_time"] = cache_time
         return cache(func, *args, **kwargs)
     else:
-        r.set(key, "loading", ex=2 * 60)
-        response = func(*args, force_refresh=force_refresh, **kwargs)
+        r.set(key, "loading", ex=10 * 60)
+        response = func(*args, force_refresh=force_refresh, cache_time=cache_time, **kwargs)
         v = json.dumps(response) if type(response) != str else response
-        r.set(key, v, ex=CACHE_TIME)
+        r.set(key, v, ex=cache_time)
         return response if type(response) != str else json.loads(response)
 
 
@@ -82,14 +84,14 @@ def show_top_fruits(group):
     data = cache(process_top_fruits, group, max_amount)
     return jsonify(result=data)
 
-def process_top_fruits(group, max_amount, force_refresh=False):
+def process_top_fruits(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
     end = round_time(datetime.utcnow())
     start = end + timedelta(days=-1)
     params = {
         "start": start.strftime(API_time_format), "end": end.strftime(API_time_format),
         "group": group
     }
-    counts = cache(tweety.get_keywords, force_refresh=force_refresh, **params)
+    counts = cache(tweety.get_keywords, force_refresh=force_refresh, cache_time=cache_time, **params)
 
     total = sum([entry["count"] for entry in counts])
 
@@ -127,8 +129,8 @@ def show_details():
     details = cache(process_details, prod, params)
     return jsonify(result=details)
 
-def process_details(prod, params, force_refresh=False):
-    tweets = cache(tweety.get_keyword, prod, force_refresh=force_refresh, **params)
+def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
+    tweets = cache(tweety.get_keyword, prod, force_refresh=force_refresh, cache_time=CACHE_TIME, **params)
 
     tweetList = []
     imagesList = []
@@ -142,18 +144,9 @@ def process_details(prod, params, force_refresh=False):
 
         tokens = tokenizeRawTweetText(tweet["text"].lower())
         wordCloudDict.update(tokens)
-        # for t in tokens:
-        #     if t not in wordCloudDict:
-        #         wordCloudDict[t] = 1
-        #     else:
-        #         wordCloudDict[t] += 1
 
         dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
         tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
-        # if (dt.year, dt.month, dt.day, dt.hour) in tsDict:
-        #     tsDict[(dt.year, dt.month, dt.day, dt.hour)] += 1
-        # else:
-        #     tsDict[(dt.year, dt.month, dt.day, dt.hour)] = 1
 
         try:
             for obj in tweet["entities"]["media"]:
