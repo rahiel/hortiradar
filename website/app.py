@@ -82,7 +82,7 @@ def index():
 def show_top(group):
     """Visualize a top k result file"""
     max_amount = request.args.get('k', 10, type=int)
-    data = cache(process_top_fruits, group, max_amount)
+    data = cache(process_top, group, max_amount)
     return jsonify(result=data)
 
 def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
