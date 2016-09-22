@@ -51,7 +51,12 @@ sudo apt install python-pip mongodb-server
 
 Python dependencies:
 ``` shell
-pip install -r requirements.txt --upgrade
+pip install -r database/requirements.txt --upgrade
+```
+
+Our common code in the hortiradar module:
+``` shell
+pip install --editable . --upgrade
 ```
 
 Install cythonized Falcon:

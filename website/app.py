@@ -36,14 +36,14 @@ def cache(func, *args, **kwargs):
     v = r.get(key)
     if v is not None and not force_refresh:
         return json.loads(v) if type(v) == str else v
-    elif v == "loading":
+    elif v == "loading" and not force_refresh:
         # TODO: do this properly
         sleep(0.5)
         kwargs["force_refresh"] = force_refresh
         kwargs["cache_time"] = cache_time
         return cache(func, *args, **kwargs)
     else:
-        r.set(key, "loading", ex=10 * 60)
+        r.set(key, "loading", ex=60)
         response = func(*args, force_refresh=force_refresh, cache_time=cache_time, **kwargs)
         v = json.dumps(response) if type(response) != str else response
         r.set(key, v, ex=cache_time)
@@ -156,7 +156,8 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
         try:
             for obj in tweet["entities"]["urls"]:
-                URLList.append(expand(obj["expanded_url"]))
+                # using "expand" here synchronously will slow everything down tremendously
+                URLList.append(obj["expanded_url"])
         except KeyError:
             pass
 
@@ -196,11 +197,11 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         avLoc = {"lng": 5, "lat": 52}
 
     images = []
-    for (url,count) in Counter(imagesList).most_common():
+    for (url, count) in Counter(imagesList).most_common():
         images.append({"link": url, "occ": count})
 
     urls = []
-    for (url,count) in Counter(URLList).most_common():
+    for (url, count) in Counter(URLList).most_common():
         urls.append({"link": url, "occ": count})
 
     data = {
