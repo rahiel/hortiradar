@@ -35,6 +35,7 @@ def cache(func, *args, **kwargs):
     key = json.dumps(':'.join(key))
     v = r.get(key)
     if v is not None and not force_refresh:
+        # FIXME: ValueError: Expected object or value
         return json.loads(v) if type(v) == str else v
     elif v == "loading" and not force_refresh:
         # TODO: do this properly
@@ -78,13 +79,13 @@ def index():
     return render_template('top10.html')
 
 @app.route("/_add_top_k/<group>")
-def show_top_fruits(group):
+def show_top(group):
     """Visualize a top k result file"""
     max_amount = request.args.get('k', 10, type=int)
     data = cache(process_top_fruits, group, max_amount)
     return jsonify(result=data)
 
-def process_top_fruits(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
+def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
     end = round_time(datetime.utcnow())
     start = end + timedelta(days=-1)
     params = {
@@ -117,9 +118,9 @@ def show_details():
     interval:   Interval in seconds for which tweets should be extracted through API
 
     """
-    prod = request.args.get('product', '', type=str)
-    interval = request.args.get('interval', 60 * 60 * 24 * 7, type=int)
-    end = request.args.get('end', None, type=str)
+    prod = request.args.get("product", u"", type=unicode)
+    interval = request.args.get("interval", 60 * 60 * 24 * 7, type=int)
+    end = request.args.get("end", None, type=unicode)
     if end:
         end = datetime.strptime(end, "%Y-%m-%d %H:%M") + timedelta(hours=1)
     else:
@@ -221,5 +222,5 @@ with open("../database/data/stoplist-nl.txt", "rb") as f:
 
 API_time_format = "%Y-%m-%d-%H-%M-%S"
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True, port=8000)
