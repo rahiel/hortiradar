@@ -21,6 +21,6 @@ sudo cp supervisor.conf /etc/supervisor/conf.d/hortiradar.conf
 sudo systemctl enable supervisor.service
 
 sudo apt install nginx
-sudo cp nginx.conf /etc/nginx/sites-enable/hortiradar.conf
+sudo cp nginx.conf /etc/nginx/sites-enabled/hortiradar.conf
 sudo cp caching.cron /etc/cron.d/hortiradar
 ```

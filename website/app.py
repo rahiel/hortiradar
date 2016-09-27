@@ -34,15 +34,13 @@ def cache(func, *args, **kwargs):
     )
     key = json.dumps(':'.join(key))
     v = r.get(key)
-    if v is not None and not force_refresh:
-        # FIXME: ValueError: Expected object or value
-        return json.loads(v) if type(v) == str else v
-    elif v == "loading" and not force_refresh:
-        # TODO: do this properly
-        sleep(0.5)
+    if v == "loading" and not force_refresh:
+        sleep(0.7)
         kwargs["force_refresh"] = force_refresh
         kwargs["cache_time"] = cache_time
         return cache(func, *args, **kwargs)
+    elif v is not None and not force_refresh:
+        return json.loads(v) if type(v) == str else v
     else:
         r.set(key, "loading", ex=60)
         response = func(*args, force_refresh=force_refresh, cache_time=cache_time, **kwargs)
