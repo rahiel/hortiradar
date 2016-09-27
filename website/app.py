@@ -74,9 +74,9 @@ def expand(url):
     except:
         return url
 
-@app.route('/')
+@app.route("/")
 def index():
-    return render_template('top10.html')
+    return render_template("top10.html")
 
 @app.route("/_add_top_k/<group>")
 def show_top(group):
@@ -105,11 +105,11 @@ def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
 
     return topkArray
 
-@app.route('/details.html')
+@app.route("/details.html")
 def details():
-    return render_template('details.html')
+    return render_template("details.html")
 
-@app.route('/_get_details')
+@app.route("/_get_details")
 def show_details():
     """
 
