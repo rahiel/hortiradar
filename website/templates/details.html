@@ -90,7 +90,7 @@ window.onload = function () {
       $.each(data.result.URLs, function (idx) {
 
         if(idx < 15) { // Display a maximum of 15 urls
-          var li = $('<li>'+data.result.URLs[idx].occ+') <a href="'+data.result.URLs[idx].link+'">'+data.result.URLs[idx].link+'</a></li>')
+          var li = $('<li>'+data.result.URLs[idx].occ+'x <a href="'+data.result.URLs[idx].link+'">'+data.result.URLs[idx].link+'</a></li>')
           .appendTo(urlList);
         }
 
@@ -102,12 +102,11 @@ window.onload = function () {
         if(idx < 15) { // Display a maximum of 15 photos
 
           if (idx%3 == 2) {
-            '<div id="photoContainer"><img class="twitImage" src="'+data.result.photos[idx].link+'" /><span id="text">'+data.result.photos[idx].occ+'</span></div>'
-            var li = $('<img class="twitImage" src="'+data.result.photos[idx].link+'" /><br />')
+            var li = $('<div id="photoContainer"><img class="twitImage" src="'+data.result.photos[idx].link+'" /><span id="text">'+data.result.photos[idx].occ+'</span></div><br />')
             .appendTo(medList);
           }
           else{
-            var li = $('<img class="twitImage" src="'+data.result.photos[idx].link+'" />')
+            var li = $('<div id="photoContainer"><img class="twitImage" src="'+data.result.photos[idx].link+'" /><span id="text">'+data.result.photos[idx].occ+'</span></div>')
             .appendTo(medList);
           }
         }
