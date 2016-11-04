@@ -1,0 +1,20 @@
+table {
+    border-collapse: collapse;
+    width: 150px;
+}
+
+th {
+    text-align: center;
+    padding: 8px;
+}
+
+td {
+    text-align: left;
+    padding: 8px;
+}
+
+.id {
+    width: 10px;
+}
+
+tr:nth-child(even){background-color: #cccccc}
