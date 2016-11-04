@@ -7,12 +7,12 @@
         <th>#</th>
         <th>Product</th>
     </tr>
-    <tr>
 {% for i in range(5) %}
+    <tr>
         <td class='id'>{{ i+1 }}.</td>
         <td>{{ data[i] }}</td>
-{% endfor %}
     </tr>
+{% endfor %}
 </table>
 
 {% endblock %}
