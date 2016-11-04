@@ -76,6 +76,14 @@ def expand(url):
 def index():
     return render_template("top10.html")
 
+@app.route("/widget/<group>")
+def top_widget(group):
+    """A small widget showing the top 5 in the group."""
+    max_amount = request.args.get("k", 10, type=int)  # this is 10, so we re-use the cached data from the top 10
+    data = cache(process_top, group, max_amount)[:5]
+    data = [d["label"] for d in data]
+    return render_template("widget.html", data=data)
+
 @app.route("/_add_top_k/<group>")
 def show_top(group):
     """Visualize a top k result file"""
