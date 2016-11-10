@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from collections import Counter
 from datetime import datetime, timedelta
-import ujson as json
 
 import falcon
+import ujson as json
 
 from streamer import get_db, get_keywords
-from hortiradar import tokenizeRawTweetText, TOKEN
+from hortiradar import tokenizeRawTweetText, admins, users
 
 
 tweets = get_db().tweets
@@ -274,7 +274,15 @@ def json_merge_patch_to_mongo_update(patch):
 class AuthenticationMiddleware(object):
     def process_request(self, req, resp):
         token = req.get_param("token")
-        if token != TOKEN:
+        if token in admins:
+            pass                # admins can access everything
+        elif token in users:
+            p = req.path
+            # users may not access /keywords/{keyword}, /keywords/{keyword}/texts, /tweet/{id_str}
+            if (p.startswith("/keywords/") and (p.endswith("/texts") or p.count("/") == 2) or
+                p.startswith("/tweet/")):
+                raise falcon.HTTPNotFound()
+        else:
             raise falcon.HTTPNotFound()
 
 
