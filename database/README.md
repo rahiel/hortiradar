@@ -46,7 +46,16 @@ Requirements:
 * MongoDB
 
 ``` shell
-sudo apt install python-pip mongodb-server
+sudo apt install python-pip virtualenv mongodb-server
+```
+
+Get the code and make a virtualenv for all Python packages:
+``` shell
+cd ~
+git clone https://github.com/mctenthij/hortiradar.git
+cd hortiradar/
+virtualenv -p python venv
+. venv/bin/activate
 ```
 
 Python dependencies:
@@ -74,3 +83,11 @@ And on Windows waitress:
 ``` shell
 pip install waitress
 ```
+
+We use the [Frog][] NLP software by the [Language Machines][lama] group at
+Radboud University, this should be installed in the virtualenv (this will take a
+while). [Follow the instruction][lamachine] for the local installation.
+
+[Frog]: https://languagemachines.github.io/frog/
+[lama]: http://applejack.science.ru.nl/languagemachines/
+[lamachine]: https://proycon.github.io/LaMachine/

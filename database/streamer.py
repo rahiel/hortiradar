@@ -1,9 +1,11 @@
 from __future__ import division, print_function
 from collections import defaultdict
 from ConfigParser import ConfigParser
+from os.path import expanduser
 from time import sleep
 import traceback
 
+import frog
 from logbook import Logger, RotatingFileHandler
 import pymongo
 import tweepy
@@ -14,6 +16,7 @@ from hortiradar import tokenizeRawTweetText
 
 
 DATABASE = None
+FROG = None
 GROUPS = {
     "bloemen": "data/flowers.txt",
     "groente_en_fruit": "data/fruitsandveg.txt"
@@ -22,6 +25,19 @@ GROUPS = {
 RotatingFileHandler("twitter.log", backup_count=5).push_application()
 log = Logger("main")
 log.info("Started")
+
+
+def get_frog():
+    """Returns the interface object to frog NLP. (There should only be one
+    instance, because it spawns a frog process that consumes a lot of RAM.)
+    """
+    global FROG
+    if FROG is None:
+        FROG = frog.Frog(frog.FrogOptions(
+            tok=True, lemma=True, morph=False, daringmorph=False, mwu=True,
+            chunking=False, ner=False, parser=False
+        ), expanduser("~/hortiradar/venv/etc/frog/frog.cfg"))
+    return FROG
 
 
 def get_db():
@@ -48,13 +64,13 @@ class StreamListener(tweepy.StreamListener):
         self.keywords = keywords
         # these below should be class attributes if we had more than 1 instance
         self.db = get_db()
+        self.frog = get_frog()
         self.tweets = self.db.tweets  # Mongo collection
         self.time_format = "%a %b %d %H:%M:%S +0000 %Y"  # 'Tue Jun 28 15:01:54 +0000 2016'
 
     def on_status(self, status):
         """Handle arrival of a new tweet."""
-        tokens = tokenizeRawTweetText(status.text)
-        keywords, groups = find_keywords_and_groups(tokens, self.keywords)
+        keywords, groups = find_keywords_and_groups(status.text, self.keywords, self.frog)
         tweet = {
             "tweet": status._json,
             "keywords": keywords,
@@ -84,17 +100,16 @@ class StreamListener(tweepy.StreamListener):
             return True
 
 
-def find_keywords_and_groups(tokens, keywords):
+def find_keywords_and_groups(text, keywords, frog):
     """Returns a list of the keywords and a list of associated groups that occur in tokens."""
+    tokens = frog.process(text)  # a list of dictionaries with frog's analysis per token
     kw = []
     groups = []
     for t in tokens:
-        if t[0] == '#':  # hashtags
-            t = t[1:]
-        t = t.lower()
-        g = keywords.get(t, None)
+        lemma = t["lemma"]
+        g = keywords.get(lemma, None)
         if g is not None:
-            kw.append(t)
+            kw.append(lemma)
             groups += g
     return list(set(kw)), list(set(groups))
 
