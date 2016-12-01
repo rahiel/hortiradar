@@ -13,6 +13,9 @@ access_key = 321321321-PQRSTUVWXYZ
 access_secret = c3VwcmlzZWQgc29tZW9uZSBmb3VuZCB0aGlzISEhISEK
 ```
 
+There are supervisor configurations and cron jobs for the following, but here an
+overview of the different parts:
+
 The tweets are saved in MongoDB with the `streamer` script:
 ``` shell
 python streamer.py
@@ -76,7 +79,7 @@ pip install --no-binary :all: falcon --upgrade
 
 On Unix we use gunicorn + gevent:
 ``` shell
-pip install gevent gunicorn
+pip install gevent gunicorn --upgrade
 ```
 
 And on Windows waitress:
@@ -91,3 +94,15 @@ while). [Follow the instruction][lamachine] for the local installation.
 [Frog]: https://languagemachines.github.io/frog/
 [lama]: http://applejack.science.ru.nl/languagemachines/
 [lamachine]: https://proycon.github.io/LaMachine/
+
+Install supervisor configurations and cron jobs:
+``` shell
+sudo cp streamer-supervisor.conf /etc/supervisor/conf.d/hortiradar-streamer.conf
+sudo cp api-supervisor.conf /etc/supervisor/conf.d/hortiradar-api.conf
+sudo cp clean.cron /etc/cron.d/hortiradar-clean
+```
+
+Finally with everything already running, set up the indexes:
+``` shell
+python indexes.py
+```

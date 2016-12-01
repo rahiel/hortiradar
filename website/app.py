@@ -3,6 +3,7 @@ from __future__ import division
 from collections import Counter
 from datetime import datetime, timedelta
 from time import sleep
+from os import environ
 
 from flask import Flask, Response, render_template, request
 from redis import StrictRedis
@@ -14,9 +15,12 @@ from hortiradar import tokenizeRawTweetText, Tweety, TOKEN
 
 app = Flask(__name__)
 
-local = "http://127.0.0.1:8000"
-qray = "http://bigtu.q-ray.nl"
-tweety = Tweety(qray, TOKEN)
+if environ["VERSION"] == "2":
+    tweety = Tweety("http://127.0.0.1:8888", TOKEN)
+    redis_namespace = "2:"
+else:
+    tweety = Tweety("http://bigtu.q-ray.nl", TOKEN)
+    redis_namespace = ""
 
 r = StrictRedis()
 
@@ -32,7 +36,7 @@ def cache(func, *args, **kwargs):
         str(args),
         str(sorted(kwargs.items(), key=lambda x: x[0]))
     )
-    key = json.dumps(':'.join(key))
+    key = redis_namespace + json.dumps(':'.join(key))
     v = r.get(key)
     if v == "loading" and not force_refresh:
         sleep(0.7)
