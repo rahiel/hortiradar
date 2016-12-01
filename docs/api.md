@@ -3,19 +3,19 @@
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
 **Table of Contents**
 
-    - [Introduction](#introduction)
-    - [Resources](#resources)
-        - [`/keywords`](#keywords)
-            - [`/keywords/{keyword}`](#keywordskeyword)
-            - [`/keywords/{keyword}/ids`](#keywordskeywordids)
-            - [`/keywords/{keyword}/media`](#keywordskeywordmedia)
-            - [`/keywords/{keyword}/urls`](#keywordskeywordurls)
-            - [`/keywords/{keyword}/texts`](#keywordskeywordtexts)
-            - [`/keywords/{keyword}/users`](#keywordskeywordusers)
-            - [`/keywords/{keyword}/wordcloud`](#keywordskeywordwordcloud)
-            - [`/keywords/{keyword}/series`](#keywordskeywordseries)
-        - [`/tweet/{id_str}`](#tweetidstr)
-    - [Python Wrapper](#python-wrapper)
+- [Introduction](#introduction)
+- [Resources](#resources)
+    - [`/keywords`](#keywords)
+        - [`/keywords/{keyword}`](#keywordskeyword)
+        - [`/keywords/{keyword}/ids`](#keywordskeywordids)
+        - [`/keywords/{keyword}/media`](#keywordskeywordmedia)
+        - [`/keywords/{keyword}/urls`](#keywordskeywordurls)
+        - [`/keywords/{keyword}/texts`](#keywordskeywordtexts)
+        - [`/keywords/{keyword}/users`](#keywordskeywordusers)
+        - [`/keywords/{keyword}/wordcloud`](#keywordskeywordwordcloud)
+        - [`/keywords/{keyword}/series`](#keywordskeywordseries)
+    - [`/tweet/{id_str}`](#tweetidstr)
+- [Python Wrapper](#python-wrapper)
 
 <!-- markdown-toc end -->
 
