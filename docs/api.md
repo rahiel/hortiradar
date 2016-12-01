@@ -38,6 +38,10 @@ located at: `http://bigtu.q-ray.nl/keywords`.
 The API talks in JSON: responses are either JSON or a HTTP error. The same API
 is used for the [Hortiradar website](https://acba.labs.vu.nl/hortiradar/).
 
+**Note**: some requests may take a long time before you get a response. This
+means that the database is working, as it has to analyze a lot of tweets! Please
+be patient and do prematurely cancel your request to retry.
+
 **The API is still in beta and subject to change.**
 
 ## Resources
