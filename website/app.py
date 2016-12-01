@@ -118,11 +118,9 @@ def details():
 @app.route("/_get_details")
 def show_details():
     """
-
     Visualize the details of a top k product
     product:    Product for which the details page should be constructed
     interval:   Interval in seconds for which tweets should be extracted through API
-
     """
     prod = request.args.get("product", u"", type=unicode)
     interval = request.args.get("interval", 60 * 60 * 24 * 7, type=int)
@@ -164,7 +162,9 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         try:
             for obj in tweet["entities"]["urls"]:
                 # using "expand" here synchronously will slow everything down tremendously
-                URLList.append(obj["expanded_url"])
+                url = obj["expanded_url"]
+                if url is not None:
+                    URLList.append(url)
         except KeyError:
             pass
 
