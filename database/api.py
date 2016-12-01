@@ -181,7 +181,7 @@ class KeywordTimeSeriesResource(object):
     @falcon.before(get_dates)
     def on_get(self, req, resp, keyword, start, end):
         """Returns a time series with number of tweets from start to end in bins of step.
-        Step is mandatory GET parameters: number of seconds as an integer.
+        Step is a mandatory GET parameter: number of seconds as an integer.
 
         Returns an object where:
             - start is the beginning of the first bin
