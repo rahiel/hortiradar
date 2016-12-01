@@ -15,7 +15,7 @@ from hortiradar import tokenizeRawTweetText, Tweety, TOKEN
 
 app = Flask(__name__)
 
-if environ["VERSION"] == "2":
+if environ.get("VERSION") == "2":
     tweety = Tweety("http://127.0.0.1:8888", TOKEN)
     redis_namespace = "2:"
 else:
