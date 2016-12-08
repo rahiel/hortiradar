@@ -127,14 +127,18 @@ def get_keywords():
 
 
 def read_keywords(filename):
+    """Returns a list of keywords from the datafile. Keywords are lemmatized."""
     keywords = []
+    frog = get_frog()
     with open(filename) as f:
         for line in f:
             word = line.decode("utf-8").strip().lower()
             if word[0] == '#':
                 word = word[1:]
-            keywords.append(word)
-    return keywords
+            tokens = frog.process(word)
+            if len(tokens) == 1:  # TODO: we skip over multi-word keywords
+                keywords.append(tokens[0]["lemma"])
+    return list(set(keywords))
 
 
 def main():
