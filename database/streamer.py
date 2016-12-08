@@ -107,7 +107,7 @@ def find_keywords_and_groups(text, keywords, frog):
     groups = []
     for t in tokens:
         lemma = t["lemma"]
-        g = keywords.get(lemma, None)
+        g = keywords.get(lemma.lower(), None)
         if g is not None:
             kw.append(lemma)
             groups += g
