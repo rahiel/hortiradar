@@ -1,3 +1,4 @@
+attrs
 logbook
 pymongo
 tweepy

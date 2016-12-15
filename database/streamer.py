@@ -5,6 +5,7 @@ from os.path import expanduser
 from time import sleep
 import traceback
 
+import attr
 import frog
 from logbook import Logger, RotatingFileHandler
 import pymongo
@@ -100,45 +101,65 @@ class StreamListener(tweepy.StreamListener):
             return True
 
 
+@attr.s(slots=True)
+class Keyword(object):
+    lemma = attr.ib()
+    pos = attr.ib()
+    groups = attr.ib(default=attr.Factory(list))
+
+
 def find_keywords_and_groups(text, keywords, frog):
     """Returns a list of the keywords and a list of associated groups that occur in tokens."""
     tokens = frog.process(text)  # a list of dictionaries with frog's analysis per token
     kw = []
     groups = []
     for t in tokens:
-        lemma = t["lemma"]
-        g = keywords.get(lemma.lower(), None)
-        if g is not None:
+        lemma = t["lemma"].lower()
+        k = keywords.get(lemma, None)
+        if k is not None:
+            if t["posprob"] > 0.6:
+                if not t["pos"].startswith(k.pos + "("):
+                    continue
             kw.append(lemma)
-            groups += g
+            groups += k.groups
     return list(set(kw)), list(set(groups))
 
 
 def get_keywords():
-    """Gets keywords from the source files. keywords is a dictionary where the keys are the
-    keywords and the values a list of the groups that keyword is in.
+    """Gets keywords from the source files. Returns a dictionary where the keys are
+    the lemma's of the keywords and the values the Keyword objects.
     """
-    keywords = defaultdict(set)
+    keywords = {}
     for group_name in GROUPS:
         words = read_keywords(GROUPS[group_name])
         for k in words:
-            keywords[k].add(group_name)
-    return {k: list(v) for k, v in keywords.items()}
+            if k.lemma in keywords:
+                keywords[k.lemma].groups.append(group_name)
+            else:
+                k.groups.append(group_name)
+                keywords[k.lemma] = k
+    return keywords
 
 
 def read_keywords(filename):
-    """Returns a list of keywords from the datafile. Keywords are lemmatized."""
+    """Returns a list of Keyword objects from the datafile."""
     keywords = []
+    lemmas = []
     frog = get_frog()
     with open(filename) as f:
         for line in f:
-            word = line.decode("utf-8").strip().lower()
+            word, pos = line.decode("utf-8").strip().split(",")
+            word = word.lower()
             if word[0] == '#':
                 word = word[1:]
             tokens = frog.process(word)
             if len(tokens) == 1:  # TODO: we skip over multi-word keywords
-                keywords.append(tokens[0]["lemma"])
-    return list(set(keywords))
+                lemma = tokens[0]["lemma"]
+                if lemma not in lemmas:  # we only want unique lemma's
+                    k = Keyword(lemma=lemma, pos=pos)
+                    keywords.append(k)
+                    lemmas.append(lemma)
+    return keywords
 
 
 def main():
