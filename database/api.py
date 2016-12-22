@@ -59,7 +59,7 @@ class KeywordsResource(object):
         for t in tw:
             kws = t["keywords"]
             if group:
-                kws = [kw for kw in kws if group in KEYWORDS[kw]]
+                kws = [kw for kw in kws if group in KEYWORDS[kw].groups]
             counts.update(kws)
         data = [{"keyword": kw, "count": c} for kw, c in counts.most_common()]
         resp.body = json.dumps(data)
