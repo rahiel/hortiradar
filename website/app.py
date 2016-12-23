@@ -46,7 +46,8 @@ def cache(func, *args, **kwargs):
     elif v is not None and not force_refresh:
         return json.loads(v) if type(v) == str else v
     else:
-        r.set(key, "loading", ex=60)
+        if not force_refresh:
+            r.set(key, "loading", ex=60)
         response = func(*args, force_refresh=force_refresh, cache_time=cache_time, **kwargs)
         v = json.dumps(response) if type(response) != str else response
         r.set(key, v, ex=cache_time)
@@ -106,10 +107,13 @@ def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
 
     total = sum([entry["count"] for entry in counts])
 
+    # we tag these, but filter them out of the top 10
+    BLACKLIST = [u'veiling', u'naaldwijk', u'fhgt', u'fhtf', u'community', u'fhalv', u'varen corso westland', u'fhglazentulp', u'fhgt2014', u'fhgt2015', u'aalsmeer', u'floraholland 2020 strategie', u'floraholland community', u'kom in de kas', u'westland', u'fh2020', u'klok', u'bloemistenklok', u'morgenvoordeklok', u'fhstf', u'floraholland magazine', u'floraholland', u'aanvoertijden', u'fhmagazine', u'floranext']
     topkArray = []
-    for i, entry in enumerate(counts):
-        if i < max_amount:
-            topkArray.append({"label": entry["keyword"], "y": entry["count"] / total})
+    for entry in counts:
+        if len(topkArray) < max_amount:
+            if entry["keyword"] not in BLACKLIST:
+                topkArray.append({"label": entry["keyword"], "y": entry["count"] / total})
         else:
             break
 
