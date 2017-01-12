@@ -26,17 +26,21 @@ r = StrictRedis()
 
 CACHE_TIME = 60 * 60
 
+def get_cache_key(func, *args, **kwargs):
+    k = (
+        func.__name__,
+        str(args),
+        str(sorted(kwargs.items(), key=lambda x: x[0]))
+    )
+    return redis_namespace + json.dumps(":".join(k))
+
+
 # tweety methods return json string
 # internal app functions return python dicts/lists
 def cache(func, *args, **kwargs):
     force_refresh = kwargs.pop("force_refresh", None) or False
     cache_time = kwargs.pop("cache_time", None) or CACHE_TIME
-    key = (
-        func.__name__,
-        str(args),
-        str(sorted(kwargs.items(), key=lambda x: x[0]))
-    )
-    key = redis_namespace + json.dumps(':'.join(key))
+    key = get_cache_key(func, *args, **kwargs)
     v = r.get(key)
     if v == "loading" and not force_refresh:
         sleep(0.7)
@@ -53,12 +57,6 @@ def cache(func, *args, **kwargs):
         r.set(key, v, ex=cache_time)
         return response if type(response) != str else json.loads(response)
 
-
-# ############ TEST MARIJN
-# def cache(func, *args, **kwargs):
-#     response = func(*args, **kwargs)
-#     return json.loads(response)
-# #############
 
 def jsonify(**kwargs):
     return Response(json.dumps(kwargs), status=200, mimetype="application/json")
@@ -79,7 +77,8 @@ def expand(url):
 
 @app.route("/")
 def index():
-    return render_template("top10.html")
+    sync_time = r.get(redis_namespace + "sync_time")
+    return render_template("top10.html", sync_time=sync_time)
 
 @app.route("/widget/<group>")
 def top_widget(group):
