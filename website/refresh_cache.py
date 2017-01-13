@@ -2,6 +2,8 @@
 import argparse
 from datetime import datetime, timedelta
 
+import ujson as json
+
 from app import r, redis_namespace, get_cache_key, process_top, process_details, round_time, API_time_format
 
 
@@ -43,7 +45,7 @@ def main():
 
     # Now populate the cache with the new data
     for (key, data) in group_data + keyword_data:
-        r.set(key, data, ex=cache_time)
+        r.set(key, json.dumps(data), ex=cache_time)
 
     r.set(redis_namespace + "sync_time", "{} - {}".format(start_time, end_time))
 
