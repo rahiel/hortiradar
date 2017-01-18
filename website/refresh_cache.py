@@ -47,7 +47,8 @@ def main():
     for (key, data) in group_data + keyword_data:
         r.set(key, json.dumps(data), ex=cache_time)
 
-    r.set(redis_namespace + "sync_time", "{} - {}".format(start_time, end_time))
+    sync_time = "{} - {}".format(start_time, end_time) if start_time != end_time else start_time
+    r.set(redis_namespace + "sync_time", sync_time)
 
 
 if __name__ == "__main__":
