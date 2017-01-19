@@ -1,4 +1,5 @@
 flask
+flask-user<0.7
 hiredis
 redis
 requests

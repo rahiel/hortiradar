@@ -5,15 +5,27 @@ from datetime import datetime, timedelta
 from time import sleep
 from os import environ
 
-from flask import Flask, Response, render_template, request
+from flask import Blueprint, Response, render_template, request, render_template_string
+from flask_mail import Mail
+from flask_user import login_required, UserManager, SQLAlchemyAdapter
 from redis import StrictRedis
 import requests
 import ujson as json
 
+from website import app, db
+from models import User
 from hortiradar import tokenizeRawTweetText, Tweety, TOKEN
 
 
-app = Flask(__name__)
+bp = Blueprint("horti", __name__, template_folder="templates")
+
+app.config.from_pyfile("settings.py")
+app.config.from_pyfile("settings-secret.py")
+mail = Mail(app)                # initialize flask-mail
+
+# Setup Flask-User
+db_adapter = SQLAlchemyAdapter(db, User)        # Register the User model
+user_manager = UserManager(db_adapter, app)     # Initialize Flask-User
 
 if environ.get("VERSION") == "2":
     tweety = Tweety("http://127.0.0.1:8888", TOKEN)
@@ -64,23 +76,12 @@ def jsonify(**kwargs):
 def round_time(dt):
     return dt + timedelta(minutes=-dt.minute, seconds=-dt.second, microseconds=-dt.microsecond)
 
-def expand(url):
-    """Expands URLs from URL shorteners."""
-    try:
-        r = requests.head(url)
-        while r.is_redirect and r.headers.get("location") is not None:
-            url = r.headers["location"]
-            r = requests.head(url)
-        return r.url
-    except:
-        return url
-
-@app.route("/")
-def index():
+@bp.route("/")
+def home():
     sync_time = r.get(redis_namespace + "sync_time")
     return render_template("top10.html", sync_time=sync_time)
 
-@app.route("/widget/<group>")
+@bp.route("/widget/<group>")
 def top_widget(group):
     """A small widget showing the top 5 in the group."""
     max_amount = request.args.get("k", 10, type=int)  # this is 10, so we re-use the cached data from the top 10
@@ -88,12 +89,48 @@ def top_widget(group):
     data = [d["label"] for d in data]
     return render_template("widget.html", data=data)
 
-@app.route("/_add_top_k/<group>")
+@bp.route("/_add_top_k/<group>")
 def show_top(group):
     """Visualize a top k result file"""
     max_amount = request.args.get('k', 10, type=int)
     data = cache(process_top, group, max_amount)
     return jsonify(result=data)
+
+@bp.route("/details.html")
+def details():
+    return render_template("details.html")
+
+@bp.route("/_get_details")
+def show_details():
+    """
+    Visualize the details of a top k product
+    product:    Product for which the details page should be constructed
+    interval:   Interval in seconds for which tweets should be extracted through API
+    """
+    prod = request.args.get("product", u"", type=unicode)
+    interval = request.args.get("interval", 60 * 60 * 24 * 7, type=int)
+    end = request.args.get("end", None, type=unicode)
+    if end:
+        end = datetime.strptime(end, "%Y-%m-%d %H:%M") + timedelta(hours=1)
+    else:
+        end = round_time(datetime.utcnow())
+    start = end + timedelta(seconds=-interval)
+    params = {"start": start.strftime(API_time_format), "end": end.strftime(API_time_format)}
+    details = cache(process_details, prod, params)
+    return jsonify(result=details)
+
+@bp.route("/members")
+@login_required
+def members_page():
+    return render_template_string("""
+    {% extends "base.html" %}
+    {% block content %}
+        <h2>Members page</h2>
+        <p>This page can only be accessed by authenticated users.</p><br/>
+        <p><a href={{ url_for('home') }}>Home page</a> (anyone)</p>
+        <p><a href={{ url_for('members_page') }}>Members page</a> (login required)</p>
+    {% endblock %}
+    """)
 
 def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
     end = round_time(datetime.utcnow())
@@ -117,29 +154,6 @@ def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
             break
 
     return topkArray
-
-@app.route("/details.html")
-def details():
-    return render_template("details.html")
-
-@app.route("/_get_details")
-def show_details():
-    """
-    Visualize the details of a top k product
-    product:    Product for which the details page should be constructed
-    interval:   Interval in seconds for which tweets should be extracted through API
-    """
-    prod = request.args.get("product", u"", type=unicode)
-    interval = request.args.get("interval", 60 * 60 * 24 * 7, type=int)
-    end = request.args.get("end", None, type=unicode)
-    if end:
-        end = datetime.strptime(end, "%Y-%m-%d %H:%M") + timedelta(hours=1)
-    else:
-        end = round_time(datetime.utcnow())
-    start = end + timedelta(seconds=-interval)
-    params = {"start": start.strftime(API_time_format), "end": end.strftime(API_time_format)}
-    details = cache(process_details, prod, params)
-    return jsonify(result=details)
 
 def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     tweets = cache(tweety.get_keyword, prod, force_refresh=force_refresh, cache_time=CACHE_TIME, **params)
@@ -185,7 +199,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
     wordCloud = []
     for token in wordCloudDict:
-        if token not in _stop_words and "http" not in token and len(token) > 1:
+        if token not in stop_words and "http" not in token and len(token) > 1:
             wordCloud.append({"text": token, "weight": wordCloudDict[token]})
 
     ts = []
@@ -229,11 +243,25 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     }
     return data
 
+def expand(url):
+    """Expands URLs from URL shorteners."""
+    try:
+        r = requests.head(url)
+        while r.is_redirect and r.headers.get("location") is not None:
+            url = r.headers["location"]
+            r = requests.head(url)
+        return r.url
+    except:
+        return url
+
+
 with open("../database/data/stoplist-nl.txt", "rb") as f:
-    _stop_words = [w.decode("utf-8").strip() for w in f]
-    _stop_words = {w: 1 for w in _stop_words}  # stop words to filter out in word cloud
+    stop_words = [w.decode("utf-8").strip() for w in f]
+    stop_words = {w: 1 for w in stop_words}  # stop words to filter out in word cloud
 
 API_time_format = "%Y-%m-%d-%H-%M-%S"
+
+app.register_blueprint(bp, url_prefix="/hortiradar")
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000)

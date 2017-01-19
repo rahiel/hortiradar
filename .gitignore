@@ -7,5 +7,5 @@
 *.pyc
 *.log
 *.ini
-secret*
+*secret*
 *.egg-info
