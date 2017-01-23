@@ -21,9 +21,19 @@ cd website/
 sudo apt install supervisor
 sudo mkdir /var/log/hortiradar
 sudo cp supervisor.conf /etc/supervisor/conf.d/hortiradar.conf
-sudo systemctl enable supervisor.service
+sudo systemctl restart supervisor.service
 
 sudo apt install nginx
 sudo cp nginx.conf /etc/nginx/sites-enabled/hortiradar.conf
+sudo systemctl restart nginx.service
 sudo cp caching.cron /etc/cron.d/hortiradar
+```
+
+The Flask app also needs to send email:
+``` shell
+sudo apt install mailutils postfix     # select "Internet Site" and "acba.labs.vu.nl" for "mail name"
+```
+Test sending mail with:
+``` shell
+echo 'Hello! | mail -r hortiradar -s 'Test email' user@example.com  # replace user@example.com with own email address
 ```

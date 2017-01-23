@@ -26,4 +26,7 @@ USER_REGISTER_URL             = "/hortiradar/user/register"
 USER_RESEND_CONFIRM_EMAIL_URL = "/hortiradar/user/resend-confirm-email"
 USER_RESET_PASSWORD_URL       = "/hortiradar/user/reset-password/<token>"
 
+# Flask-SQLAlchemy
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 # SECRET_KEY and MAIL_PASSWORD in settings-secret.py

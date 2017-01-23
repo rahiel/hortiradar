@@ -17,10 +17,8 @@ from models import User
 from hortiradar import tokenizeRawTweetText, Tweety, TOKEN
 
 
-bp = Blueprint("horti", __name__, template_folder="templates")
+bp = Blueprint("horti", __name__, template_folder="templates", static_folder="static")
 
-app.config.from_pyfile("settings.py")
-app.config.from_pyfile("settings-secret.py")
 mail = Mail(app)                # initialize flask-mail
 
 # Setup Flask-User
