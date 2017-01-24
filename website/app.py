@@ -77,7 +77,7 @@ def round_time(dt):
 @bp.route("/")
 def home():
     sync_time = r.get(redis_namespace + "sync_time")
-    return render_template("top10.html", sync_time=sync_time)
+    return render_template("home.html", title=make_title("BigTU research project"), sync_time=sync_time)
 
 @bp.route("/widget/<group>")
 def top_widget(group):
@@ -94,7 +94,7 @@ def show_top(group):
     data = cache(process_top, group, max_amount)
     return jsonify(result=data)
 
-@bp.route("/details.html")
+@bp.route("/details")
 def details():
     return render_template("details.html")
 
@@ -251,6 +251,9 @@ def expand(url):
         return r.url
     except:
         return url
+
+def make_title(page):
+    return u"Hortiradar — " + page
 
 
 with open("../database/data/stoplist-nl.txt", "rb") as f:

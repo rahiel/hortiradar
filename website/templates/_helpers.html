@@ -1,0 +1,7 @@
+{% macro render_nav(active_page, page, label) %}
+  {% if active_page == page %}
+    <li class="active"><a href="{{ url_for(page) }}">{{label}} <span class="sr-only">(current)</span></a></li>
+  {% else %}
+    <li><a href="{{ url_for(page) }}">{{label}}</a></li>
+  {% endif %}
+{% endmacro %}

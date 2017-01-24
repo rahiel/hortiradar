@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% set active_page = "horti.home" %}
 {% block content %}
 <script type="text/javascript">
 
@@ -25,11 +26,11 @@
           }
           ],
           axisX: {
-            labelFontSize: 24
+            labelFontSize: 22
           },
           axisY:{
             valueFormatString: "##%",
-            labelFontSize: 24,
+            labelFontSize: 22,
           }
         });
         chart.render();
@@ -58,11 +59,11 @@
           }
           ],
           axisX: {
-            labelFontSize: 24,
+            labelFontSize: 22,
           },
           axisY:{
             valueFormatString: "##%",
-            labelFontSize: 24,
+            labelFontSize: 22,
           }
         });
         chart.render();
@@ -71,7 +72,7 @@
       .always( function() { console.log("Completed")});
 
     function onClick(e) {
-      window.open(APP_ROOT + "details.html?product=" + e.dataPoint.label);
+      window.open(APP_ROOT + "details?product=" + e.dataPoint.label);
     }
 
   }

@@ -1,6 +1,6 @@
 from flask_user import UserMixin
 
-from app import db
+from website import db
 
 
 class User(db.Model, UserMixin):

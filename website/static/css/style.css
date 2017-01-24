@@ -1,0 +1,85 @@
+body {
+  padding-top: 70px;
+}
+
+footer {
+    text-align: right;
+    color: #777;
+}
+
+@media (min-width: 1300px) {
+    .container{
+        width: 1270px;
+    }
+}
+
+/* Generated with TWBSColor: http://work.smarchal.com/twbscolor/css/defdd1a3e18a35583e0000000 */
+.navbar-default {
+  background-color: #defdd1;
+  border-color: #a3e18a;
+}
+.navbar-default .navbar-brand {
+  color: #35583e;
+}
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-brand:focus {
+  color: #000000;
+}
+.navbar-default .navbar-text {
+  color: #35583e;
+}
+.navbar-default .navbar-nav > li > a {
+  color: #35583e;
+}
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  color: #000000;
+}
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover,
+.navbar-default .navbar-nav > .active > a:focus {
+  color: #000000;
+  background-color: #a3e18a;
+}
+.navbar-default .navbar-nav > .open > a,
+.navbar-default .navbar-nav > .open > a:hover,
+.navbar-default .navbar-nav > .open > a:focus {
+  color: #000000;
+  background-color: #a3e18a;
+}
+.navbar-default .navbar-toggle {
+  border-color: #a3e18a;
+}
+.navbar-default .navbar-toggle:hover,
+.navbar-default .navbar-toggle:focus {
+  background-color: #a3e18a;
+}
+.navbar-default .navbar-toggle .icon-bar {
+  background-color: #35583e;
+}
+.navbar-default .navbar-collapse,
+.navbar-default .navbar-form {
+  border-color: #35583e;
+}
+.navbar-default .navbar-link {
+  color: #35583e;
+}
+.navbar-default .navbar-link:hover {
+  color: #000000;
+}
+
+@media (max-width: 767px) {
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a {
+    color: #35583e;
+  }
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
+    color: #000000;
+  }
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a,
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
+    color: #000000;
+    background-color: #a3e18a;
+  }
+}

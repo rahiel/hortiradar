@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
-<script type="text/javascript" src="static/js/jqcloud.js"></script>
-<link rel="stylesheet" href="static/css/jqcloud.css" />
-<link rel="stylesheet" href="static/css/details.css" />
+<script type="text/javascript" src="{{ url_for("horti.static", filename="js/jqcloud.js") }}"></script>
+<link rel="stylesheet" href="{{ url_for("horti.static", filename="css/jqcloud.css") }}">
+<link rel="stylesheet" href="{{ url_for("horti.static", filename="css/details.css") }}">
 <script type="text/javascript">
 
 Url = {
@@ -152,7 +152,7 @@ window.onload = function () {
       var day = String(e.dataPoint.x.getDate())
       var hour = String(e.dataPoint.x.getHours())
       var end = year + "-" + month + "-" + day + " " + hour + ":00";
-      window.open(APP_ROOT + "details.html?product=" + Url.get.product + "&end=" + end)
+      window.open(APP_ROOT + "details?product=" + Url.get.product + "&end=" + end)
     }
 
 }
