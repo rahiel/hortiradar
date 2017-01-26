@@ -174,7 +174,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
         try:
             for obj in tweet["entities"]["media"]:
-                imagesList.append(obj["media_url"])
+                imagesList.append(obj["media_url_https"])
         except KeyError:
             pass
 
