@@ -71,9 +71,10 @@ class StreamListener(tweepy.StreamListener):
 
     def on_status(self, status):
         """Handle arrival of a new tweet."""
+        json = clean_tweet(status._json)
         keywords, groups = find_keywords_and_groups(status.text, self.keywords, self.frog)
         tweet = {
-            "tweet": status._json,
+            "tweet": json,
             "keywords": keywords,
             "num_keywords": len(keywords),
             "groups": groups,
@@ -160,6 +161,43 @@ def read_keywords(filename):
                     keywords.append(k)
                     lemmas.append(lemma)
     return keywords
+
+def clean_tweet(j):
+    """Clean the tweet json from redundant fields. For example duplicate data in
+    integer/string form and http/https forms of URLs.
+    """
+    # The following fields are deprecated: https://dev.twitter.com/overview/api/tweets
+    del j["contributors"]
+    del j["geo"]
+
+    # these are redundant because we have `id_str` versions of them
+    del j["id"]
+    del j["in_reply_to_status_id"]
+    del j["in_reply_to_user_id"]
+    if j.get("quoted_status_id"):
+        del j["quoted_status_id"]
+
+    # user
+    del j["user"]["id"]
+    del j["user"]["profile_background_image_url"]  # profile_background_image_url_https
+    del j["user"]["profile_image_url"]             # profile_image_url_https
+
+    # entities
+    if j["entities"].get("media"):
+        for m in j["entities"]["media"]:
+            del m["id"]         # id_str
+            del m["media_url"]  # media_url_https
+            if m.get("source_status_id"):
+                del m["source_status_id"]  # source_status_id_str
+    if j["entities"].get("user_mentions"):
+        for mention in j["entities"]["user_mentions"]:
+            del mention["id"]
+
+    # retweet data
+    if j.get("retweeted_status"):
+        j["retweeted_status"] = clean_tweet(j["retweeted_status"])
+
+    return j
 
 
 def main():
