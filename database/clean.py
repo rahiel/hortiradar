@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from streamer import get_db
+from keywords import get_db
 
 
 tweets = get_db().tweets

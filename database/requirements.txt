@@ -1,5 +1,10 @@
 attrs
+celery<5
+gevent
+gunicorn
+hiredis
 logbook
 pymongo
+redis
 tweepy
 ujson

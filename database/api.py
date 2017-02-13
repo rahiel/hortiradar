@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import falcon
 import ujson as json
 
-from streamer import get_db, get_keywords
+from keywords import get_db, get_keywords
 from hortiradar import tokenizeRawTweetText, admins, users
 
 

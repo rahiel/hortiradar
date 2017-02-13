@@ -13,11 +13,10 @@ git clone https://github.com/mctenthij/hortiradar.git
 cd hortiradar/
 virtualenv -p python venv
 . venv/bin/activate
-pip install -r website/requirements.txt
 pip install --editable . --upgrade
-pip install gunicorn gevent
-
 cd website/
+pip install -r requirements.txt
+
 sudo apt install supervisor
 sudo mkdir /var/log/hortiradar
 sudo cp supervisor.conf /etc/supervisor/conf.d/hortiradar.conf

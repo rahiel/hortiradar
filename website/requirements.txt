@@ -1,5 +1,7 @@
 flask
 flask-user<0.7
+gevent
+gunicorn
 hiredis
 redis
 requests
