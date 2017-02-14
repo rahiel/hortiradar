@@ -13,7 +13,7 @@ def main():
     args = parser.parse_args()
 
     # bigger than usual time for when the hourly recache is too slow
-    cache_time = 90 * 60
+    cache_time = 120 * 60
 
     groups = [u"bloemen", u"groente_en_fruit"]
     get_time = lambda: datetime.now().strftime("%H:%M")
