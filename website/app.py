@@ -90,7 +90,7 @@ def top_widget(group):
 @bp.route("/_add_top_k/<group>")
 def show_top(group):
     """Visualize a top k result file"""
-    max_amount = request.args.get('k', 10, type=int)
+    max_amount = request.args.get("k", 10, type=int)
     data = cache(process_top, group, max_amount)
     return jsonify(result=data)
 
@@ -130,6 +130,10 @@ def members_page():
     {% endblock %}
     """)
 
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template("page_not_found.html"), 404
+
 def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
     end = round_time(datetime.utcnow())
     start = end + timedelta(days=-1)
@@ -142,7 +146,7 @@ def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
     total = sum([entry["count"] for entry in counts])
 
     # we tag these, but filter them out of the top 10
-    BLACKLIST = [u'veiling', u'naaldwijk', u'fhgt', u'fhtf', u'community', u'fhalv', u'varen corso westland', u'fhglazentulp', u'fhgt2014', u'fhgt2015', u'aalsmeer', u'floraholland 2020 strategie', u'floraholland community', u'kom in de kas', u'westland', u'fh2020', u'klok', u'bloemistenklok', u'morgenvoordeklok', u'fhstf', u'floraholland magazine', u'floraholland', u'aanvoertijden', u'fhmagazine', u'floranext']
+    BLACKLIST = [u'fhgt', u'fhtf', u'fhalv', u'fhglazentulp', u'fhgt2014', u'fhgt2015', u'aalsmeer', u'westland', u'fh2020', u'bloemistenklok', u'morgenvoordeklok', u'fhstf', u'floraholland', u'fhmagazine', u'floranext']
     topkArray = []
     for entry in counts:
         if len(topkArray) < max_amount:

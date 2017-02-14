@@ -1,5 +1,4 @@
 #Bloemistenklok,N
-#Community,N
 #FH2020,N
 #FHALV,N
 #FHGT,N
@@ -14,21 +13,14 @@
 #fhtf,N
 #floranext,N
 #flowersong,N
-#glastuinbouw,N
-#klok,N
-#komindekas,N
 #morgenvoordeklok,N
 #passionforflowers,N
 #passionforplants,N
 #plantconnect,N
 #sierteeltsector,N
-#tuinbouw,N
 #tuinplantvandemaand,N
 #varend corso,N
-#westland,N
 #woonplantvandemaand,N
-Aalsmeer,SPEC
-Aanvoertijden,N
 Abutilon,N
 Acacia,N
 Acer,N
@@ -117,9 +109,6 @@ Festuca,N
 Ficus,N
 Fittonia,N
 FloraHolland,N
-FloraHolland 2020 strategie,N
-FloraHolland Community,N
-FloraHolland Magazine,N
 FloraNext,N
 Freesia,N
 Freesia's,N
@@ -127,7 +116,6 @@ Fritillaria,N
 Fuchsia,N
 Gardenia,N
 Gaultheria,N
-Gemengd boeket,N
 Gentiaan,N
 Gentiana,N
 Geranium,N
@@ -174,7 +162,6 @@ Kerstroos,N
 Kerstster,N
 Kindje op moeders schoot,N
 Klimop,N
-Kom in de kas,N
 Krulvaren,N
 Laurier,N
 Laurus,N
@@ -200,7 +187,6 @@ Monstera,N
 Mosplantje,N
 Musa,N
 Muscari,N
-Naaldwijk,SPEC
 Narcis,N
 Narcissen,N
 Nephrolepis,N
@@ -241,7 +227,6 @@ Pluischrysant,N
 Plumbargo,N
 Poinsettia,N
 Potroos,N
-Presentatieruimte,N
 Primula,N
 Ranonkel,N
 Ranonkels,N
@@ -277,8 +262,6 @@ Trachelium,N
 Trosanjer,N
 Troschrysant,N
 Troschrysanten,N
-Tuincentra,N
-Tuincentrum,N
 Tuinplant,N
 Tuinplanten,N
 Tulipa,N
@@ -286,7 +269,6 @@ Tulp,N
 Tulpen,N
 Tulpendag,N
 Twuinbijt,N
-Valentijn,N
 Varen corso westland,N
 Verbena,N
 Viola,N
@@ -301,6 +283,3 @@ coniferen,N
 groene planten,N
 perkplanten,N
 solanum,N
-veiling,N
-viool,N
-viooltjes,N
