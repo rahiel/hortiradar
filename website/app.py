@@ -6,6 +6,7 @@ from time import sleep
 from os import environ
 
 from flask import Blueprint, Response, render_template, request, render_template_string
+from flask_babel import Babel
 from flask_mail import Mail
 from flask_user import login_required, UserManager, SQLAlchemyAdapter
 from redis import StrictRedis
@@ -19,7 +20,9 @@ from hortiradar import tokenizeRawTweetText, Tweety, TOKEN
 
 bp = Blueprint("horti", __name__, template_folder="templates", static_folder="static")
 
-mail = Mail(app)                # initialize flask-mail
+# Initialize flask extensions
+babel = Babel(app)
+mail = Mail(app)
 
 # Setup Flask-User
 db_adapter = SQLAlchemyAdapter(db, User)        # Register the User model

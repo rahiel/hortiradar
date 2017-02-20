@@ -9,3 +9,4 @@
 *.ini
 *secret*
 *.egg-info
+translations

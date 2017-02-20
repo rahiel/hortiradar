@@ -3,6 +3,9 @@ DEBUG = False
 SQLALCHEMY_DATABASE_URI = "sqlite:///hortiradar.sqlite"
 CSRF_ENABLED = True
 
+# Flask-Babel
+BABEL_DEFAULT_LOCALE = "nl"
+
 # Flask-Mail settings
 MAIL_USERNAME = "noreply@acba.labs.vu.nl"
 MAIL_DEFAULT_SENDER = '"Hortiradar" <noreply@acba.labs.vu.nl>'

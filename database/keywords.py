@@ -66,7 +66,7 @@ def get_frog():
         FROG = frog.Frog(frog.FrogOptions(
             tok=True, lemma=True, morph=False, daringmorph=False, mwu=True,
             chunking=False, ner=False, parser=False
-        ), expanduser("~/hortiradar/venv/etc/frog/frog.cfg"))
+        ), expanduser("~/hortiradar/venv/share/frog/nld/frog.cfg"))
     return FROG
 
 

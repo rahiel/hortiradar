@@ -1,4 +1,5 @@
 flask
+flask-babel
 flask-user<0.7
 gevent
 gunicorn

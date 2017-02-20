@@ -36,3 +36,9 @@ Test sending mail with:
 ``` shell
 echo 'Hello! | mail -r hortiradar -s 'Test email' user@example.com  # replace user@example.com with own email address
 ```
+
+Copy flask-user files for Dutch translation of login/register/etc. pages:
+``` shell
+cd ~/hortiradar/
+cp -r ./venv/lib/python2.7/site-packages/flask_user/translations/ ./website/
+```
