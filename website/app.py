@@ -148,8 +148,9 @@ def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
 
     total = sum([entry["count"] for entry in counts])
 
-    # we tag these, but filter them out of the top 10
-    BLACKLIST = [u'fhgt', u'fhtf', u'fhalv', u'fhglazentulp', u'fhgt2014', u'fhgt2015', u'aalsmeer', u'westland', u'fh2020', u'bloemistenklok', u'morgenvoordeklok', u'fhstf', u'floraholland', u'fhmagazine', u'floranext']
+    # tags in the first line are still in flowers.txt, tags from the second line are not
+    BLACKLIST = [u'fhgt', u'fhtf', u'fhalv', u'fhglazentulp', u'fhgt2014', u'fhgt2015', u'aalsmeer', u'westland', u'fh2020', u'bloemistenklok', u'morgenvoordeklok', u'fhstf', u'floraholland', u'fhmagazine', u'floranext',
+                 u'community', u'glastuinbouw', u'klok', u'komindekas', u'tuinbouw', u'westland', u'aalsmeer', u'aanvoertijden', u'naaldwijk', u'presentatieruimte', u'tuincentra', u'tuincentrum', u'valentijn', u'veiling', u'viool', u'viooltjes']
     topkArray = []
     for entry in counts:
         if len(topkArray) < max_amount:
