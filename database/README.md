@@ -45,7 +45,7 @@ Requirements:
 * RabbitMQ
 
 ``` shell
-sudo apt install python-pip virtualenv mongodb-server rabbitmq-server
+sudo apt install python-pip virtualenv mongodb-server rabbitmq-server redis-server
 ```
 
 Get the code and make a virtualenv for all Python packages:
@@ -84,11 +84,52 @@ while). [Follow the instruction][lamachine] for the local installation.
 Install supervisor configurations and cron jobs:
 ``` shell
 sudo cp streamer-supervisor.conf /etc/supervisor/conf.d/hortiradar-streamer.conf
+sudo cp master-supervisor.conf /etc/supervisor/conf.d/hortiradar-master.conf
 sudo cp api-supervisor.conf /etc/supervisor/conf.d/hortiradar-api.conf
 sudo cp clean.cron /etc/cron.d/hortiradar-clean
+sudo mkdir -p /var/log/hortiradar
+sudo supervisorctl reread
+sudo supervisorctl update
 ```
 
 Finally with everything already running, set up the indexes:
 ``` shell
 python indexes.py
 ```
+
+Set up [access to RabbitMQ](http://docs.celeryproject.org/en/latest/getting-started/brokers/rabbitmq.html#setting-up-rabbitmq):
+(Replace password with an actual good password.)
+``` shell
+sudo rabbitmqctl add_user worker password
+sudo rabbitmqctl add_vhost hortiradar
+sudo rabbitmqctl set_permissions -p hortiradar worker ".*" ".*" ".*"
+sudo rabbitmqctl set_permissions -p hortiradar guest ".*" ".*" ".*"
+```
+
+Also place the password in a file called `worker_settings.py` in the database
+directory like so:
+``` python
+password = "the password"
+```
+
+# Workers
+
+We use a distributed task queue to process the incoming tweets in parallel.
+Worker nodes need the following Debian packages:
+``` shell
+sudo apt install python-pip virtualenv redis-server
+```
+
+In addition they need all Python packages from the previous section including
+the LaMachine software distribution, except Falcon.
+
+Install the supervisor config:
+``` shell
+sudo cp worker-supervisor.conf /etc/supervisor/conf.d/hortiradar-worker1.conf
+sudo mkdir -p /var/log/hortiradar
+sudo supervisorctl reread
+sudo supervisorctl update
+```
+
+Copy the config if you need more workers, replacing `worker1` with a higher
+number.

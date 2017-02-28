@@ -4,9 +4,12 @@ from celery import Celery
 
 
 if environ.get("ROLE") == "master":
-    broker_url = "amqp://guest@localhost//"
+    broker_url = "amqp://guest@localhost:5672/hortiradar"
 else:
-    broker_url = "amqp://guest@localhost//"
+    from worker_settings import password
+    username = "worker"
+    master = "acba.labs.vu.nl"
+    broker_url = "amqp://{}:{}@{}:5672/hortiradar".format(username, password, master)
 
 app = Celery("tasks", broker=broker_url)
 

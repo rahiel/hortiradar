@@ -10,3 +10,4 @@
 *secret*
 *.egg-info
 translations
+worker_settings.py

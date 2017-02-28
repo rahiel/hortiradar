@@ -74,12 +74,7 @@ def get_db():
     """Returns the twitter database."""
     global DATABASE
     if DATABASE is None:
-        mongo = pymongo.MongoClient()
-        # check info so we quit early if we can't connect to mongo
-        try:
-            mongo.server_info()
-        except pymongo.errors.ServerSelectionTimeoutError as e:
-            raise Exception("Can't connect to MongoDB at " + str(e))
-        print("Connected to MongoDB")
+        mongo = pymongo.MongoClient(connect=False)
+        # connect=False: http://api.mongodb.com/python/current/faq.html#is-pymongo-fork-safe
         DATABASE = mongo.twitter
     return DATABASE
