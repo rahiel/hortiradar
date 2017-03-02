@@ -28,11 +28,11 @@ mail = Mail(app)
 db_adapter = SQLAlchemyAdapter(db, User)        # Register the User model
 user_manager = UserManager(db_adapter, app)     # Initialize Flask-User
 
-if environ.get("VERSION") == "2":
-    tweety = Tweety("http://127.0.0.1:8888", TOKEN)
+if environ.get("VERSION") == "old":
+    tweety = Tweety("http://bigtu.q-ray.nl", TOKEN)
     redis_namespace = "2:"
 else:
-    tweety = Tweety("http://bigtu.q-ray.nl", TOKEN)
+    tweety = Tweety("http://127.0.0.1:8888", TOKEN)
     redis_namespace = ""
 
 r = StrictRedis()

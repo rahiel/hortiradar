@@ -133,3 +133,17 @@ sudo supervisorctl update
 
 Copy the config if you need more workers, replacing `worker1` with a higher
 number.
+
+## Monitoring
+
+Monitor Workers in real-time with [flower][]:
+
+``` shell
+pip install flowers
+sudo rabbitmq-plugins enable rabbitmq_management
+sudo rabbitmqctl set_user_tags guest management
+
+flower -A tasks_workers --port=5555
+```
+
+[flower]: https://flower.readthedocs.io/en/latest/
