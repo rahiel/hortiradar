@@ -3,8 +3,8 @@ from datetime import datetime
 import ujson as json
 from redis import StrictRedis
 
-from selderij import app
 from keywords import get_db
+from selderij import app
 
 
 r = StrictRedis()
@@ -15,7 +15,7 @@ tweet_time_format = "%a %b %d %H:%M:%S +0000 %Y"
 
 
 @app.task
-def insert_tweet(id_str, keywords, groups):
+def insert_tweet(id_str, keywords, groups, tokens):
     """Task to insert tweet into MongoDB."""
     key = "t:" + id_str
     j = json.loads(r.get(key))
@@ -24,6 +24,7 @@ def insert_tweet(id_str, keywords, groups):
         "keywords": keywords,
         "num_keywords": len(keywords),
         "groups": groups,
+        "tokens": tokens,
         "datetime": datetime.strptime(j["created_at"], tweet_time_format),
     }
     spam = j.get("possibly_sensitive", False)
