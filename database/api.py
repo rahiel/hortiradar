@@ -6,7 +6,7 @@ import falcon
 import ujson as json
 
 from keywords import get_db, get_keywords
-from hortiradar import tokenizeRawTweetText, admins, users
+from hortiradar import admins, users
 
 
 tweets = get_db().tweets
@@ -166,14 +166,14 @@ class KeywordWordcloudResource(object):
         tw = tweets.find({
             "keywords": keyword,
             "datetime": {"$gte": start, "$lt": end},
-        }, projection={"tweet.text": True, "spam": True, "_id": False})
+        }, projection={"tokens": True, "spam": True, "_id": False})
         words = Counter()
         skip_spam = not want_spam(req)
         for t in tw:
             if skip_spam and is_spam(t):
                 continue
-            tokens = tokenizeRawTweetText(t["tweet"]["text"])
-            words.update([w for w in tokens if w.lower() not in stop_words])
+            lemmas = [token["lemma"] for token in t["tokens"]]
+            words.update([l for l in lemmas if l.lower() not in stop_words])
         data = [{"word": w, "count": c} for w, c in words.most_common()]
         resp.body = json.dumps(data)
 
