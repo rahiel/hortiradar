@@ -15,7 +15,7 @@ import ujson as json
 
 from website import app, db
 from models import User
-from hortiradar import tokenizeRawTweetText, Tweety, TOKEN
+from hortiradar import Tweety, TOKEN
 
 
 bp = Blueprint("horti", __name__, template_folder="templates", static_folder="static")
@@ -171,10 +171,11 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     tsDict = Counter()
     mapLocations = []
 
-    for tweet in tweets:
+    for tw in tweets:
+        tweet = tw["tweet"]
         tweetList.append(tweet["id_str"])
 
-        tokens = tokenizeRawTweetText(tweet["text"].lower())
+        tokens = [t["lemma"] for t in tw["tokens"]]
         wordCloudDict.update(tokens)
 
         dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
@@ -205,7 +206,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
     wordCloud = []
     for token in wordCloudDict:
-        if token not in stop_words and "http" not in token and len(token) > 1:
+        if token.lower() not in stop_words and "http" not in token and len(token) > 1:
             wordCloud.append({"text": token, "weight": wordCloudDict[token]})
 
     ts = []

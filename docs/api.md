@@ -37,10 +37,12 @@ located at: `http://bigtu.q-ray.nl/keywords`.
 
 The API talks in JSON: responses are either JSON or a HTTP error. The same API
 is used for the [Hortiradar website](https://acba.labs.vu.nl/hortiradar/).
+Internally we use the Tweety [Python Wrapper](#python-wrapper) for our API. The
+Tweety method names are mentioned at the corresponding API resources.
 
 **Note**: some requests may take a long time before you get a response. This
 means that the database is working, as it has to analyze a lot of tweets! Please
-be patient and do prematurely cancel your request to retry.
+be patient and do not prematurely cancel your request to retry.
 
 **The API is still in beta and subject to change.**
 
@@ -97,16 +99,21 @@ The following resources are shown as URI templates, so in the resource
 `/keywords/{keyword}/ids` the part with the curly braces should be replaced with
 the actual value you're interested in, for example `/keywords/banaan/ids`.
 
+Tweety: `Tweety.get_keywords(group)`
+
 #### `/keywords/{keyword}`
 
 This resource provides additional data for specific keywords. For example,
-sending a GET request to `/keywords/fruit` gives a list of tweet objects each
-with the text, entities and timestamp as provided by Twitter.
+sending a GET request to `/keywords/fruit` gives a list of tweet objects with
+the entities and timestamp as provided by Twitter, and the NLP analysis of the
+tweet's text.
 
 This resource is only internally available in compliance with Twitter's terms of
 service. If you have to read this, then you don't have access to this resource.
 You could however have access to data derived from the raw tweets, provided in
 the next resources.
+
+Tweety: `Tweety.get_keyword(keyword)`
 
 #### `/keywords/{keyword}/ids`
 
@@ -114,20 +121,28 @@ Sending a GET request for a specific keyword returns a list of strings, each
 representing a tweet id. You can request more data on the tweet directly from
 Twitter.
 
+Tweety: `Tweety.get_keyword_id(keyword)`
+
 #### `/keywords/{keyword}/media`
 
 Responds to GET requests with a list of objects with the `entities` key. The
 `entities` key holds the `media` key with data as given by Twitter's API.
+
+Tweety: `Tweety.get_keyword_media(keyword)`
 
 #### `/keywords/{keyword}/urls`
 
 The same as with media, but now the `entities` objects hold the `urls` key as
 supplied by Twitter.
 
+Tweety: `Tweety.get_keyword_urls(keyword)`
+
 #### `/keywords/{keyword}/texts`
 
 Returns a list with objects containing tweet texts on GET requests. The objects
 have `text` and `id_str` keys. This resource is only internally available.
+
+Tweety: `Tweety.get_keyword_texts(keyword)`
 
 #### `/keywords/{keyword}/users`
 
@@ -135,11 +150,15 @@ On GET: returns a list of users found tweeting the keyword. The users are
 objects with the keys `id_str` and `count`, the number of times they tweeted the
 keyword.
 
+Tweety: `Tweety.get_keyword_users(keyword)`
+
 #### `/keywords/{keyword}/wordcloud`
 
 On GET: makes a wordcloud of all words in the tweet texts containing the
 keyword. Responds with a list of objects with as keys `word` and `count`, sorted
 on the count.
+
+Tweety: `Tweety.get_keyword_wordcloud(keyword)`
 
 #### `/keywords/{keyword}/series`
 
@@ -190,6 +209,8 @@ numbers and their count, missing bins are empty. So above bin 0 with a count of
 3 tweets again in 03:00-04:00. The most tweets were from 14:00-15:00 with a
 count of 5.
 
+Tweety: `Tweety.get_keyword_series(keyword, step=2600)`
+
 ### `/tweet/{id_str}`
 
 This resource is for internal use only.
@@ -197,6 +218,8 @@ This resource is for internal use only.
 On GET: shows the raw Twitter data for the tweet.
 On DELETE: deletes the tweet from the database.
 On PATCH: modifies specified data for the tweet. 
+
+Tweety: `Tweety.get_tweet(id_str)`, `Tweety.delete_tweet(id_str)`
 
 ## Python Wrapper
 

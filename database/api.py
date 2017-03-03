@@ -67,19 +67,17 @@ class KeywordsResource(object):
 class KeywordResource(object):
     @falcon.before(get_dates)
     def on_get(self, req, resp, keyword, start, end):
-        """The text, entities and timestamp of tweets matching keyword."""
+        """NLP analysis of the tweet text, entities and timestamp of tweets matching keyword."""
         tw = tweets.find({
             "keywords": keyword,
             "datetime": {"$gte": start, "$lt": end}
         }, projection={
-            "tweet.id_str": True, "tweet.text": True, "tweet.entities": True, "tweet.created_at": True,
+            "tweet.id_str": True, "tokens": True, "tweet.entities": True, "tweet.created_at": True,
             "spam": True, "_id": False
         })
-        if want_spam(req):
-            data = [t["tweet"] for t in tw]
-        else:
-            data = [t["tweet"] for t in tw if not is_spam(t)]
-        resp.body = json.dumps(data)
+        if not want_spam(req):
+            tw = [t for t in tw if not is_spam(t)]
+        resp.body = json.dumps(tw)
 
 class KeywordIdsResource(object):
     @falcon.before(get_dates)
@@ -166,7 +164,7 @@ class KeywordWordcloudResource(object):
         tw = tweets.find({
             "keywords": keyword,
             "datetime": {"$gte": start, "$lt": end},
-        }, projection={"tokens": True, "spam": True, "_id": False})
+        }, projection={"tokens.lemma": True, "spam": True, "_id": False})
         words = Counter()
         skip_spam = not want_spam(req)
         for t in tw:
