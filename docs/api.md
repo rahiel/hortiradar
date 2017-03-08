@@ -224,8 +224,8 @@ Tweety: `Tweety.get_tweet(id_str)`, `Tweety.delete_tweet(id_str)`
 ## Python Wrapper
 
 It's preferable to have descriptive functions in code instead of bare HTTP
-requests. Internally we use the Tweety wrapper for Python 2 (open an issue if
-you need Python 3 support). Install it from our repository:
+requests. Internally we use the Tweety wrapper for Python 3+. Install it from
+our repository:
 
 ``` shell
 pip install git+https://github.com/mctenthij/hortiradar.git

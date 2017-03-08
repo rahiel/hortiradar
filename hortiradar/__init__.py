@@ -1,4 +1,3 @@
-from .twokenize import tokenizeRawTweetText
 from .tweety import Tweety
 
 
