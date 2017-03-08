@@ -23,17 +23,17 @@
 
 The data in the Hortiradar is accessible from a HTTP API. The base URL is:
 ``` text
-http://bigtu.q-ray.nl
+https://acba.labs.vu.nl/hortiradar/api/
 ```
 
 Every request requires an authentication token passed in as a GET parameter:
 ``` text
-http://bigtu.q-ray.nl/keywords?token=123456abcd
+https://acba.labs.vu.nl/hortiradar/api/keywords?token=123456abcd
 ```
 
 An incorrect token results in a 404 error. In what follows, resources and
 examples are shown relative to the base URL, so the resource `/keywords` is
-located at: `http://bigtu.q-ray.nl/keywords`.
+located at: `https://acba.labs.vu.nl/hortiradar/api/keywords`.
 
 The API talks in JSON: responses are either JSON or a HTTP error. The same API
 is used for the [Hortiradar website](https://acba.labs.vu.nl/hortiradar/).
@@ -70,7 +70,7 @@ They are strings using the time format `%Y-%m-%d-%H-%M-%S`, so for example
 For example, to get an overview of all keyword counts in the "bloemen" group
 from 2016-10-15 to 2016-11-15:
 ``` shell
-GET http://bigtu.q-ray.nl/keywords?token=123456abcd&group=bloemen&start=2016-10-15-00-00-00&end=2016-11-15-00-00-00
+GET https://acba.labs.vu.nl/hortiradar/api/keywords?token=123456abcd&group=bloemen&start=2016-10-15-00-00-00&end=2016-11-15-00-00-00
 ```
 
 Example output:
@@ -178,7 +178,7 @@ Returns an object where:
 For example to get a time series of the keyword "ananas" for the whole day of
 October 1st 2016 with a bin size of an hour:
 ``` shell
-GET http://bigtu.q-ray.nl/keywords/ananas/series?token=123456abcd&start=2016-10-01-00-00-00&end=2016-10-02-00-00-00&step=2600
+GET https://acba.labs.vu.nl/hortiradar/api/keywords/ananas/series?token=123456abcd&start=2016-10-01-00-00-00&end=2016-10-02-00-00-00&step=2600
 ```
 
 With as output:
@@ -237,7 +237,7 @@ And use it like:
 from hortiradar import Tweety
 
 # The Tweety class takes the base URL and the token as arguments.
-tweety = Tweety("http://bigtu.q-ray.nl", "123456abcd")
+tweety = Tweety("https://acba.labs.vu.nl/hortiradar/api/", "123456abcd")
 
 all_keywords = tweety.get_keywords()
 flowers = tweety.get_keywords("bloemen")
