@@ -65,7 +65,9 @@ All resources under `/keywords` take the optional `start` and `end` GET
 parameters. With these you can specify the range of time you're interested in.
 They are strings using the time format `%Y-%m-%d-%H-%M-%S`, so for example
 `2016-11-24-14-01-26` is 24th November 2016 at 14:01:26. If you don't specify
-`start` or `get` you will get all matching tweets in the database.
+`start` or `get` you will get all matching tweets in the database. The time
+format is available in our `hortiradar` library, please use
+`hortiradar.time_format` instead of hardcoding the format.
 
 For example, to get an overview of all keyword counts in the "bloemen" group
 from 2016-10-15 to 2016-11-15:
@@ -211,6 +213,15 @@ count of 5.
 
 Tweety: `Tweety.get_keyword_series(keyword, step=2600)`
 
+### `/groups`
+
+On GET returns a list with the groups tagged in the database.
+
+#### `/groups/{group}`
+
+On GET returns a list of objects of tweets tagged with `group` with the NLP
+analysis of the tweet text, parsed entities, timestamp and the tagged keywords.
+
 ### `/tweet/{id_str}`
 
 This resource is for internal use only.
@@ -243,6 +254,9 @@ all_keywords = tweety.get_keywords()
 flowers = tweety.get_keywords("bloemen")
 banana_wordcloud = tweety.get_keyword_wordcloud("banaan")
 ```
+
+After running this code, you'll find in the variables `all_keywords`, `flowers`
+and `banana_wordcloud` JSON-encoded strings of the requested data.
 
 URI template parameters are positional arguments of tweety methods and GET
 parameters are optional keyword arguments of tweety methods. Notice that the

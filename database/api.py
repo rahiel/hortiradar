@@ -5,13 +5,12 @@ from datetime import datetime, timedelta
 import falcon
 import ujson as json
 
-from keywords import get_db, get_keywords
-from hortiradar import admins, users
+from keywords import get_db, get_keywords, GROUPS
+from hortiradar import admins, users, time_format
 
 
 tweets = get_db().tweets
 KEYWORDS = get_keywords()
-time_format = "%Y-%m-%d-%H-%M-%S"
 
 with open("data/stoplist-nl.txt") as f:
     stop_words = [w.decode("utf-8").strip() for w in f.readlines()]
@@ -63,6 +62,29 @@ class KeywordsResource(object):
             counts.update(kws)
         data = [{"keyword": kw, "count": c} for kw, c in counts.most_common()]
         resp.body = json.dumps(data)
+
+class GroupsResource(object):
+    @falcon.before(get_dates)
+    def on_get(self, req, resp, start, end):
+        """The groups currently tagged in the database."""
+        resp.body = json.dumps(GROUPS.keys())
+
+class GroupResource(object):
+    @falcon.before(get_dates)
+    def on_get(self, req, resp, group, start, end):
+        """NLP analysis of the tweet text, entities and timestamp of tweets matching
+        group, and the tagged keywords.
+        """
+        tw = tweets.find({
+            "groups": group,
+            "datetime": {"$gte": start, "$lt": end}
+        }, projection={
+            "tweet.id_str": True, "tokens": True, "tweet.entities": True, "tweet.created_at": True,
+            "keywords": True, "spam": True, "_id": False
+        })
+        if not want_spam(req):
+            tw = [t for t in tw if not is_spam(t)]
+        resp.body = json.dumps(tw)
 
 class KeywordResource(object):
     @falcon.before(get_dates)
@@ -276,9 +298,10 @@ class AuthenticationMiddleware(object):
             pass                # admins can access everything
         elif token in users:
             p = req.path
-            # users may not access /keywords/{keyword}, /keywords/{keyword}/texts, /tweet/{id_str}
+            # users may not access /keywords/{keyword}, /keywords/{keyword}/texts,
+            # /tweet/{id_str} and /groups/{group}
             if (p.startswith("/keywords/") and (p.endswith("/texts") or p.count("/") == 2) or
-                p.startswith("/tweet/")):
+                p.startswith("/tweet/") or p.startswith("/groups/")):
                 raise falcon.HTTPNotFound()
         else:
             raise falcon.HTTPNotFound()
@@ -286,6 +309,8 @@ class AuthenticationMiddleware(object):
 
 app = application = falcon.API(middleware=AuthenticationMiddleware())
 app.add_route("/keywords", KeywordsResource())
+app.add_route("/groups", GroupsResource())
+app.add_route("/groups/{group}", GroupResource())
 app.add_route("/keywords/{keyword}", KeywordResource())
 app.add_route("/keywords/{keyword}/ids", KeywordIdsResource())
 app.add_route("/keywords/{keyword}/media", KeywordMediaResource())

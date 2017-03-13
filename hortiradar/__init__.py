@@ -1,4 +1,4 @@
-from .tweety import Tweety
+from .tweety import Tweety, time_format
 
 
 try:

@@ -1,6 +1,9 @@
 import requests
 
 
+time_format = "%Y-%m-%d-%H-%M-%S"
+
+
 class Tweety(object):
     def __init__(self, base_url, token):
         self.base_url = base_url
@@ -35,6 +38,8 @@ class Tweety(object):
         self.get_keyword_wordcloud = wrap_api("get", "/keywords/{}/wordcloud", name="get_keyword_wordcloud")
         # tweety.get_keyword_series("meloen", step=3600)
         self.get_keyword_series = wrap_api("get", "/keywords/{}/series", name="get_keyword_series")
+        self.get_groups = wrap_api("get", "/groups", name="get_groups")
+        self.get_group = wrap_api("get", "/groups/{}", name="get_group")
         self.get_tweet = wrap_api("get", "/tweet/{}", name="get_tweet")
         self.delete_tweet = wrap_api("delete", "/tweet/{}", name="delete_tweet")
         #  tweety.patch_tweet(id_str, data=json.dumps({"spam": 1.0}))
