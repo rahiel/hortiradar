@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 
 import ujson as json
 
-from app import r, redis_namespace, get_cache_key, process_top, process_details, round_time, API_time_format
+from app import r, redis_namespace, get_cache_key, process_top, process_details, round_time
+from hortiradar import time_format
 
 
 def main():
@@ -30,7 +31,7 @@ def main():
     end = round_time(datetime.utcnow())
     interval = 60 * 60 * 24 * 7
     start = end + timedelta(seconds=-interval)
-    params = {"start": start.strftime(API_time_format), "end": end.strftime(API_time_format)}
+    params = {"start": start.strftime(time_format), "end": end.strftime(time_format)}
     keyword_data = []
     for (_, group) in group_data:
         for keyword in group:
