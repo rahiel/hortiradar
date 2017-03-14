@@ -43,7 +43,7 @@ def read_keywords(filename):
     frog = get_frog()
     with open(filename) as f:
         for line in f:
-            word, pos = line.decode("utf-8").strip().split(",")
+            word, pos = line.strip().split(",")
             word = word.lower()
             if word[0] == '#':
                 word = word[1:]

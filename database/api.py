@@ -12,7 +12,7 @@ tweets = get_db().tweets
 KEYWORDS = get_keywords()
 
 with open("data/stoplist-nl.txt") as f:
-    stop_words = [w.decode("utf-8").strip() for w in f.readlines()]
+    stop_words = [w.strip() for w in f.readlines()]
     stop_words = {w: 1 for w in stop_words}  # stop words to filter out in word cloud
 
 
