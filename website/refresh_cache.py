@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import argparse
 from datetime import datetime, timedelta
 
@@ -15,7 +14,7 @@ def main():
     # bigger than usual time for when the hourly recache is too slow
     cache_time = 120 * 60
 
-    groups = [u"bloemen", u"groente_en_fruit"]
+    groups = ["bloemen", "groente_en_fruit"]
     get_time = lambda: datetime.now().strftime("%H:%M")
 
     start_time = get_time()

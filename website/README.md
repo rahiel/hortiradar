@@ -8,10 +8,10 @@ Follow instructions at <https://certbot.eff.org/> for the SSL certificate and th
 at <https://weakdh.org/sysadmin.html> to use a strong Diffie-Hellman group.
 
 ``` shell
-sudo apt install virtualenv python-pip redis-server
+sudo apt install virtualenv python3-pip redis-server
 git clone https://github.com/mctenthij/hortiradar.git
 cd hortiradar/
-virtualenv -p python venv
+virtualenv -p python3 venv
 . venv/bin/activate
 pip install --editable . --upgrade
 cd website/
@@ -40,5 +40,5 @@ echo 'Hello! | mail -r hortiradar -s 'Test email' user@example.com  # replace us
 Copy flask-user files for Dutch translation of login/register/etc. pages:
 ``` shell
 cd ~/hortiradar/
-cp -r ./venv/lib/python2.7/site-packages/flask_user/translations/ ./website/
+cp -r ./venv/lib/python3*/site-packages/flask_user/translations/ ./website/
 ```

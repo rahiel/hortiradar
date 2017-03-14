@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import division
 from collections import Counter
 from datetime import datetime, timedelta
 from time import sleep
@@ -15,7 +13,7 @@ import ujson as json
 
 from website import app, db
 from models import User
-from hortiradar import Tweety, TOKEN
+from hortiradar import Tweety, TOKEN, time_format
 
 
 bp = Blueprint("horti", __name__, template_folder="templates", static_folder="static")
@@ -108,15 +106,15 @@ def show_details():
     product:    Product for which the details page should be constructed
     interval:   Interval in seconds for which tweets should be extracted through API
     """
-    prod = request.args.get("product", u"", type=unicode)
+    prod = request.args.get("product", "", type=str)
     interval = request.args.get("interval", 60 * 60 * 24 * 7, type=int)
-    end = request.args.get("end", None, type=unicode)
+    end = request.args.get("end", "", type=str)
     if end:
         end = datetime.strptime(end, "%Y-%m-%d %H:%M") + timedelta(hours=1)
     else:
         end = round_time(datetime.utcnow())
     start = end + timedelta(seconds=-interval)
-    params = {"start": start.strftime(API_time_format), "end": end.strftime(API_time_format)}
+    params = {"start": start.strftime(time_format), "end": end.strftime(time_format)}
     details = cache(process_details, prod, params)
     return jsonify(result=details)
 
@@ -141,7 +139,7 @@ def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
     end = round_time(datetime.utcnow())
     start = end + timedelta(days=-1)
     params = {
-        "start": start.strftime(API_time_format), "end": end.strftime(API_time_format),
+        "start": start.strftime(time_format), "end": end.strftime(time_format),
         "group": group
     }
     counts = cache(tweety.get_keywords, force_refresh=force_refresh, cache_time=cache_time, **params)
@@ -149,8 +147,8 @@ def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
     total = sum([entry["count"] for entry in counts])
 
     # tags in the first line are still in flowers.txt, tags from the second line are not
-    BLACKLIST = [u"fhgt", u"fhtf", u"fhalv", u"fhglazentulp", u"fhgt2014", u"fhgt2015", u"aalsmeer", u"westland", u"fh2020", u"bloemistenklok", u"morgenvoordeklok", u"fhstf", u"floraholland", u"fhmagazine", u"floranext", u"bos",
-                 u"community", u"glastuinbouw", u"klok", u"komindekas", u"tuinbouw", u"westland", u"aalsmeer", u"aanvoertijden", u"naaldwijk", u"presentatieruimte", u"tuincentra", u"tuincentrum", u"valentijn", u"veiling", u"viool", u"viooltjes"]
+    BLACKLIST = ["fhgt", "fhtf", "fhalv", "fhglazentulp", "fhgt2014", "fhgt2015", "aalsmeer", "westland", "fh2020", "bloemistenklok", "morgenvoordeklok", "fhstf", "floraholland", "fhmagazine", "floranext", "bos",
+                 "community", "glastuinbouw", "klok", "komindekas", "tuinbouw", "westland", "aalsmeer", "aanvoertijden", "naaldwijk", "presentatieruimte", "tuincentra", "tuincentrum", "valentijn", "veiling", "viool", "viooltjes"]
     topkArray = []
     for entry in counts:
         if len(topkArray) < max_amount:
@@ -262,14 +260,12 @@ def expand(url):
         return url
 
 def make_title(page):
-    return u"Hortiradar — " + page
+    return "Hortiradar — " + page
 
 
 with open("../database/data/stoplist-nl.txt", "rb") as f:
     stop_words = [w.decode("utf-8").strip() for w in f]
     stop_words = {w: 1 for w in stop_words}  # stop words to filter out in word cloud
-
-API_time_format = "%Y-%m-%d-%H-%M-%S"
 
 app.register_blueprint(bp, url_prefix="/hortiradar")
 

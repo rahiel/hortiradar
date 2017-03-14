@@ -1,5 +1,4 @@
-from __future__ import division, print_function
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 from time import sleep
 import traceback
 
@@ -40,7 +39,7 @@ class StreamListener(tweepy.StreamListener):
         """A user deleted a tweet, respect their decision by also deleting it
         on our end.
         """
-        status_id, user_id = unicode(status_id), unicode(user_id)
+        status_id, user_id = str(status_id), str(user_id)
         log.notice("on_delete: status_id = {}, user_id = {}".format(status_id, user_id))
         self.tweets.delete_one({"tweet.id_str": status_id, "tweet.user.id_str": user_id})
 
@@ -103,7 +102,7 @@ def main():
     stream = tweepy.Stream(auth=auth, listener=listener)
 
     with open("data/stoplist_nl_extended.txt") as f:
-        track = [unicode(l.split()[0]) for l in f.readlines()]   # list of most common Dutch words
+        track = [str(l.split()[0]) for l in f.readlines()]   # list of most common Dutch words
 
     while True:
         try:

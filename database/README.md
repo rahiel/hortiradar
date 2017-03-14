@@ -33,19 +33,19 @@ python indexes.py
 
 Start the API with:
 ``` shell
-gunicorn api -k gevent -w 2 --threads 2
+gunicorn api -b 127.0.0.1:8888 -k gevent -w 2 --threads 2
 ```
 
 # Installation
 
 Requirements:
 
-* Python 2.7
+* Python 3
 * MongoDB
 * RabbitMQ
 
 ``` shell
-sudo apt install python-pip virtualenv mongodb-server rabbitmq-server redis-server
+sudo apt install python3-pip virtualenv mongodb-server rabbitmq-server redis-server
 ```
 
 Get the code and make a virtualenv for all Python packages:
@@ -53,7 +53,7 @@ Get the code and make a virtualenv for all Python packages:
 cd ~
 git clone https://github.com/mctenthij/hortiradar.git
 cd hortiradar/
-virtualenv -p python venv
+virtualenv -p python3 venv
 . venv/bin/activate
 ```
 
@@ -117,7 +117,7 @@ password = "the password"
 We use a distributed task queue to process the incoming tweets in parallel.
 Worker nodes need the following Debian packages:
 ``` shell
-sudo apt install python-pip virtualenv redis-server
+sudo apt install python3-pip virtualenv redis-server
 ```
 
 In addition they need all Python packages from the previous section including
