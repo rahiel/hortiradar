@@ -59,14 +59,14 @@ def cache(func, *args, **kwargs):
         kwargs["cache_time"] = cache_time
         return cache(func, *args, **kwargs)
     elif v is not None and not force_refresh:
-        return json.loads(v) if type(v) == str else v
+        return json.loads(v) if type(v) == bytes else v
     else:
         if not force_refresh:
             r.set(key, "loading", ex=60)
         response = func(*args, force_refresh=force_refresh, cache_time=cache_time, **kwargs)
-        v = json.dumps(response) if type(response) != str else response
+        v = json.dumps(response) if type(response) != bytes else response
         r.set(key, v, ex=cache_time)
-        return response if type(response) != str else json.loads(response)
+        return response if type(response) != bytes else json.loads(response)
 
 
 def jsonify(**kwargs):
@@ -77,7 +77,7 @@ def round_time(dt):
 
 @bp.route("/")
 def home():
-    sync_time = r.get(redis_namespace + "sync_time")
+    sync_time = r.get(redis_namespace + "sync_time").decode("utf-8")
     return render_template("home.html", title=make_title("BigTU research project"), sync_time=sync_time)
 
 @bp.route("/widget/<group>")
