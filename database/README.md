@@ -137,7 +137,7 @@ number.
 For some reason the workers slow down if they're continuously running for long
 periods of time, so we restart them every night:
 ``` shell
-sudo cp restart-workers.cron /etc/cron.d/hortiraadar-restart-workers
+sudo cp restart-workers.cron /etc/cron.d/hortiradar-restart-workers
 ```
 
 ## Monitoring
