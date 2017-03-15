@@ -134,6 +134,12 @@ sudo supervisorctl update
 Copy the config if you need more workers, replacing `worker1` with a higher
 number.
 
+For some reason the workers slow down if they're continuously running for long
+periods of time, so we restart them every night:
+``` shell
+sudo cp restart-workers.cron /etc/cron.d/hortiraadar-restart-workers
+```
+
 ## Monitoring
 
 Monitor Workers in real-time with [flower][]:
