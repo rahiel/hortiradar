@@ -13,7 +13,7 @@ else:
 
 app = Celery("tasks", broker=broker_url)
 
-app.conf.update(task_ignore_result=True)
+app.conf.update(task_ignore_result=True, worker_prefetch_multiplier=20)
 
 
 if __name__ == "__main__":
