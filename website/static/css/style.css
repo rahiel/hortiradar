@@ -2,9 +2,9 @@ body {
   padding-top: 70px;
 }
 
-footer {
-    text-align: right;
+#footer {
     color: #777;
+    padding-top: 20px;
 }
 
 @media (min-width: 1300px) {
