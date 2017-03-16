@@ -1,13 +1,8 @@
-/data/twitdata.ini
-/data/bigtu_twitter.ini
-/tweets
-/results
-/z_other
-/www
 *.pyc
 *.log
-*.ini
 *secret*
 *.egg-info
+streamer.ini
 translations
 worker_settings.py
+hortiradar.sqlite

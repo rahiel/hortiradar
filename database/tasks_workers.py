@@ -1,3 +1,5 @@
+from configparser import ConfigParser
+
 from keywords import get_frog, get_keywords
 from selderij import app
 from tasks_master import insert_tweet
@@ -5,8 +7,11 @@ from tasks_master import insert_tweet
 
 keywords = get_keywords()
 
+config = ConfigParser()
+config.read("tasks_workers.ini")
+posprob_minimum = config["workers"].getfloat("posprob_minimum")
 
-# task for worker nodes
+
 @app.task
 def find_keywords_and_groups(id_str, text):     # TODO: cache retweets
     """Find the keywords and associated groups in the tweet."""
@@ -18,7 +23,7 @@ def find_keywords_and_groups(id_str, text):     # TODO: cache retweets
         lemma = t["lemma"].lower()
         k = keywords.get(lemma, None)
         if k is not None:
-            if t["posprob"] > 0.6:
+            if t["posprob"] > posprob_minimum:
                 if not t["pos"].startswith(k.pos + "("):
                     continue
             kw.append(lemma)

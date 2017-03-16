@@ -92,10 +92,11 @@ def clean_tweet(j):
 
 def main():
     config = ConfigParser()
-    config.read("config.ini")
+    config.read("streamer.ini")
+    config = config["twitter"]
 
-    auth = tweepy.OAuthHandler(config.get("twitter", "consumer_key"), config.get("twitter", "consumer_secret"))
-    auth.set_access_token(config.get("twitter", "access_key"), config.get("twitter", "access_secret"))
+    auth = tweepy.OAuthHandler(config["consumer_key"], config["consumer_secret"])
+    auth.set_access_token(config["access_key"], config["access_secret"])
     api = tweepy.API(auth, compression=True, wait_on_rate_limit=True)
 
     listener = StreamListener(api)
