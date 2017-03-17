@@ -28,7 +28,7 @@ def find_keywords_and_groups(id_str, text, retweet_id_str):
         if rt:
             kw, groups, tokens = json.loads(rt)
             insert_tweet.apply_async((id_str, kw, groups, tokens), queue="master")
-            r.expire(key, ex=rt_cache_time)
+            r.expire(key, rt_cache_time)
             return
 
     frog = get_frog()
