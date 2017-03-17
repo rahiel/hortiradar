@@ -8,3 +8,9 @@ end we're building an analytics platform for Twitter data.
 [hortiradar]: https://acba.labs.vu.nl/hortiradar/
 [VU]: https://vu.nl/en/
 [BIGt&u]: http://bigtu.nl
+
+# License
+
+Hortiradar is free software. You are free to share, improve and use the code
+under the conditions as described in the Apache-2.0 license, included in
+`LICENSE.txt`.
