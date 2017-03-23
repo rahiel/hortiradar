@@ -37,24 +37,42 @@ def get_keywords():
 
 
 def read_keywords(filename):
-    """Returns a list of Keyword objects from the datafile."""
+    """Returns a list of Keyword objects from the datafile. Assumes keywords in
+    filename are lemmatised, lowercase (but capitalized for names, according to
+    the pos) and unique.
+    """
     keywords = []
-    lemmas = []
-    frog = get_frog()
     with open(filename) as f:
         for line in f:
+            lemma, pos = line.strip().split(",")
+            k = Keyword(lemma=lemma, pos=pos)
+            keywords.append(k)
+    return keywords
+
+
+def clean_wordlist(filename):
+    frog = get_frog()
+    keywords = []
+
+    with open("data/{}".format(filename)) as f:
+        for line in f:
             word, pos = line.strip().split(",")
-            word = word.lower()
-            if word[0] == '#':
+            if not pos.startswith("SPEC"):
+                word = word.lower()
+            if word[0] == "#":
                 word = word[1:]
             tokens = frog.process(word)
-            if len(tokens) == 1:  # TODO: we skip over multi-word keywords
+            if len(tokens) > 1:  # TODO: we skip over multi-word keywords
+                lemma = word
+            else:
                 lemma = tokens[0]["lemma"]
-                if lemma not in lemmas:  # we only want unique lemma's
-                    k = Keyword(lemma=lemma, pos=pos)
-                    keywords.append(k)
-                    lemmas.append(lemma)
-    return keywords
+            keywords.append((lemma, pos))
+
+    keywords = sorted(set(keywords))
+
+    with open("data/new_{}".format(filename), "w") as f:
+        for (word, pos) in keywords:
+            f.write("{},{}\n".format(word, pos))
 
 
 def get_frog():
