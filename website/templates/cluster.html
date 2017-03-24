@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block content %}
+<script type="text/javascript" src="{{ url_for("horti.static", filename="js/jqcloud.js") }}"></script>
+<link rel="stylesheet" href="{{ url_for("horti.static", filename="css/jqcloud.css") }}">
+<link rel="stylesheet" href="{{ url_for("horti.static", filename="css/details.css") }}">
+<script>
+  
+d3.json(APP_ROOT + '_get_clusters', function(error, data) {
+  if (error) throw error;
+
+  var width = 500,
+    height = 300;
+
+  var nodes = data.clusters,
+    root = nodes[0],
+    color = d3.scale.category10();
+
+  for (var i = 0; i< nodes.length; i++){
+    nodes[i]["radius"] = calc_radius(nodes[i]);
+  }
+
+  var force = d3.layout.force()
+    .gravity(0.05)
+    .charge(function(d, i) { return 0; })
+    .nodes(nodes)
+    .size([width, height]);
+
+  force.start();
+
+  var svg = d3.select("#splineContainer").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  var node = svg.selectAll("circle")
+    .data(nodes)
+      .enter().append("g").call(force.drag)
+      .on("click", function(d){click(d)});
+
+  node.append("circle")
+    .attr("r", function(d) { return Math.sqrt(100*d.num_tweets); })
+    .attr("fill", function(d) { return color(Math.random()*5); })
+    .append("title").text(function(d) { return d.best_tweet });
+
+  force.on("tick", function(e) {
+    var q = d3.geom.quadtree(nodes),
+      i = 0,
+      n = nodes.length;
+
+    while (++i < n) q.visit(collide(nodes[i]));
+
+    svg.selectAll("circle")
+      .attr("cx", function(d) { return d.x; })
+      .attr("cy", function(d) { return d.y; });
+  
+  });
+
+  // svg.on("mousemove", function() {
+  //   var p1 = d3.mouse(this);
+  //   root.px = p1[0];
+  //   root.py = p1[1];
+  //   force.resume();
+  // });
+
+
+  function calc_radius(node) { 
+    return Math.sqrt(100*node.num_tweets);
+  }
+
+  function collide(node) {
+    var r = node.radius + 16,
+      nx1 = node.x - r,
+      nx2 = node.x + r,
+      ny1 = node.y - r,
+      ny2 = node.y + r;
+    return function(quad, x1, y1, x2, y2) {
+      if (quad.point && (quad.point !== node)) {
+        var x = node.x - quad.point.x,
+          y = node.y - quad.point.y,
+          l = Math.sqrt(x * x + y * y),
+          r = node.radius + quad.point.radius;
+        if (l < r) {
+          l = (l - r) / l * .5;
+          node.x -= x *= l;
+          node.y -= y *= l;
+          quad.point.x += x;
+          quad.point.y += y;
+        }
+      }
+      return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+    };
+  }
+
+  function click(cluster) {      
+    d3.select("#summaryTweet").remove();
+    d3.select("#summaryDiv")
+      .append("div")
+      .attr("id", "summaryTweet")
+      .append("h2")
+      .text(cluster.best_tweet);
+
+    d3.select("#urlDiv").remove();
+    d3.select("#urlContainer")
+      .append("div")
+      .attr("id", "urlDiv")
+      .append("ul")
+      .attr("id", "urlList");
+
+    var url = d3.select('#urlList')
+      .selectAll('li')
+      .data(cluster.urls)
+      .enter()
+      .append("li")
+      .text( function (d) { return d.occ + "x " } )
+      .append("a")
+      .attr("href", function (d) { return d.link })
+      .attr("target","_blank")
+      .text(function (d) { return d.link });
+
+    d3.select("#mediaDiv").remove();
+    d3.select("#mediaContainer")
+      .append("div")
+      .attr("id", "mediaDiv");
+
+    var medList = $('div#mediaDiv')
+    $.each(cluster.images, function (idx) {
+
+      if (idx%3 == 2) {
+        var li = $('<div id="photoContainer"><img class="twitImage" src="'+cluster.images[idx].link+'" /><span id="text">'+cluster.images[idx].occ+'</span></div><br />')
+          .appendTo(medList);
+      }
+      else{
+        var li = $('<div id="photoContainer"><img class="twitImage" src="'+cluster.images[idx].link+'" /><span id="text">'+cluster.images[idx].occ+'</span></div>')
+          .appendTo(medList);
+      }
+
+    });
+
+    d3.select("#tweetsList").remove();
+    d3.select("#tweetsContainer")
+      .append("ul")
+      .attr("id", "tweetsList")
+
+    var twList = $('ul#tweetsList')
+    $.each(cluster.tweets, function (idx,val) {
+
+      if(idx < 15) { // Display a maximum of 15 tweets
+        var li = $('<li><div id="'+val+'"></div></li>')
+        .appendTo(twList);
+
+        var tweet = document.getElementById(val);
+        twttr.widgets.createTweet(
+        val, tweet,
+        {
+          conversation : 'none',    // or all
+          cards        : 'hidden',  // or visible
+          linkColor    : '#cc0000', // default is blue
+          theme        : 'light',    // or dark
+          lang         : 'nl'
+        })
+      }
+
+    });
+   
+
+    d3.select("#mapDiv").remove();
+    d3.select("#mapContainer")
+      .append("div")
+      .attr("id", "mapDiv");
+
+    var map = new google.maps.Map(document.getElementById('mapDiv'), {
+      center: {lat: cluster.avLoc.lat, lng: cluster.avLoc.lng},
+      disableDefaultUI: true,
+      zoom: 6
+    });
+
+    $.each(cluster.locations, function (idx) {
+      // Create a marker and set its position.
+      var marker = new google.maps.Marker({
+        map: map,
+        position: {lat: cluster.locations[idx].lat, lng: cluster.locations[idx].lng}
+      });
+
+    });
+
+    d3.select("#wordcloudDiv").remove();
+    d3.select("#wordcloudContainer")
+      .append("div")
+      .attr("id", "wordcloudDiv");
+
+    var words = [];
+    $.each (cluster.wordcloud, function (idx) {
+      words.push({ text: cluster.wordcloud[idx].text, weight: 50*cluster.wordcloud[idx].weight^2 });
+      });
+    $('#wordcloudDiv').jQCloud(words, {
+      autoResize: false
+    });
+
+  }
+
+});
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA0adISATP5Nhic-ghCRijy6KOirg-k60" async defer></script>
+
+<div id="content">
+  <div id="wrapper" class="title"> <h1 id="product">Currently on Twitter</h1> </div>
+  <div class="horizontalSpacer"></div>
+  <div id="wrapper">
+    <div id="tweetsContainer">
+      <ul id="tweetsList"></ul>
+    </div>
+    <div id="contentContainer">
+      <div id="wrapper" class="title"> <h2>Clusters</h2> </div>
+      <div id="wrapper">
+        <div id="splineContainer" align="center"></div>
+      </div>
+      <div class="horizontalSpacer"></div>
+      <div id="summaryDiv">
+          <div id="wrapper" class="title"> <h2> Summary Tweet: </h2></div>
+          <div id="summaryTweet"></div>
+        </div>
+
+      <div id="wrapper" class="main">
+        <div id="urlContainer">
+          <div id="wrapper" class="title"> <h2> Links </h2></div>
+          <div class="horizontalSpacer"></div>
+          <div id="urlDiv">
+            <ul id="urlList"></ul>
+          </div>
+        </div>
+        <div id="wordcloudContainer">
+          <div id="wrapper" class="title"> <h2> Wordcloud </h2></div>
+          <div class="horizontalSpacer"></div>
+          <div id="wordcloudDiv"></div>
+        </div>
+      </div>
+
+      <div id="wrapper" class="main">
+        <div id="mapContainer">
+          <div id="wrapper" class="title"> <h2> Locations </h2></div>
+          <div class="horizontalSpacer"></div>
+          <div id="mapDiv"></div>
+        </div>
+        <div id="mediaContainer">
+          <div id="wrapper" class="title"> <h2> Photos </h2></div>
+          <div class="horizontalSpacer"></div>
+          <div id="mediaDiv"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

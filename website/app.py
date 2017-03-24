@@ -118,6 +118,15 @@ def show_details():
     details = cache(process_details, prod, params)
     return jsonify(result=details)
 
+@bp.route("/_get_clusters")
+def show_clusters():
+    # TODO: currently loading in file with clusters, implement caching of clusters
+    now = round_time(datetime.utcnow())
+    cluster_file = now.strftime("%Y%m%d_%H_clusters.json")
+    with open(cluster_file) as f:
+        clusters = json.load(f)
+    return jsonify(clusters)
+
 @bp.route("/members")
 @login_required
 def members_page():
