@@ -14,7 +14,7 @@ config = ConfigParser()
 config.read("tasks_workers.ini")
 posprob_minimum = config["workers"].getfloat("posprob_minimum")
 
-r = StrictRedis()
+redis = StrictRedis()
 rt_cache_time = 60 * 60 * 6
 
 
@@ -24,11 +24,11 @@ def find_keywords_and_groups(id_str, text, retweet_id_str):
     # First check if retweets are already processed in the cache
     if retweet_id_str:
         key = "t:%s" % retweet_id_str
-        rt = r.get(key)
+        rt = redis.get(key)
         if rt:
             kw, groups, tokens = json.loads(rt)
             insert_tweet.apply_async((id_str, kw, groups, tokens), queue="master")
-            r.expire(key, rt_cache_time)
+            redis.expire(key, rt_cache_time)
             return
 
     frog = get_frog()
@@ -50,4 +50,4 @@ def find_keywords_and_groups(id_str, text, retweet_id_str):
     # put retweets in the cache
     if retweet_id_str:
         data = [kw, groups, tokens]
-        r.set(key, json.dumps(data), ex=rt_cache_time)
+        redis.set(key, json.dumps(data), ex=rt_cache_time)

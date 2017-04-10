@@ -17,7 +17,7 @@ RotatingFileHandler("twitter.log", backup_count=5).push_application()
 log = Logger("main")
 log.info("Started")
 
-r = StrictRedis()
+redis = StrictRedis()
 
 
 class StreamListener(tweepy.StreamListener):
@@ -32,7 +32,7 @@ class StreamListener(tweepy.StreamListener):
     def on_status(self, status):
         """Handle arrival of a new tweet."""
         j = clean_tweet(status._json)
-        r.set("t:" + status.id_str, json.dumps(j))
+        redis.set("t:" + status.id_str, json.dumps(j))
         if "retweeted_status" in j:
             retweet_id_str = j["retweeted_status"]["id_str"]
         else:

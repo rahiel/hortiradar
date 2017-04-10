@@ -33,7 +33,7 @@ else:
     tweety = Tweety("http://127.0.0.1:8888", TOKEN)
     redis_namespace = ""
 
-r = StrictRedis()
+redis = StrictRedis()
 
 CACHE_TIME = 60 * 60
 
@@ -52,7 +52,7 @@ def cache(func, *args, **kwargs):
     force_refresh = kwargs.pop("force_refresh", None) or False
     cache_time = kwargs.pop("cache_time", None) or CACHE_TIME
     key = get_cache_key(func, *args, **kwargs)
-    v = r.get(key)
+    v = redis.get(key)
     if v == "loading" and not force_refresh:
         sleep(0.7)
         kwargs["force_refresh"] = force_refresh
@@ -62,10 +62,10 @@ def cache(func, *args, **kwargs):
         return json.loads(v) if type(v) == bytes else v
     else:
         if not force_refresh:
-            r.set(key, "loading", ex=60)
+            redis.set(key, "loading", ex=60)
         response = func(*args, force_refresh=force_refresh, cache_time=cache_time, **kwargs)
         v = json.dumps(response) if type(response) != bytes else response
-        r.set(key, v, ex=cache_time)
+        redis.set(key, v, ex=cache_time)
         return response if type(response) != bytes else json.loads(response)
 
 
@@ -77,7 +77,9 @@ def round_time(dt):
 
 @bp.route("/")
 def home():
-    sync_time = r.get(redis_namespace + "sync_time").decode("utf-8")
+    sync_time = redis.get(redis_namespace + "sync_time")
+    if sync_time:
+        sync_time = sync_time.decode("utf-8")
     return render_template("home.html", title=make_title("BigTU research project"), sync_time=sync_time)
 
 @bp.route("/widget/<group>")
@@ -98,6 +100,11 @@ def show_top(group):
 @bp.route("/details")
 def details():
     return render_template("details.html")
+
+@bp.route("/about")
+def about():
+    stats = json.loads(redis.get("t:stats"))
+    return render_template("about.html", **stats)
 
 @bp.route("/_get_details")
 def show_details():

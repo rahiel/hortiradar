@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 import ujson as json
 
-from app import r, redis_namespace, get_cache_key, process_top, process_details, round_time
+from app import redis, redis_namespace, get_cache_key, process_top, process_details, round_time
 from hortiradar import time_format
 
 
@@ -45,10 +45,10 @@ def main():
 
     # Now populate the cache with the new data
     for (key, data) in group_data + keyword_data:
-        r.set(key, json.dumps(data), ex=cache_time)
+        redis.set(key, json.dumps(data), ex=cache_time)
 
     sync_time = "{} - {}".format(start_time, end_time) if start_time != end_time else start_time
-    r.set(redis_namespace + "sync_time", sync_time)
+    redis.set(redis_namespace + "sync_time", sync_time)
 
 
 if __name__ == "__main__":

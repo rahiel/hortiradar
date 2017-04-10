@@ -87,6 +87,7 @@ sudo cp streamer-supervisor.conf /etc/supervisor/conf.d/hortiradar-streamer.conf
 sudo cp master-supervisor.conf /etc/supervisor/conf.d/hortiradar-master.conf
 sudo cp api-supervisor.conf /etc/supervisor/conf.d/hortiradar-api.conf
 sudo cp clean.cron /etc/cron.d/hortiradar-clean
+sudo cp statistics.cron /etc/cron.d/hortiradar-statistics
 sudo mkdir -p /var/log/hortiradar
 sudo supervisorctl reread
 sudo supervisorctl update
