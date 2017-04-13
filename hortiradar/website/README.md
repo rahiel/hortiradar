@@ -14,7 +14,7 @@ cd hortiradar/
 virtualenv -p python3 venv
 . venv/bin/activate
 pip install --editable . --upgrade
-cd website/
+cd hortiradar/website/
 pip install -r requirements.txt
 
 sudo apt install supervisor

@@ -1,7 +1,6 @@
 from collections import Counter
 from datetime import datetime, timedelta
 from time import sleep
-from os import environ
 
 from flask import Blueprint, Response, render_template, request, render_template_string
 from flask_babel import Babel
@@ -11,9 +10,9 @@ from redis import StrictRedis
 import requests
 import ujson as json
 
-from website import app, db
-from models import User
 from hortiradar import Tweety, TOKEN, time_format
+from hortiradar.website import app, db
+from models import User
 
 
 bp = Blueprint("horti", __name__, template_folder="templates", static_folder="static")
@@ -26,13 +25,8 @@ mail = Mail(app)
 db_adapter = SQLAlchemyAdapter(db, User)        # Register the User model
 user_manager = UserManager(db_adapter, app)     # Initialize Flask-User
 
-if environ.get("VERSION") == "old":
-    tweety = Tweety("http://bigtu.q-ray.nl", TOKEN)
-    redis_namespace = "2:"
-else:
-    tweety = Tweety("http://127.0.0.1:8888", TOKEN)
-    redis_namespace = ""
-
+tweety = Tweety("http://127.0.0.1:8888", TOKEN)
+redis_namespace = ""
 redis = StrictRedis()
 
 CACHE_TIME = 60 * 60

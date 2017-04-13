@@ -1,6 +1,6 @@
 from flask_user import UserMixin
 
-from website import db
+from hortiradar.website import db
 
 
 class User(db.Model, UserMixin):

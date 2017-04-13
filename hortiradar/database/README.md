@@ -57,14 +57,15 @@ virtualenv -p python3 venv
 . venv/bin/activate
 ```
 
-Python dependencies:
-``` shell
-pip install -r database/requirements.txt --upgrade
-```
-
-Our common code in the hortiradar module:
+Install the hortiradar package:
 ``` shell
 pip install --editable . --upgrade
+```
+
+The Python dependencies:
+``` shell
+cd hortiradar/database/
+pip install -r requirements.txt --upgrade
 ```
 
 Install cythonized Falcon:

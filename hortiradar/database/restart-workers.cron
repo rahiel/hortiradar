@@ -4,4 +4,4 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 HORTI=/home/rahiel/hortiradar
 
 # m h dom mon dow user  command
-0 * * * * rahiel cd $HORTI/website && $HORTI/venv/bin/python ./refresh_cache.py
+00 4 * * * root cd $HORTI/hortiradar/database && $HORTI/venv/bin/python ./restart_workers.py

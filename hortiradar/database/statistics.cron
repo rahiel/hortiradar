@@ -4,4 +4,4 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 HORTI=/home/rahiel/hortiradar
 
 # m h dom mon dow user  command
-30 2 * * * rahiel cd $HORTI/database && $HORTI/venv/bin/python ./clean.py
+00 2 * * * rahiel cd $HORTI/hortiradar/database && $HORTI/venv/bin/python ./statistics.py
