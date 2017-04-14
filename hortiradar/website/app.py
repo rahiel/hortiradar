@@ -11,6 +11,7 @@ import requests
 import ujson as json
 
 from hortiradar import Tweety, TOKEN, time_format
+from hortiradar.database import GROUPS
 from hortiradar.website import app, db
 from models import User
 
@@ -30,6 +31,7 @@ redis_namespace = ""
 redis = StrictRedis()
 
 CACHE_TIME = 60 * 60
+groups = sorted(GROUPS.keys())
 
 def get_cache_key(func, *args, **kwargs):
     k = (
@@ -84,12 +86,21 @@ def top_widget(group):
     data = [d["label"] for d in data]
     return render_template("widget.html", data=data)
 
-@bp.route("/_add_top_k/<group>")
-def show_top(group):
-    """Visualize a top k result file"""
-    max_amount = request.args.get("k", 10, type=int)
-    data = cache(process_top, group, max_amount)
-    return jsonify(result=data)
+@bp.route("/groups/")
+@bp.route("/groups")
+def view_groups():
+    return render_template("groups.html", title=make_title("Groepen"), groups=groups)
+
+@bp.route("/groups/<group>")
+def view_group(group):
+    params = get_process_top_params(group)
+    keywords = cache(tweety.get_keywords, **params)
+    total = sum([entry["count"] for entry in keywords])
+    for keyword in keywords:
+        keyword["percentage"] = "{:.2f}".format(keyword["count"] / total * 100)
+    nums = range(1, len(keywords) + 1)
+    template_data = {"nums_keywords": zip(nums, keywords), "group": group, "nums": nums, "total": total}
+    return render_template("group.html", title=make_title(group), **template_data)
 
 @bp.route("/details")
 def details():
@@ -98,7 +109,18 @@ def details():
 @bp.route("/about")
 def about():
     stats = json.loads(redis.get("t:stats"))
-    return render_template("about.html", **stats)
+    return render_template("about.html", title="Over de Hortiradar", **stats)
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template("page_not_found.html"), 404
+
+@bp.route("/_add_top_k/<group>")
+def show_top(group):
+    """Visualize a top k result file"""
+    max_amount = request.args.get("k", 10, type=int)
+    data = cache(process_top, group, max_amount)
+    return jsonify(result=data)
 
 @bp.route("/_get_details")
 def show_details():
@@ -141,19 +163,18 @@ def members_page():
     {% endblock %}
     """)
 
-@app.errorhandler(404)
-def page_not_found(error):
-    return render_template("page_not_found.html"), 404
-
-def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
+def get_process_top_params(group):
     end = round_time(datetime.utcnow())
     start = end + timedelta(days=-1)
     params = {
         "start": start.strftime(time_format), "end": end.strftime(time_format),
         "group": group
     }
-    counts = cache(tweety.get_keywords, force_refresh=force_refresh, cache_time=cache_time, **params)
+    return params
 
+def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
+    params = get_process_top_params(group)
+    counts = cache(tweety.get_keywords, force_refresh=force_refresh, cache_time=cache_time, **params)
     total = sum([entry["count"] for entry in counts])
 
     # tags in the first line are still in flowers.txt, tags from the second line are not
@@ -270,7 +291,7 @@ def expand(url):
         return url
 
 def make_title(page):
-    return "Hortiradar — " + page
+    return page + " — Hortiradar"
 
 
 with open("../database/data/stoplist-nl.txt", "rb") as f:

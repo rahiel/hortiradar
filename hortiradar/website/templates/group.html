@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% set active_page = "horti.view_group(%s)" % group %}
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <h1>{{ group }}</h1>
+    <p>
+      In de laatste 24 uur hebben we {{ total }} tweets gevonden in de groep {{ group }}.
+      Hieronder het overzicht. Het percentage is van het totaal aantal tweets in
+      deze groep.
+    </p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Trefwoord</th>
+          <th>Aantal tweets</th>
+          <th>Percentage</th>
+        </tr>
+      </thead>
+      {% for (i, keyword) in nums_keywords %}
+        <tr>
+          <td>{{ i }}</td>
+          <td>{{ keyword["keyword"] }}</td>
+          <td>{{ keyword["count"] }}</td>
+          <td>{{ keyword["percentage"] }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+
+  </div>
+</div>
+{% endblock %}

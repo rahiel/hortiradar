@@ -1,7 +1,7 @@
-{% macro render_nav(active_page, page, label) %}
+{% macro render_nav(active_page, page, base_page, page_kwargs, label) %}
   {% if active_page == page %}
-    <li class="active"><a href="{{ url_for(page) }}">{{label}} <span class="sr-only">(current)</span></a></li>
+    <li class="active"><a href="{{ url_for(base_page, **page_kwargs) }}">{{label}} <span class="sr-only">(current)</span></a></li>
   {% else %}
-    <li><a href="{{ url_for(page) }}">{{label}}</a></li>
+    <li><a href="{{ url_for(base_page, **page_kwargs) }}">{{label}}</a></li>
   {% endif %}
 {% endmacro %}
