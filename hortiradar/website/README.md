@@ -20,6 +20,7 @@ pip install -r requirements.txt
 sudo apt install supervisor
 sudo mkdir /var/log/hortiradar
 sudo cp supervisor.conf /etc/supervisor/conf.d/hortiradar.conf
+sudo cp processing-supervisor.conf /etc/supervisor/conf.d/hortiradar-processor.conf
 sudo systemctl restart supervisor.service
 
 sudo apt install nginx

@@ -94,7 +94,7 @@ def view_keyword(keyword):
         return keyword_data
     keyword_data = json.dumps(keyword_data)
     template_data = {"keyword": keyword, "keyword_data": keyword_data}
-    return render_template("keyword.html", **template_data)
+    return render_template("keyword.html", title=make_title(keyword), **template_data)
 
 @bp.route("/about")
 def about():

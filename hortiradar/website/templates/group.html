@@ -22,7 +22,7 @@
       {% for (i, keyword) in nums_keywords %}
         <tr>
           <td>{{ i }}</td>
-          <td>{{ keyword["keyword"] }}</td>
+          <td><a href="{{ url_for("horti.view_keyword", keyword=keyword["keyword"]) }}">{{ keyword["keyword"] }}</a></td>
           <td>{{ keyword["count"] }}</td>
           <td>{{ keyword["percentage"] }}</td>
         </tr>
