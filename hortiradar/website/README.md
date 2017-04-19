@@ -26,6 +26,14 @@ sudo apt install nginx
 sudo cp nginx.conf /etc/nginx/sites-enabled/hortiradar.conf
 sudo systemctl restart nginx.service
 sudo cp caching.cron /etc/cron.d/hortiradar
+
+sudo apt install nodejs-legacy npm
+echo "prefix = ~/.npm-global" > ~/.npmrc
+echo 'export PATH="$HOME/.npm-global/bin:$PATH"' >> ~/.profile
+. ~/.profile
+npm -g install npm
+npm install
+npm run build
 ```
 
 The Flask app also needs to send email:

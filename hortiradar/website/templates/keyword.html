@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqcloud/1.0.4/jqcloud-1.0.4.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqcloud/1.0.4/jqcloud.css">
+<link rel="stylesheet" href="{{ url_for("horti.static", filename="css/details.css") }}">
+<h1 class="text-center">{{ keyword }}</h1>
+
+<div id="content">
+  <div id="wrapper">
+    <div id="tweetsContainer">
+      <ul id="tweetsList"></ul>
+    </div>
+    <div id="contentContainer">
+      <div id="wrapper" class="title"> <h2>Time series</h2> </div>
+      <div id="wrapper">
+        <div id="splineContainer"></div>
+      </div>
+
+      <div id="wrapper" class="main">
+        <div id="urlContainer">
+          <div id="wrapper" class="title"> <h2>Links</h2></div>
+          <div class="horizontalSpacer"></div>
+          <div id="urlDiv">
+            <ul id="urlList"></ul>
+          </div>
+        </div>
+        <div id="wordcloudContainer">
+          <div id="wrapper" class="title"> <h2>Wordcloud</h2></div>
+          <div class="horizontalSpacer"></div>
+          <div id="wordcloudDiv"></div>
+        </div>
+      </div>
+
+      <div id="wrapper" class="main">
+        <div id="mapContainer">
+          <div id="wrapper" class="title"> <h2>Locations</h2></div>
+          <div class="horizontalSpacer"></div>
+          <div id="mapDiv"></div>
+        </div>
+        <div id="mediaContainer">
+          <div id="wrapper" class="title"> <h2>Photos</h2></div>
+          <div class="horizontalSpacer"></div>
+          <div id="mediaDiv"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA0adISATP5Nhic-ghCRijy6KOirg-k60" async defer></script>
+
+<script type="text/javascript">
+ var keyword_data = {{ keyword_data|safe }};
+</script>
+<script src="{{ url_for("horti.static", filename="keyword.js") }}"></script>
+{% endblock %}

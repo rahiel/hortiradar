@@ -1,0 +1,23 @@
+{
+  "name": "hortiradar",
+  "scripts": {
+    "build": "webpack --optimize-minimize",
+    "start": "webpack-dev-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/jquery": "^2.0.41",
+    "@types/node": "^7.0.13",
+    "awesome-typescript-loader": "^3.1.2",
+    "source-map-loader": "^0.2.1",
+    "typescript": "^2.2.2",
+    "webpack": "^2.4.1",
+    "webpack-dev-server": "^2.4.2"
+  },
+  "dependencies": {
+    "promise-polyfill": "6.0.2",
+    "url-search-params": "^0.7.0",
+    "whatwg-fetch": "^2.0.3"
+  }
+}

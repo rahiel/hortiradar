@@ -1,3 +1,5 @@
+celery<5
+eventlet
 flask
 flask-babel
 flask-user<0.7

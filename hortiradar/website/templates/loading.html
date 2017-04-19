@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% set active_page = "horti.loading" %}
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <h1 id="title">Tweets worden geladen</h1>
+  </div>
+</div>
+<script src="{{ url_for("horti.static", filename="loading.js") }}"></script>
+{% endblock %}

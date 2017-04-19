@@ -6,3 +6,5 @@ streamer.ini
 translations
 worker_settings.py
 hortiradar.sqlite
+node_modules
+*.js*

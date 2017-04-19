@@ -2,7 +2,6 @@
 {% set active_page = "horti.home" %}
 {% block content %}
 <script type="text/javascript">
-
   window.onload = function() {
 
     var contents = [];
@@ -26,17 +25,16 @@
           }
           ],
           axisX: {
-            labelFontSize: 22
+            labelFontSize: 19
           },
           axisY:{
             valueFormatString: "##%",
-            labelFontSize: 22,
+            labelFontSize: 20,
           }
         });
         chart.render();
       })
-      .fail( function(jqXHR, textStatus, errorThrown) { console.log("There was an error:", textStatus, errorThrown)})
-      .always( function() { console.log("Completed")});
+      .fail( function(jqXHR, textStatus, errorThrown) { console.log("There was an error:", textStatus, errorThrown)});
 
     var contents2 = [];
       $.getJSON(APP_ROOT + '_add_top_k/bloemen', {k: 10})
@@ -59,20 +57,19 @@
           }
           ],
           axisX: {
-            labelFontSize: 22,
+            labelFontSize: 19,
           },
           axisY:{
             valueFormatString: "##%",
-            labelFontSize: 22,
+            labelFontSize: 20,
           }
         });
         chart.render();
       })
-      .fail( function(jqXHR, textStatus, errorThrown) { console.log("There was an error:", textStatus, errorThrown)})
-      .always( function() { console.log("Completed")});
+      .fail( function(jqXHR, textStatus, errorThrown) { console.log("There was an error:", textStatus, errorThrown)});
 
     function onClick(e) {
-      window.open(APP_ROOT + "details?product=" + e.dataPoint.label);
+      window.open(APP_ROOT + "keywords/" + e.dataPoint.label);
     }
 
   }
