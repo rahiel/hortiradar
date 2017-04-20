@@ -1,3 +1,4 @@
+import calendar
 from collections import Counter
 from configparser import ConfigParser
 from datetime import datetime
@@ -43,7 +44,8 @@ class Stories:
         
         self.tweets = Counter(c.tweets)
         self.token_counts = c.token_counts
-        self.time_series = []
+        self.first_tweet_time = min([tw.tweet.created_at for tw in self.tweets])
+        self.time_series = self.calc_TS()
 
     def __str__(self):
         return ",".join([token.lemma for token in self.filt_tokens])
@@ -61,6 +63,9 @@ class Stories:
         self.token_counts.update(c.token_counts)
         for tweet in c.tweets:
             self.tweets[tweet] += 1
+        
+        self.first_tweet_time = min([tw.tweet.created_at for tw in self.tweets])
+        self.time_series = self.calc_TS()
 
     def add_delay(self):
         """Update idle time counter"""
@@ -73,12 +78,9 @@ class Stories:
     def end_story(self):
         """Add closing time to Story and calculate time series"""
         self.closed_at = datetime.utcnow()
-        self.calc_TS()
 
     def calc_TS(self):
         """Given an array of datetime objects, return the time series."""
-        self.first_tweet_time = min([tw.tweet.created_at for tw in self.tweets])
-
         rounded_times = [round_time(tw.tweet.created_at) for tw in self.tweets]
         TS_counter = Counter(rounded_times)
 
@@ -196,7 +198,10 @@ class Stories:
         
         jDict = {}
         jDict["startStory"] = datetime.strftime(self.created_at,"%Y-%m-%d %Hh")
-        jDict["endStory"] = datetime.strftime(self.closed_at,"%Y-%m-%d %Hh")
+        try:
+            jDict["endStory"] = datetime.strftime(self.closed_at,"%Y-%m-%d %Hh")
+        except AttributeError:
+            pass
         jDict["firstTweetTime"] = calendar.timegm(self.first_tweet_time.timetuple())
         jDict["ts"] = self.time_series
         jDict["original_wordcloud"] = self.get_original_wordcloud()

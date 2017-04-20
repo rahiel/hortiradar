@@ -3,7 +3,8 @@ import ujson as json
 from tweepy.api import API
 from tweepy.models import Status
 
-with open("/home/rahiel/hortiradar/database/data/stoplist-nl.txt", encoding='utf-8') as f:
+# TODO: maybe make stop_words part of variables for database package? like get_db currently
+with open("/home/rahiel/hortiradar/hortiradar/database/data/stoplist-nl.txt", encoding='utf-8') as f:
     stop_words = [w.strip("\n") for w in f.readlines()]
 
 class ExtendedTweet:

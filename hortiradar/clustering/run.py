@@ -5,7 +5,7 @@ from redis import StrictRedis
 
 from hortiradar.database import get_db
 
-from clustering import Cluster
+from cluster import Cluster
 from stories import Stories
 from tweet import ExtendedTweet
 from util import jac, round_time
@@ -27,6 +27,7 @@ def cast_to_interval(dt,jump="forward"):
     return dt
 
 def get_recent_tweets(end):
+    ## TODO: Currently directly queried from db, could be adjusted to Tweety call
     query = {
         "num_keywords": {"$gt": 0},
         "datetime": {"$gte": cast_to_interval(end,jump="backward"), "$lt": end}
@@ -76,29 +77,29 @@ def output_clusters(clusters,now):
 
 def storify_clusters(stories,clusters):
     if not stories:
-            for c in clusters:
+        for c in clusters:
+            stories.append(Stories(c))
+    else:
+        matched_boolean = [0]*len(stories)
+
+        for c in clusters:
+            matched = False
+            for i,story in enumerate(stories):
+                if story.is_similar(c):
+                    matched = True
+                    story.add_cluster(c)
+                    match_position = i
+
+            if matched:
+                matched_boolean[match_position] = 1
+            else:
                 stories.append(Stories(c))
-        else:
-            matched_boolean = [0]*len(stories)
 
-            for c in clusters:
-                matched = False
-                for i,story in enumerate(stories):
-                    if story.is_similar(c):
-                        matched = True
-                        story.add_cluster(c)
-                        match_position = i
-
-                if matched:
-                    matched_boolean[match_position] = 1
-                else:
-                    stories.append(Stories(c))
-
-            for j,story in enumerate(current_stories):
-                if matched_boolean[j] == 0:
-                    story.add_delay()
-                    if story.close_story():
-                        story.end_story()
+        for j,story in enumerate(current_stories):
+            if matched_boolean[j] == 0:
+                story.add_delay()
+                if story.close_story():
+                    story.end_story()
 
     return stories
 
@@ -135,5 +136,5 @@ while True:
     stories = output_finished_stories(stories)
     redis.set("stories",jsonify_stories(stories))
 
-    seconds_to_sleep = get_sleep_time()
+    seconds_to_sleep = get_sleep_time(now)
     sleep(seconds_to_sleep)
