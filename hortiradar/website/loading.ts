@@ -1,9 +1,6 @@
-import Promise from "promise-polyfill";
+import "es6-promise/auto";
 import "whatwg-fetch";
 
-if (!window.Promise) {
-    window.Promise = Promise;
-}
 
 declare const APP_ROOT: string;
 const URLSearchParams = require("url-search-params");

@@ -16,7 +16,7 @@
     "webpack-dev-server": "^2.4.2"
   },
   "dependencies": {
-    "promise-polyfill": "6.0.2",
+    "es6-promise": "^4.1.0",
     "url-search-params": "^0.7.0",
     "whatwg-fetch": "^2.0.3"
   }

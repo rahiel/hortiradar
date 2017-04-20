@@ -87,7 +87,7 @@ window.onload = function () {
     let words = [];
     $.each(data.tagCloud, function (idx) {
         if (data.tagCloud[idx].text != searchParams.get("product")) {
-            words.push({ text: data.tagCloud[idx].text, weight: 50*data.tagCloud[idx].weight^2 });
+            words.push({ text: data.tagCloud[idx].text, weight: 50*data.tagCloud[idx].weight**2 });
         } else {
             console.log(data.tagCloud[idx].text)
         }
