@@ -18,13 +18,11 @@ class Stories:
     J_original_threshold:   Jaccard index threshold for adding cluster w.r.t. first added tokens
 
     Attributes:
-    id:                     Story id
     tokens:                 Set of tokens that were added last_edited
     original_tokens:        Set of tokens that were added on creation
     filt_tokens:            Set of filtered tokens that were added last_edited
     original_filt_tokens:   List of filtered tokens that were added on creation
     last_edited:            Number of iterations ago that a cluster was added
-    has_been_outputted:     Boolean that indicates if the story has been written to disk
     token_counts:           Frequencies that tokens are used in tweets
     tweets:                 Set of tweets corresponding to the story
     time_series:            List of number of tweets per hour in story
@@ -33,11 +31,9 @@ class Stories:
     J_threshold = Config.getfloat('Parameters','cluster_jac_threshold')
     J_original_threshold = Config.getfloat('Parameters','cluster_original_jac_threshold')
 
-    def __init__(self,idx,c):
-        self.id = idx;
+    def __init__(self,c):
         self.created_at = datetime.utcnow()
         self.last_edited = 0
-        self.has_been_outputted = False
         
         self.tokens = c.tokens
         self.filt_tokens = c.filt_tokens
@@ -51,12 +47,6 @@ class Stories:
 
     def __str__(self):
         return ",".join([token.lemma for token in self.filt_tokens])
-
-    def __hash__(self):
-        return self.id
-
-    def __eq__(self,other):
-        return self.id == other.id
 
     def is_similar(self,c): ## was CalcMatch
         """Calculate if the cluster matches to the story"""

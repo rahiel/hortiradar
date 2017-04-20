@@ -139,4 +139,3 @@ class Cluster:
         jDict["best_tweet"] = self.get_best_tweet()
         jDict["tweets"] = [tw.tweet.id_str for tw in self.tweets]
         return jDict
-        # return {"tokens": [token.lemma for token in self.filt_tokens], "num_tweets": len(self.tweets)}

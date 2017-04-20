@@ -1,13 +1,17 @@
 from datetime import datetime, timedelta
 from time import sleep
 
-### TODO: import werkt nog niet, moet aangepast worden bij integratie
-from keywords import get_db
+from redis import StrictRedis
 
-from cluster import Cluster
+from hortiradar.database import get_db
+
+from clustering import Cluster
 from stories import Stories
 from tweet import ExtendedTweet
-from util import jac
+from util import jac, round_time
+
+redis = StrictRedis()
+db = get_db()
 
 def get_sleep_time(now):
     next = cast_to_interval(now)
@@ -66,60 +70,37 @@ def jsonify_clusters(clusters):
     return jsonDict
 
 def output_clusters(clusters,now):
-    # TODO: clusters worden weggeschreven naar bestanden, dit moet nog aangepast worden naar cache
-    with open("clusters/{dt}_clusters.json".format(dt=now.strftime("%Y%m%d_%H")),"w") as f:
-        json.dump(jsonify_clusters(clusters),f)
+    output = jsonify_clusters(clusters)
+    output["clustertime"] = round_time(now)
+    db.clusters.insert_one(output)
 
 def storify_clusters(stories,clusters):
     if not stories:
             for c in clusters:
-                stories.append(Stories(len(stories),c))
+                stories.append(Stories(c))
         else:
-            current_stories = get_current_stories(stories)
+            matched_boolean = [0]*len(stories)
 
             for c in clusters:
                 matched = False
-                for i,story in enumerate(current_stories):
+                for i,story in enumerate(stories):
                     if story.is_similar(c):
                         matched = True
                         story.add_cluster(c)
-                        storyToRemove = i
+                        match_position = i
 
                 if matched:
-                    current_stories.pop(storyToRemove)
+                    matched_boolean[match_position] = 1
                 else:
-                    stories.append(Stories(len(stories),c))
+                    stories.append(Stories(c))
 
-            for story in current_stories:
-                story.add_delay()
-                if story.close_story():
-                    story.end_story()
+            for j,story in enumerate(current_stories):
+                if matched_boolean[j] == 0:
+                    story.add_delay()
+                    if story.close_story():
+                        story.end_story()
 
     return stories
-
-def get_current_stories(stories):
-    current_stories = []
-    for story in stories:
-        if not story.close_story():
-            current_stories.append(story)
-
-    return current_stories
-
-def get_finished_stories(stories):
-    finished_stories = []
-    for story in stories:
-        if story.close_story():
-            finished_stories.append(story)
-
-    return finished_stories
-
-def get_new_finished_stories(stories):
-    finished_stories = []
-    for story in stories:
-        if story.close_story() and story.has_been_outputted==False:
-            finished_stories.append(story)
-
-    return finished_stories
 
 def jsonify_stories(stories):
     jsonDict = {"stories": []}
@@ -128,30 +109,31 @@ def jsonify_stories(stories):
 
     return jsonDict
 
-def output_stories(stories,now):
-    finished_stories = []
+def insert_story(story):
+    db.stories.insert_story(story.get_json())
+
+def output_finished_stories(stories):
+    active_stories = []
     for story in stories:
-        if story.close_story() and story.has_been_outputted==False:
-            finished_stories.append(story)
-            story.has_been_outputted = True
+        if story.close_story():
+            story.end_story()            
+            insert_story(story)
+        else:
+            active_stories.append(story)
 
-    # TODO: stories worden weggeschreven naar bestanden, dit moet nog aangepast worden naar cache
-    with open("stories/{dt}_finished_stories.json".format(dt=now.strftime("%Y%m%d_%H")),"w") as f:
-        json.dump(jsonify_stories(finished_stories),f)
+    return active_stories
 
-def main():
-    stories = []
+stories = []
 
-    while True:
-        now = datetime.utcnow()
-        clusters = cluster_tweets(now)
-        output_clusters(clusters,now)
-        
-        stories = storify_clusters(stories,clusters)
-        output_stories(stories,now)
+while True:
+    now = datetime.utcnow()
+    clusters = cluster_tweets(now)
+    redis.set("clusters",jsonify_clusters(clusters))
+    output_clusters(clusters,now)
+    
+    stories = storify_clusters(stories,clusters)
+    stories = output_finished_stories(stories)
+    redis.set("stories",jsonify_stories(stories))
 
-        seconds_to_sleep = get_sleep_time()
-        sleep(seconds_to_sleep)
-
-if __name__ == '__main__':
-    main()
+    seconds_to_sleep = get_sleep_time()
+    sleep(seconds_to_sleep)
