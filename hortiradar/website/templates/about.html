@@ -5,34 +5,34 @@
   <div class="col-md-8">
     <h2>Doel</h2>
     <p>
-      De Hortiradar is opgezet met als doel de tuinbouw- en sierteeltsector
-      inzichten uit social media te verschaffen, zodat zij weten hoe over hun
-      producten wordt gesproken. Het is een initiatief van het <a href="http://bigtu.nl/over-bigtu/">BIGt&u consortium</a>.
+      De Hortiradar is opgezet om de tuinbouw sector
+      inzichten uit social media te verschaffen. Het doel is te onderzoeken hoe er over producten wordt gesproken op social media en hoe deze informatie is om te zetten naar bruikbare marktinformatie. Het is een initiatief van het <a href="http://bigtu.nl/over-bigtu/">BIGt&u consortium</a>.
     </p>
     <p>
-      Deze sectoren hebben woordenlijsten opgesteld met termen waar zij
-      geïnteresseerd in zijn, zoals appel en mango van de tuinbouw, en tulp en
-      zonnnebloem van de sierteelt. Wij analyseren het gebruik van deze
-      trefwoorden in social media.
+      Voor de voedings-tuinbouw en de sierteelt zijn twee woordenlijsten opgesteld met trefwoorden, zoals appel, mango, tulp en zonnnebloem. Het gebruik van deze
+      trefwoorden in social media wordt geanalyseerd middels de Hortiradar.
     </p>
 
     <h2>Data</h2>
     <p>
-      Wij maken gebruik van Twitters <a href="https://dev.twitter.com/streaming/public">public streaming API</a>.
-      Deze geeft ons een constante stroom van tweets. Wij analyseren elke tweet,
-      en taggen het met de trefwoorden die erin voorkomen. Alle tweets slaan wij
-      op in een database waar wij later verdere analyses op uitvoeren.
+      In de Hortiradar wordt gebruik van Twitters <a href="https://dev.twitter.com/streaming/public">public streaming API</a> gemaakt.
+      Deze geeft een constante stroom van tweets. Elke tweet wordt geanalyseerd en getagd met de trefwoorden die erin voorkomen. Alle tweets worden opgeslagen in een database waar later verdere analyses op uitgevoerd kunnen worden.
     </p>
     <p>
-      Onze database bevat <b>{{count}}</b> tweets van {{date_oldest_tweet}} tot {{date_latest_tweet}}, waarvan {{count_24h}} in de laatste 24 uur.<br>
+      De database bevat <b>{{count}}</b> tweets van {{date_oldest_tweet}} tot {{date_latest_tweet}}, waarvan {{count_24h}} in de laatste 24 uur.<br>
       De database neemt <b>{{storage_size}} GB</b> in beslag, ongecomprimeerd zou dit {{size}} GB zijn.
+    </p>
+
+    <h2>Stand van zaken</h2>
+    <p>
+      Bij een aantal producten is nog een zekere mate van ``vervuiling" te zien in de tweets die getagd worden. Een voorbeeld van deze verkeerde tagging is het volgende: een tweet met de tekst ``Het beste uitje sinds jaren" wordt op dit moment getagd als tweet die over `ui' gaat. Momenteel wordt gewerkt aan een verbetering van de tagging, door de kennis van Natural Language Processing en algoritmiek te combineren. Totdat deze tagging verbetert is, worden sommige trefwoorden buiten de top-10 overzichten gehouden. Alle trefwoorden zijn wel toegankelijk via de `Bloemen' en `Groente en Fruit' tabbladen.
     </p>
 
     <h2>Vrije Software</h2>
     <p>
       De Hortiradar is <a href="https://fsfe.org/about/basics/freesoftware.nl.html">vrije software</a>.
       De broncode is beschikbaar op GitHub: <a href="https://github.com/mctenthij/hortiradar">https://github.com/mctenthij/hortiradar</a>.
-      Alle code is beschikbaar onder voorwaarden van de <a href="https://github.com/mctenthij/hortiradar/blob/master/LICENSE.txt">Apache 2.0 licentie</a>.
+      Alle broncode is beschikbaar onder voorwaarden van de <a href="https://github.com/mctenthij/hortiradar/blob/master/LICENSE.txt">Apache 2.0 licentie</a>.
     </p>
   </div>
 </div>
