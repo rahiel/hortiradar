@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
+import re
 
+import CommonMark
 import ujson as json
 from flask import Blueprint, render_template, render_template_string, request
 from flask_babel import Babel
@@ -30,6 +32,26 @@ redis = StrictRedis()
 
 groups = sorted(GROUPS.keys())
 
+def render_markdown(filename):
+    parser = CommonMark.Parser()
+    renderer = CommonMark.HtmlRenderer()
+    with open(filename) as f:
+            doc = f.read()
+    ast = parser.parse(doc)
+    doc = renderer.render(ast)
+    # add internal links
+    find_section = lambda x: re.search(r"<h([2-6])>(?:<.+>)?(.+?)(?:<.+>)?<\/h\1>", x)
+    sub = lambda x: x.lower().replace(" ", "-").translate({ord(c): "" for c in "{}/"})
+    section = find_section(doc)
+    while section:
+        start, end = section.span()
+        gr = section.groups()
+        sec = '<h{0} id="{1}">{2}</h{0}>'.format(gr[0], sub(gr[1]), gr[1])
+        doc = doc[:start] + sec + doc[end:]
+        section = find_section(doc)
+    return doc
+
+docs = render_markdown("../../docs/api.md")
 
 def jsonify(*args, **kwargs):
     if args and kwargs:
@@ -100,6 +122,10 @@ def view_keyword(keyword):
 def about():
     stats = json.loads(redis.get("t:stats"))
     return render_template("about.html", title="Over de Hortiradar", **stats)
+
+@bp.route("/docs/api")
+def api():
+    return render_template("api.html", title=make_title("API documentatie"), docs=docs)
 
 @bp.route("/loading/<loading_id>", methods=["GET", "POST"])
 def loading(loading_id):

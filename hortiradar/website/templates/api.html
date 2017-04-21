@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% set active_page = "horti.api" %}
+{% block content %}
+  <div class="row">
+    <div class="col-md-8">
+      <p>
+        De Hortiradar heeft een API, deze gebruiken wij intern voor de website.
+        De API bevindt zich nu in een testfase en is nog niet publiekelijk
+        toegankelijk. Hieronder de documentatie voor de API. Deze is, zoals de
+        meeste technische documenten, in het Engels.
+      </p>
+      {{ docs|safe }}
+    </div>
+  </div>
+{% endblock %}
