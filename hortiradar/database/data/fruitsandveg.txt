@@ -197,9 +197,7 @@ mispel,N
 mizuna,N
 monniksbaard,N
 morielje,N
-mosterd,N
 mosterdkool,N
-munt,N
 name mapuey,N
 nangka,N
 nashi,N
@@ -254,7 +252,6 @@ radicchio,N
 radijs,N
 ramboetans,N
 rammenassen,N
-rapen,N
 reine claudes,N
 reuzengranadilla,N
 romanesco,N
@@ -266,14 +263,12 @@ roomse kervel,N
 rozemarijn,N
 rozijn,N
 rucola,N
-salak,N
 salie,N
 sapodilla,N
 sapota,N
 sareptamosterd,N
 satsuma,N
 savooiekool,N
-scheut,N
 schorseneren,N
 selderij,N
 sharonvrucht,N
@@ -298,7 +293,6 @@ suikerij,N
 suikermais,N
 suikermeloen,N
 suikerriet,N
-sweetie,N
 tamarillo,N
 tamarinde,N
 tangelo,N
@@ -327,7 +321,6 @@ vleestomaat,N
 vleugelbonen,N
 vlierbes,N
 vossenbessen,N
-vrucht,N
 waterkastanjes,N
 waterkers,N
 watermeloen,N
