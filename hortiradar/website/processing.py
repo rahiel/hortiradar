@@ -2,6 +2,7 @@ from collections import Counter
 from datetime import datetime, timedelta
 from hashlib import md5
 from types import FunctionType
+from typing import Sequence
 
 import ujson as json
 from celery import Celery
@@ -20,9 +21,13 @@ redis = StrictRedis()
 
 CACHE_TIME = 60 * 60
 
-with open("../database/data/stoplist-nl.txt", "rb") as f:
-    stop_words = [w.decode("utf-8").strip() for w in f]
+with open("../database/data/stoplist-nl.txt", "r") as f:
+    stop_words = [w.strip() for w in f]
     stop_words = {w: 1 for w in stop_words}  # stop words to filter out in word cloud
+
+with open("../database/data/obscene_words.txt", "r") as f:
+    obscene_words = [w.strip() for w in f if not w.startswith("#")]
+    obscene_words = {w: 1 for w in obscene_words}
 
 
 def get_cache_key(func, *args, **kwargs):
@@ -74,6 +79,11 @@ def cache_request(func, args, kwargs, cache_time, key, loading_id):
     redis.set(key, v, ex=cache_time)
     redis.set(loading_id, b"done", ex=cache_time)
 
+@app.task
+def mark_as_spam(ids: Sequence[str]):
+    for id_str in ids:
+        tweety.patch_tweet(id_str, data=json.dumps({"spam": 0.8}))
+
 def round_time(dt):
     return dt + timedelta(minutes=-dt.minute, seconds=-dt.second, microseconds=-dt.microsecond)
 
@@ -91,9 +101,10 @@ def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
     counts = cache(tweety.get_keywords, force_refresh=force_refresh, cache_time=cache_time, **params)
     total = sum([entry["count"] for entry in counts])
 
-    # tags in the first line are still in flowers.txt, tags from the second line are not
+    # tags in the first line are still in flowers.txt
+    # tags in the second line are excluded but should be included again in the future
     BLACKLIST = ["fhgt", "fhtf", "fhalv", "fhglazentulp", "fhgt2014", "fhgt2015", "aalsmeer", "westland", "fh2020", "bloemistenklok", "morgenvoordeklok", "fhstf", "floraholland", "fhmagazine", "floranext", "bos",
-                 "community", "glastuinbouw", "klok", "komindekas", "tuinbouw", "westland", "aalsmeer", "aanvoertijden", "naaldwijk", "presentatieruimte", "tuincentra", "tuincentrum", "valentijn", "veiling", "viool", "viooltjes"]
+                 "aardappel", "bes", "citroen", "kool", "sla", "ui", "wortel"]
     topkArray = []
     for entry in counts:
         if len(topkArray) < max_amount:
@@ -113,12 +124,17 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     wordCloudDict = Counter()
     tsDict = Counter()
     mapLocations = []
+    spam_list = []
 
     for tw in tweets:
         tweet = tw["tweet"]
-        tweetList.append(tweet["id_str"])
-
         tokens = [t["lemma"] for t in tw["tokens"]]
+
+        if any(obscene_words.get(t) for t in tokens):
+            spam_list.append(tweet["id_str"])
+            continue
+
+        tweetList.append(tweet["id_str"])
         wordCloudDict.update(tokens)
 
         dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
@@ -146,6 +162,8 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
                     mapLocations.append({"lng": coords[0], "lat": coords[1]})
         except KeyError:
             pass
+
+    mark_as_spam.apply_async((spam_list,), queue="web")
 
     wordCloud = []
     for token in wordCloudDict:

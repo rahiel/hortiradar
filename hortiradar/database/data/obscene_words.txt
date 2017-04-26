@@ -1,4 +1,6 @@
-# list based on https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words/blob/master/nl ## TODO: link naar license toevoegen
+# list based on https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words/blob/master/nl
+# original list: © 2012–2015 Shutterstock, Inc.
+# License: CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/
 afberen
 aflebberen
 afrossen
@@ -9,6 +11,7 @@ afzeiken
 afzuigen
 aso
 balen
+ballen
 bedonderen
 befborstel
 beffen
@@ -22,7 +25,6 @@ bokkelul
 botergeil
 broekhoesten
 buffelen
-ballen
 del
 dombo
 draaikont
@@ -105,8 +107,8 @@ poot
 portiekslet
 pot
 potverdorie
-prostituée
 prostituee
+prostituée
 publiciteitsgeil
 raaskallen
 reet
