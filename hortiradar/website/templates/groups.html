@@ -4,7 +4,7 @@
 <div class="row">
   <div class="col-md-8">
     <h1>Groepen</h1>
-    <p>Wij taggen de volgende groepen van trefwoorden:</p>
+    <p>De volgende groepen van trefwoorden worden getagd:</p>
     <ul>
       {% for group in groups %}
         <li><a href="{{ url_for("horti.view_group", group=group) }}">{{ group }}</a></li>
