@@ -1,57 +1,73 @@
 {% extends "base.html" %}
 {% block content %}
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqcloud/1.0.4/jqcloud-1.0.4.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqcloud/1.0.4/jqcloud.css">
-<link rel="stylesheet" href="{{ url_for("horti.static", filename="css/details.css") }}">
-<h1 class="text-center">{{ keyword }}</h1>
+<link rel="stylesheet" href="{{ url_for("horti.static", filename="css/keyword.css") }}">
 
-<div id="content">
-  <div id="wrapper">
-    <div id="tweetsContainer">
-      <ul id="tweetsList"></ul>
-    </div>
-    <div id="contentContainer">
-      <div id="wrapper" class="title"> <h2>Time series</h2> </div>
-      <div id="wrapper">
-        <div id="splineContainer"></div>
-      </div>
+<h1>{{ keyword }}</h1>
 
-      <div id="wrapper" class="main">
-        <div id="urlContainer">
-          <div id="wrapper" class="title"> <h2>Links</h2></div>
-          <div class="horizontalSpacer"></div>
-          <div id="urlDiv">
-            <ul id="urlList"></ul>
-          </div>
-        </div>
-        <div id="wordcloudContainer">
-          <div id="wrapper" class="title"> <h2>Wordcloud</h2></div>
-          <div class="horizontalSpacer"></div>
-          <div id="wordcloudDiv"></div>
-        </div>
-      </div>
-
-      <div id="wrapper" class="main">
-        <div id="mapContainer">
-          <div id="wrapper" class="title"> <h2>Locations</h2></div>
-          <div class="horizontalSpacer"></div>
-          <div id="mapDiv"></div>
-        </div>
-        <div id="mediaContainer">
-          <div id="wrapper" class="title"> <h2>Photos</h2></div>
-          <div class="horizontalSpacer"></div>
-          <div id="mediaDiv"></div>
-        </div>
-      </div>
-
-    </div>
+<div class="row">
+  <div class="col-md-12">
+    <h2 class="text-center">Tijdreeks</h2>
+    <div id="splineContainer"></div>
   </div>
 </div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA0adISATP5Nhic-ghCRijy6KOirg-k60" async defer></script>
+<div class="row">
+  <div class="col-md-8">
+    <h2 class="text-center">Wordcloud</h2>
+    <div id="wordcloudDiv"></div>
+  </div>
+
+  <div class="col-md-4">
+    <h2 class="text-center">Links</h2>
+    <table class="table table-condensed">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>URL</th>
+        </tr>
+      </thead>
+      {% for url in urls %}
+        <tr>
+          <td>{{ url["occ"] }}</td>
+          <td><a href="{{ url["link"] }}">{{ url["display_url"] }}</a></td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <h2 class="text-center">Foto's</h2>
+    {% for (p1, p2) in photos %}
+      <div id="photoContainer">
+        <img class="twitImage" src="{{ p1["link"] }}"><span id="text">{{ p1["occ"] }}</span>
+      </div>
+      <div id="photoContainer">
+        <img class="twitImage" src="{{ p2["link"] }}"><span id="text">{{ p2["occ"] }}</span>
+      </div>
+      <br>
+    {% endfor %}
+
+    <h2 class="text-center">Plaatsen</h2>
+    <div id="mapDiv"></div>
+  </div>
+  <div class="col-md-6">
+    <h2 class="text-center">Tweets</h2>
+    {% for t in range(num_tweets) %}
+      <div id="tweet{{t}}"></div>
+    {% endfor %}
+  </div>
+</div>
 
 <script type="text/javascript">
  var keyword_data = {{ keyword_data|safe }};
+ var num_tweets = {{ num_tweets }};
 </script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqcloud/1.0.4/jqcloud-1.0.4.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqcloud/1.0.4/jqcloud.css">
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA0adISATP5Nhic-ghCRijy6KOirg-k60"></script>
 <script src="{{ url_for("horti.static", filename="keyword.js") }}"></script>
 {% endblock %}

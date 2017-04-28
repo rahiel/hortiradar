@@ -3,6 +3,7 @@ const URLSearchParams = require("url-search-params");
 
 declare const APP_ROOT: string;
 declare const keyword_data: any;
+declare const num_tweets: number;
 const searchParams = new URLSearchParams(window.location.search);
 
 
@@ -44,53 +45,19 @@ window.onload = function () {
     });
     chart.render();
 
-    let twList = $("ul#tweetsList")
-    $.each(data.tweets, function (idx, val) {
-        if (idx < 15) { // Display a maximum of 15 tweets
-            let li = $(`<li><div id="${val}"></div></li>`).appendTo(twList);
-
-            let tweet = document.getElementById(val);
-            twttr.widgets.createTweet(
-                val, tweet,
-                {
-                    conversation : "none",    // or all
-                    cards        : "hidden",  // or visible
-                    linkColor    : "#cc0000", // default is blue
-                    theme        : "light",    // or dark
-                    lang         : "nl"
-                })
-        }
-    });
-
-    let urlList = $("ul#urlList")
-    $.each(data.URLs, function (idx) {
-        if (idx < 15) { // Display a maximum of 15 urls
-            let li = $(`<li>${data.URLs[idx].occ}x <a href="${data.URLs[idx].link}">${data.URLs[idx].link}</a></li>`)
-                .appendTo(urlList);
-        }
-    });
-
-    let medList = $("div#mediaDiv")
-    $.each(data.photos, function (idx) {
-        if(idx < 15) { // Display a maximum of 15 photos
-            if (idx % 3 == 2) {
-                let li = $('<div id="photoContainer"><img class="twitImage" src="'+data.photos[idx].link+'" /><span id="text">'+data.photos[idx].occ+'</span></div><br/>')
-                    .appendTo(medList);
-            }
-            else{
-                let li = $('<div id="photoContainer"><img class="twitImage" src="'+data.photos[idx].link+'" /><span id="text">'+data.photos[idx].occ+'</span></div>')
-                    .appendTo(medList);
-            }
-        }
-    });
+    for (let i = 0; i < num_tweets; i++) {
+        let tweet = document.getElementById(`tweet${i}`);
+        twttr.widgets.createTweet(data.tweets[i], tweet, {
+            conversation: "none",
+            cards: "hidden",
+            theme: "light",
+            lang: "nl",
+        });
+    }
 
     let words = [];
-    $.each(data.tagCloud, function (idx) {
-        if (data.tagCloud[idx].text != searchParams.get("product")) {
-            words.push({ text: data.tagCloud[idx].text, weight: 50*data.tagCloud[idx].weight**2 });
-        } else {
-            console.log(data.tagCloud[idx].text)
-        }
+    $.each(data.tagCloud, function (index) {
+        words.push({ text: data.tagCloud[index].text, weight: data.tagCloud[index].weight });
     });
     $("#wordcloudDiv").jQCloud(words, {
         autoResize: false
@@ -103,11 +70,11 @@ window.onload = function () {
         zoom: 6
     });
 
-    $.each(data.locations, function (idx) {
+    $.each(data.locations, function (index) {
         // Create a marker and set its position.
         let marker = new google.maps.Marker({
             map: map,
-            position: {lat: data.locations[idx].lat, lng: data.locations[idx].lng}
+            position: {lat: data.locations[index].lat, lng: data.locations[index].lng}
         });
     });
 

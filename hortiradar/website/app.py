@@ -53,6 +53,12 @@ def render_markdown(filename):
 
 docs = render_markdown("../../docs/api.md")
 
+def shorten(text: str, limit: int) -> str:
+    if len(text) <= limit:
+        return text
+    else:
+        return text[:limit - 1] + "…"
+
 def jsonify(*args, **kwargs):
     if args and kwargs:
         raise ValueError
@@ -114,8 +120,32 @@ def view_keyword(keyword):
     keyword_data = cache(process_details, keyword, params, path=get_req_path(request))
     if isinstance(keyword_data, Response):
         return keyword_data
+
+    urls = keyword_data["URLs"][:16]
+    for url in urls:
+        url["display_url"] = shorten(url["link"], 45)
+    if not urls:
+        urls.append({"occ": 0, "link": "#", "display_url": "Geen URLs gevonden"})
+    del keyword_data["URLs"]
+
+    keyword_data["tagCloud"] = keyword_data["tagCloud"][:200]
+
+    photos = keyword_data["photos"][:16]
+    if len(photos) > 2:         # TODO: other conditions
+        photos = [(photos[i], photos[i+1]) for i in range(0, len(photos)-1, 2)]
+    del keyword_data["photos"]
+
+    num_tweets = 11
+    keyword_data["tweets"] = keyword_data["tweets"][:num_tweets]
+
     keyword_data = json.dumps(keyword_data)
-    template_data = {"keyword": keyword, "keyword_data": keyword_data}
+    template_data = {
+        "keyword": keyword,
+        "keyword_data": keyword_data,
+        "urls": urls,
+        "photos": photos,
+        "num_tweets": num_tweets
+    }
     return render_template("keyword.html", title=make_title(keyword), **template_data)
 
 @bp.route("/about")
@@ -179,4 +209,4 @@ def make_title(page):
 app.register_blueprint(bp, url_prefix="/hortiradar")
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8000)
+    app.run(debug=True, port=9000)

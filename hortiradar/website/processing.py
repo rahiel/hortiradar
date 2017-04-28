@@ -166,9 +166,9 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     mark_as_spam.apply_async((spam_list,), queue="web")
 
     wordCloud = []
-    for token in wordCloudDict:
+    for (token, count) in wordCloudDict.most_common():
         if token.lower() not in stop_words and "http" not in token and len(token) > 1:
-            wordCloud.append({"text": token, "weight": wordCloudDict[token]})
+            wordCloud.append({"text": token, "weight": count})
 
     ts = []
     tsStart = sorted(tsDict)[0]
