@@ -119,6 +119,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     tweets = cache(tweety.get_keyword, prod, force_refresh=force_refresh, cache_time=CACHE_TIME, **params)
 
     tweetList = []
+    clusters = []
     imagesList = []
     URLList = []
     wordCloudDict = Counter()
@@ -136,6 +137,18 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
         tweetList.append(tweet["id_str"])
         wordCloudDict.update(tokens)
+
+        found_match = False
+
+        for cluster in clusters:
+            if cluster.is_similar(tweet):
+                found_match = True
+                cluster.add_tweet(tweet)
+                break
+
+        if not found_match:
+            cluster = Cluster(tweet)
+            clusters.append(cluster)
 
         dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
         tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
@@ -200,8 +213,11 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     for (url, count) in Counter(URLList).most_common():
         urls.append({"link": url, "occ": count})
 
+    summaryTweetList = [c.get_best_tweet().tweet.id_str for c in clusters]
+
     data = {
-        "tweets": tweetList[::-1],
+        # "tweets": tweetList[::-1],
+        "tweets": summaryTweetList,
         "timeSeries": ts,
         "URLs": urls,
         "photos": images,
