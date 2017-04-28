@@ -3,11 +3,10 @@ from configparser import ConfigParser
 from datetime import datetime
 import json
 
-from tweet import ExtendedTweet
-from util import jac, cos_sim
+from util import jac #, cos_sim
 
 Config = ConfigParser()
-Config.read('config.ini')
+Config.read('/home/rahiel/hortiradar/hortiradar/clustering/config.ini')
 
 class Cluster:
     def __init__(self,ext_tweet):

@@ -10,6 +10,8 @@ from flask import redirect
 from redis import StrictRedis
 
 from hortiradar import Tweety, TOKEN, time_format
+from hortiradar.clustering.cluster import Cluster
+from hortiradar.clustering.tweet import ExtendedTweet
 
 
 broker_url = "amqp://guest@localhost:5672/hortiradar"
@@ -139,6 +141,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         wordCloudDict.update(tokens)
 
         found_match = False
+        tweet = ExtendedTweet(tw)
 
         for cluster in clusters:
             if cluster.is_similar(tweet):
