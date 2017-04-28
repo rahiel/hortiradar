@@ -4,11 +4,8 @@ from time import sleep
 from redis import StrictRedis
 
 from hortiradar.database import get_db
-
-from cluster import Cluster
-from stories import Stories
-from tweet import ExtendedTweet
-from util import jac, round_time
+from hortiradar.clustering import ExtendedTweet, Cluster, Stories
+from hortiradar.clustering.util import jac, round_time
 
 redis = StrictRedis()
 db = get_db()

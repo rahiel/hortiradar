@@ -1,12 +1,9 @@
 from collections import Counter
-from configparser import ConfigParser
 from datetime import datetime
 import json
 
 from hortiradar.clustering.util import jac #, cos_sim
-
-Config = ConfigParser()
-Config.read('/home/rahiel/hortiradar/hortiradar/clustering/config.ini')
+from hortiradar.clustering import Config
 
 class Cluster:
     def __init__(self,ext_tweet):

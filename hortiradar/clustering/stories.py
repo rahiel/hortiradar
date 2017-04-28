@@ -1,13 +1,10 @@
 import calendar
 from collections import Counter
-from configparser import ConfigParser
 from datetime import datetime
 import json
 
-from util import jac, round_time, get_time_passed
-
-Config = ConfigParser()
-Config.read('config.ini')
+from hortiradar.clustering import Config
+from hortiradar.clustering.util import jac, round_time, get_time_passed
 
 class Stories:
     """
