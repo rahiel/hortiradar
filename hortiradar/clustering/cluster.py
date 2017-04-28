@@ -3,7 +3,7 @@ from configparser import ConfigParser
 from datetime import datetime
 import json
 
-from util import jac #, cos_sim
+from hortiradar.clustering.util import jac #, cos_sim
 
 Config = ConfigParser()
 Config.read('/home/rahiel/hortiradar/hortiradar/clustering/config.ini')
