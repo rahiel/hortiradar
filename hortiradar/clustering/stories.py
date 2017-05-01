@@ -3,8 +3,12 @@ from collections import Counter
 from datetime import datetime
 import json
 
-from hortiradar.clustering import Config
 from hortiradar.clustering.util import jac, round_time, get_time_passed
+
+## TODO: preload config at once for complete package
+from configparser import ConfigParser
+Config = ConfigParser()
+Config.read('config.ini')
 
 class Stories:
     """

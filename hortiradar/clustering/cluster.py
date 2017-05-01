@@ -3,7 +3,11 @@ from datetime import datetime
 import json
 
 from hortiradar.clustering.util import jac #, cos_sim
-from hortiradar.clustering import Config
+
+## TODO: preload config at once for complete package
+from configparser import ConfigParser
+Config = ConfigParser()
+Config.read('config.ini')
 
 class Cluster:
     def __init__(self,ext_tweet):

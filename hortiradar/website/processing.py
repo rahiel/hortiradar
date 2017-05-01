@@ -10,8 +10,7 @@ from flask import redirect
 from redis import StrictRedis
 
 from hortiradar import Tweety, TOKEN, time_format
-from hortiradar.clustering.cluster import Cluster
-from hortiradar.clustering.tweet import ExtendedTweet
+from hortiradar.clustering import Cluster, ExtendedTweet
 
 
 broker_url = "amqp://guest@localhost:5672/hortiradar"
