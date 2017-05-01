@@ -4,10 +4,10 @@ import json
 
 from hortiradar.clustering.util import jac #, cos_sim
 
-## TODO: preload config at once for complete package
+## TODO: preload config at once for complete package and fix absolute path
 from configparser import ConfigParser
 Config = ConfigParser()
-Config.read('config.ini')
+Config.read('/home/rahiel/hortiradar/hortiradar/clustering/config.ini')
 
 class Cluster:
     def __init__(self,ext_tweet):

@@ -5,10 +5,10 @@ import json
 
 from hortiradar.clustering.util import jac, round_time, get_time_passed
 
-## TODO: preload config at once for complete package
+## TODO: preload config at once for complete package and fix absolute path
 from configparser import ConfigParser
 Config = ConfigParser()
-Config.read('config.ini')
+Config.read('/home/rahiel/hortiradar/hortiradar/clustering/config.ini')
 
 class Stories:
     """
