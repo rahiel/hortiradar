@@ -105,7 +105,7 @@ def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
     # tags in the second line are excluded but should be included again in the future
     # tags in 3rd line are removed from the word lists
     BLACKLIST = ["fhgt", "fhtf", "fhalv", "fhglazentulp", "fhgt2014", "fhgt2015", "aalsmeer", "westland", "fh2020", "bloemistenklok", "morgenvoordeklok", "fhstf", "floraholland", "fhmagazine", "floranext", "bos",
-                 "aardappel", "bes", "citroen", "kool", "sla", "ui", "wortel", "phoenix", "acer", "jasmijn", "erica", "iris", "fruit",
+                 "aardappel", "bes", "citroen", "kool", "sla", "ui", "wortel", "phoenix", "acer", "jasmijn", "erica", "iris", "fruit", "roos",
                  "munt", "vrucht", "mosterd", "sweetie", "scheut", "salak", "rapen"
     ]
     topkArray = []
