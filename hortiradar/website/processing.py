@@ -105,8 +105,11 @@ def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
 
     # tags in the first line are still in flowers.txt
     # tags in the second line are excluded but should be included again in the future
+    # tags in 3rd line are removed from the word lists
     BLACKLIST = ["fhgt", "fhtf", "fhalv", "fhglazentulp", "fhgt2014", "fhgt2015", "aalsmeer", "westland", "fh2020", "bloemistenklok", "morgenvoordeklok", "fhstf", "floraholland", "fhmagazine", "floranext", "bos",
-                 "aardappel", "bes", "citroen", "kool", "sla", "ui", "wortel"]
+                 "aardappel", "bes", "citroen", "kool", "sla", "ui", "wortel", "phoenix", "acer", "jasmijn", "erica", "iris",
+                 "munt", "vrucht", "mosterd", "sweetie", "scheut", "salak", "rapen"
+    ]
     topkArray = []
     for entry in counts:
         if len(topkArray) < max_amount:
