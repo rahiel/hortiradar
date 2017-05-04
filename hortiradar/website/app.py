@@ -3,7 +3,7 @@ import re
 
 import CommonMark
 import ujson as json
-from babel.dates import format_datetime
+from babel.dates import format_datetime, get_timezone
 from flask import Blueprint, render_template, render_template_string, request
 from flask_babel import Babel
 from flask_mail import Mail
@@ -154,14 +154,16 @@ def view_keyword(keyword):
 
     keyword_data = json.dumps(keyword_data)
     babel_datetime_format = "EEEE d MMMM HH:mm y"
+    dutch_timezone = get_timezone("Europe/Amsterdam")
+    display_datetime = lambda dt: format_datetime(dt, babel_datetime_format, tzinfo=dutch_timezone, locale="nl")
     template_data = {
         "keyword": keyword,
         "keyword_data": keyword_data,
         "urls": urls,
         "photos": photos,
         "num_tweets": num_tweets,
-        "start": format_datetime(start, babel_datetime_format, locale="nl"),
-        "end": format_datetime(end, babel_datetime_format, locale="nl"),
+        "start": display_datetime(start),
+        "end": display_datetime(end),
         "period": period
     }
     return render_template("keyword.html", title=make_title(keyword), **template_data)
