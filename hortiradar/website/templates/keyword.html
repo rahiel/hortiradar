@@ -4,6 +4,25 @@
 
 <h1>{{ keyword }}</h1>
 
+{% macro render_button(period_button, period_label) %}
+  {% if period_button == period %}
+    <a class="btn btn-primary" href="{{ url_for("horti.view_keyword", keyword=keyword, period=period_button) }}" role="button">{{ period_label }}</a>
+  {% else %}
+    <a class="btn btn-default" href="{{ url_for("horti.view_keyword", keyword=keyword, period=period_button) }}" role="button">{{ period_label }}</a>
+  {% endif %}
+{% endmacro %}
+
+<div class="row">
+  <div class="col-md-8">
+    <p>Hieronder de analyse van tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}.</p>
+  </div>
+  <div class="col-md-4 text-right">
+    {{ render_button("day", "Dag") }}
+    {{ render_button("week", "Week") }}
+    {{ render_button("month", "Maand") }}
+  </div>
+</div>
+
 <div class="row">
   <div class="col-md-12">
     <h2 class="text-center">Tijdreeks</h2>

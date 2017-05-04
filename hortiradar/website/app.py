@@ -3,6 +3,7 @@ import re
 
 import CommonMark
 import ujson as json
+from babel.dates import format_datetime
 from flask import Blueprint, render_template, render_template_string, request
 from flask_babel import Babel
 from flask_mail import Mail
@@ -109,13 +110,26 @@ def view_group(group):
 
 @bp.route("/keywords/<keyword>")
 def view_keyword(keyword):
-    interval = request.args.get("interval", 60 * 60 * 24 * 7, type=int)
-    end = request.args.get("end", "", type=str)
-    if end:
-        end = datetime.strptime(end, "%Y-%m-%d %H:%M") + timedelta(hours=1)
+    period = request.args.get("period", "", type=str)
+    if period:
+        end = datetime.utcnow()
+        if period == "day":
+            start = end - timedelta(days=1)
+        elif period == "week":
+            start = end - timedelta(weeks=1)
+        elif period == "month":
+            start = end - timedelta(days=30)
+        end = round_time(end)
+        start = round_time(start)
     else:
-        end = round_time(datetime.utcnow())
-    start = end + timedelta(seconds=-interval)
+        period = "week"         # default
+        interval = request.args.get("interval", 60 * 60 * 24 * 7, type=int)
+        end = request.args.get("end", "", type=str)
+        if end:
+            end = datetime.strptime(end, "%Y-%m-%d %H:%M") + timedelta(hours=1)
+        else:
+            end = round_time(datetime.utcnow())
+        start = end + timedelta(seconds=-interval)
     params = {"start": start.strftime(time_format), "end": end.strftime(time_format)}
     keyword_data = cache(process_details, keyword, params, path=get_req_path(request))
     if isinstance(keyword_data, Response):
@@ -139,12 +153,16 @@ def view_keyword(keyword):
     keyword_data["tweets"] = keyword_data["tweets"][:num_tweets]
 
     keyword_data = json.dumps(keyword_data)
+    babel_datetime_format = "EEEE d MMMM HH:mm y"
     template_data = {
         "keyword": keyword,
         "keyword_data": keyword_data,
         "urls": urls,
         "photos": photos,
-        "num_tweets": num_tweets
+        "num_tweets": num_tweets,
+        "start": format_datetime(start, babel_datetime_format, locale="nl"),
+        "end": format_datetime(end, babel_datetime_format, locale="nl"),
+        "period": period
     }
     return render_template("keyword.html", title=make_title(keyword), **template_data)
 

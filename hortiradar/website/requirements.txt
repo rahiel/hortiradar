@@ -1,3 +1,4 @@
+babel
 celery<5
 commonmark
 eventlet

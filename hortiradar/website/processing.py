@@ -85,7 +85,8 @@ def mark_as_spam(ids: Sequence[str]):
         tweety.patch_tweet(id_str, data=json.dumps({"spam": 0.8}))
 
 def round_time(dt):
-    return dt + timedelta(minutes=-dt.minute, seconds=-dt.second, microseconds=-dt.microsecond)
+    """Returns the floor (to the hour) of a datetime object."""
+    return dt - timedelta(minutes=dt.minute, seconds=dt.second, microseconds=dt.microsecond)
 
 def get_process_top_params(group):
     end = round_time(datetime.utcnow())
