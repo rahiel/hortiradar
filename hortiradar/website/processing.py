@@ -50,23 +50,26 @@ def get_cache_key(func, *args, **kwargs):
 def cache(func, *args, path=None, **kwargs):
     force_refresh = kwargs.pop("force_refresh", None) or False
     cache_time = kwargs.pop("cache_time", None) or CACHE_TIME
+    loading_cache_time = 60 * 10
     key = get_cache_key(func, *args, **kwargs)
     v = redis.get(key)
 
     if v is not None and not force_refresh:
         return json.loads(v) if type(v) == bytes else v
     else:
+        loading_id = "loading:" + md5(key.encode("utf-8")).hexdigest()
         if not force_refresh:
-            loading_id = "loading:" + md5(key.encode("utf-8")).hexdigest()
             loading = redis.get(loading_id)
             if not loading:
-                redis.set(loading_id, b"loading", ex=cache_time)
+                redis.set(loading_id, b"loading", ex=loading_cache_time)
                 cache_request.apply_async((func.__name__, args, kwargs, cache_time, key, loading_id), queue="web")
             return redirect("/hortiradar/loading/{}?redirect={}".format(loading_id.split(":", 1)[1], path))
         else:
+            redis.set(loading_id, b"loading", ex=loading_cache_time)
             response = func(*args, force_refresh=force_refresh, cache_time=cache_time, **kwargs)
             v = json.dumps(response) if type(response) != bytes else response
             redis.set(key, v, ex=cache_time)
+            redis.set(loading_id, b"done", ex=loading_cache_time)
             return response if type(response) != bytes else json.loads(response)
 
 @app.task
