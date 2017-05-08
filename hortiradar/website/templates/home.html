@@ -1,79 +1,23 @@
 {% extends "base.html" %}
 {% set active_page = "horti.home" %}
 {% block content %}
-<script type="text/javascript">
-  window.onload = function() {
 
-    var contents = [];
-      $.getJSON(APP_ROOT + '_add_top_k/groente_en_fruit', {k: 10})
-      .done(function( data) {
-        $.each (data.result, function (idx) {
-          contents.push({ label: data.result[idx].label, y: data.result[idx].y });
-        });
-        var chart = new CanvasJS.Chart("chartContainer_fruit", {
-          theme: "theme2",//theme1
-          title:{
-            text: "Top 10 groenten en fruit"
-          },
-          animationEnabled: true,   // change to true
-          data: [
-          {
-            // Change type to "bar", "area", "spline", "pie",etc.
-            type: "column",
-            dataPoints: contents,
-            click: onClick
-          }
-          ],
-          axisX: {
-            labelFontSize: 19
-          },
-          axisY:{
-            valueFormatString: "##%",
-            labelFontSize: 20,
-          }
-        });
-        chart.render();
-      })
-      .fail( function(jqXHR, textStatus, errorThrown) { console.log("There was an error:", textStatus, errorThrown)});
+{% from "_helpers.html" import render_button %}
 
-    var contents2 = [];
-      $.getJSON(APP_ROOT + '_add_top_k/bloemen', {k: 10})
-      .done(function( data) {
-        $.each (data.result, function (idx) {
-          contents2.push({ label: data.result[idx].label, y: data.result[idx].y });
-        });
-        var chart = new CanvasJS.Chart("chartContainer_flower", {
-          theme: "theme2",//theme1
-          title:{
-            text: "Top 10 bloemen en planten"
-          },
-          animationEnabled: true,   // change to true
-          data: [
-          {
-            // Change type to "bar", "area", "spline", "pie",etc.
-            type: "column",
-            dataPoints: contents2,
-            click: onClick
-          }
-          ],
-          axisX: {
-            labelFontSize: 19,
-          },
-          axisY:{
-            valueFormatString: "##%",
-            labelFontSize: 20,
-          }
-        });
-        chart.render();
-      })
-      .fail( function(jqXHR, textStatus, errorThrown) { console.log("There was an error:", textStatus, errorThrown)});
+<div class="row">
+  <div class="col-md-8">
+    <p>
+      Hieronder de top 10 meest besproken trefwoorden op Twitter in de groepen <a href="{{ url_for("horti.view_group", group="bloemen") }}">Bloemen</a> en <a href="{{ url_for("horti.view_group", group="groente_en_fruit") }}">Groente en Fruit</a> van {{ start }} tot {{ end }}.
+    </p>
+  </div>
+  <div class="col-md-4 text-right">
+    {{ render_button("horti.home", {}, period, "day", "Dag") }}
+    {{ render_button("horti.home", {}, period, "week", "Week") }}
+    {{ render_button("horti.home", {}, period, "month", "Maand") }}
+  </div>
+</div>
 
-    function onClick(e) {
-      window.open(APP_ROOT + "keywords/" + e.dataPoint.label);
-    }
-
-  }
-</script>
+<br>
 
 <div id="chartContainer_flower" style="height: 300px; width: 100%;"></div>
 <br>
@@ -84,4 +28,10 @@
 <br>
 <br>
 <div>Laatste synchronisatietijd: {{sync_time}}</div>
+
+<script type="text/javascript">
+ var bloemen = {{ bloemen|safe }};
+ var groente_en_fruit = {{ groente_en_fruit|safe }};
+</script>
+<script src="{{ url_for("horti.static", filename="home.js") }}"></script>
 {% endblock %}

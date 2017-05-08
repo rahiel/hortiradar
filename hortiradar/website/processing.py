@@ -100,8 +100,7 @@ def get_process_top_params(group):
     }
     return params
 
-def process_top(group, max_amount, force_refresh=False, cache_time=CACHE_TIME):
-    params = get_process_top_params(group)
+def process_top(group, max_amount, params, force_refresh=False, cache_time=CACHE_TIME):
     counts = cache(tweety.get_keywords, force_refresh=force_refresh, cache_time=cache_time, **params)
     total = sum([entry["count"] for entry in counts])
 

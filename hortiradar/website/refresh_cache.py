@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import ujson as json
 
 from hortiradar import time_format
-from processing import redis, get_cache_key, process_top, process_details, round_time
+from processing import redis, get_cache_key, get_process_top_params, process_top, process_details, round_time
 
 
 def main():
@@ -24,13 +24,13 @@ def main():
     for group in groups:
         if args.verbose:
             print("Caching group: {}".format(group))
-        key = get_cache_key(process_top, group, max_amount)
-        data = process_top(group, max_amount, force_refresh=True, cache_time=cache_time)
+        arguments = (group, max_amount, get_process_top_params(group))
+        key = get_cache_key(process_top, *arguments)
+        data = process_top(*arguments, force_refresh=True, cache_time=cache_time)
         group_data.append((key, data))
 
     end = round_time(datetime.utcnow())
-    interval = 60 * 60 * 24 * 7
-    start = end + timedelta(seconds=-interval)
+    start = end - timedelta(weeks=1)
     params = {"start": start.strftime(time_format), "end": end.strftime(time_format)}
     keyword_data = []
     for (_, group) in group_data:

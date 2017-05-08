@@ -5,3 +5,11 @@
     <li><a href="{{ url_for(base_page, **page_kwargs) }}">{{label}}</a></li>
   {% endif %}
 {% endmacro %}
+
+{% macro render_button(route, route_kwargs, period, period_button, period_label) %}
+  {% if period_button == period %}
+    <a class="btn btn-primary" href="{{ url_for(route, period=period_button, **route_kwargs) }}" role="button">{{ period_label }}</a>
+  {% else %}
+    <a class="btn btn-default" href="{{ url_for(route, period=period_button, **route_kwargs) }}" role="button">{{ period_label }}</a>
+  {% endif %}
+{% endmacro %}

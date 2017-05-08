@@ -1,5 +1,6 @@
 module.exports = {
     entry: {
+        home: "./home.ts",
         keyword: "./keyword.ts",
         loading: "./loading.ts"
     },

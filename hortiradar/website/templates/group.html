@@ -1,15 +1,29 @@
 {% extends "base.html" %}
 {% set active_page = "horti.view_group(%s)" % group %}
 {% block content %}
+
+{% from "_helpers.html" import render_button %}
+
+<h1>{{ group }}</h1>
+
 <div class="row">
   <div class="col-md-8">
-    <h1>{{ group }}</h1>
     <p>
-      In de laatste 24 uur zijn er {{ total }} tweets gevonden in de groep {{ group }}.
+      Van {{ start }} tot {{ end }} zijn er {{ total }} tweets gevonden in de groep {{ group }}.
       Hieronder het overzicht. Het percentage is van het totaal aantal tweets in
       deze groep.
     </p>
 
+  </div>
+  <div class="col-md-4 text-right">
+    {{ render_button("horti.view_group", {"group": group}, period, "day", "Dag") }}
+    {{ render_button("horti.view_group", {"group": group}, period, "week", "Week") }}
+    {{ render_button("horti.view_group", {"group": group}, period, "month", "Maand") }}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
     <table class="table">
       <thead>
         <tr>
