@@ -28,8 +28,8 @@ function render_chart(data: any, chartContainer: string, title: string) {
     chart.render();
 }
 
-render_chart(groente_en_fruit, "chartContainer_fruit", "Top 10 groenten en fruit")
-render_chart(bloemen, "chartContainer_flower", "Top 10 bloemen en planten")
+render_chart(groente_en_fruit, "chartContainer_fruit", "Top 10 Groente en Fruit")
+render_chart(bloemen, "chartContainer_flower", "Top 10 Bloemen en Planten")
 
 
 function onClick(e) {

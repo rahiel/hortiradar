@@ -102,9 +102,14 @@ def get_period(request, default_period=""):
     return period, start, end
 
 def display_datetime(dt):
+    """Render UTC datetimes to Amsterdam local time."""
     babel_datetime_format = "EEEE d MMMM HH:mm y"
     dutch_timezone = get_timezone("Europe/Amsterdam")
     return format_datetime(dt, babel_datetime_format, tzinfo=dutch_timezone, locale="nl")
+
+def display_group(group: str):
+    """Render an internal group name suitable for display."""
+    return {"bloemen": "Bloemen en Planten", "groente_en_fruit": "Groente en Fruit"}.get(group)
 
 @bp.route("/")
 def home():
@@ -163,14 +168,14 @@ def view_group(group):
     nums = range(1, len(keywords) + 1)
     template_data = {
         "nums_keywords": zip(nums, keywords),
-        "group": group,
+        "group": display_group(group),
         "nums": nums,
         "total": format_number(total),
         "period": period,
         "start": display_datetime(start),
         "end": display_datetime(end)
     }
-    return render_template("group.html", title=make_title(group), **template_data)
+    return render_template("group.html", title=make_title(template_data["group"]), **template_data)
 
 @bp.route("/keywords/<keyword>")
 def view_keyword(keyword):
