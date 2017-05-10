@@ -8,7 +8,7 @@
 
 <div class="row">
   <div class="col-md-8">
-    <p>Hieronder de analyse van tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}.</p>
+    <p>Hieronder de analyse van {{ num_tweets }} tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}.</p>
   </div>
   <div class="col-md-4 text-right">
     {{ render_button("horti.view_keyword", {"keyword": keyword}, period, "day", "Dag") }}
@@ -67,7 +67,7 @@
   </div>
   <div class="col-md-6">
     <h2 class="text-center">Tweets</h2>
-    {% for t in range(num_tweets) %}
+    {% for t in range(display_tweets) %}
       <div id="tweet{{t}}"></div>
     {% endfor %}
   </div>
@@ -75,7 +75,7 @@
 
 <script type="text/javascript">
  var keyword_data = {{ keyword_data|safe }};
- var num_tweets = {{ num_tweets }};
+ var display_tweets = {{ display_tweets }};
 </script>
 
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqcloud/1.0.4/jqcloud-1.0.4.min.js"></script>

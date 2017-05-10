@@ -3,7 +3,7 @@ const URLSearchParams = require("url-search-params");
 
 declare const APP_ROOT: string;
 declare const keyword_data: any;
-declare const num_tweets: number;
+declare const display_tweets: number;
 const searchParams = new URLSearchParams(window.location.search);
 
 
@@ -36,7 +36,7 @@ window.onload = function () {
     });
     chart.render();
 
-    for (let i = 0; i < num_tweets; i++) {
+    for (let i = 0; i < display_tweets; i++) {
         let tweet = document.getElementById(`tweet${i}`);
         twttr.widgets.createTweet(data.tweets[i], tweet, {
             conversation: "none",

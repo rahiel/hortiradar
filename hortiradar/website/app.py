@@ -199,16 +199,20 @@ def view_keyword(keyword):
         photos = [(photos[i], photos[i+1]) for i in range(0, len(photos)-1, 2)]
     del keyword_data["photos"]
 
-    num_tweets = 11
-    keyword_data["tweets"] = keyword_data["tweets"][:num_tweets]
+    display_tweets = 11
+    keyword_data["tweets"] = keyword_data["tweets"][:display_tweets]
+
+    num_tweets = keyword_data["num_tweets"]
+    del keyword_data["num_tweets"]
 
     keyword_data = json.dumps(keyword_data)
     template_data = {
         "keyword": keyword,
         "keyword_data": keyword_data,
+        "num_tweets": format_number(num_tweets),
         "urls": urls,
         "photos": photos,
-        "num_tweets": num_tweets,
+        "display_tweets": display_tweets,
         "start": display_datetime(start),
         "end": display_datetime(end),
         "period": period
