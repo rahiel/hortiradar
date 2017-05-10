@@ -108,6 +108,7 @@ fluweelpoot,N
 framboos,N
 frisee,N
 fruit,N
+gavoorkleur,N
 gember,N
 goabonen,N
 granaatappel,N
