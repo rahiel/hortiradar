@@ -13,32 +13,23 @@ window.onload = function () {
     let timeSeries = [];
     let query_interval;
 
-    if (searchParams.get("end") === null) {
-        query_interval = 60*60*24*7;
-    } else {
-        query_interval = 60*60;
-    }
-
     for (let p of data.timeSeries) {
         timeSeries.push({
-            x: new Date(p.year, p.month-1, p.day, p.hour),
-            y: p.value
+            x: new Date(Date.UTC(p.year, p.month-1, p.day, p.hour)),
+            y: p.count
         });
     }
 
     let chart = new CanvasJS.Chart("splineContainer", {
-        // title:{
-        //   text: "Time Series of tweets for "+Url.get.product
-        // },
-        animationEnabled: true,   // change to true
+        animationEnabled: true,
         axisX: {
-            valueFormatString: "YYYY-MM-DD HH",
+            valueFormatString: "D-M-YYYY HH:00",
             interval: 6,
             intervalType: "hour",
             labelAngle: 50
         },
         data: [{
-            type: "line", //change it to line, area, column, pie, etc
+            type: "line",
             dataPoints: timeSeries,
             click: onClick
         }]
@@ -79,11 +70,12 @@ window.onload = function () {
     });
 
     function onClick(e) {
-        let year = String(e.dataPoint.x.getFullYear())
-        let month = String(e.dataPoint.x.getMonth() + 1)
-        let day = String(e.dataPoint.x.getDate())
-        let hour = String(e.dataPoint.x.getHours())
-        let end = year + "-" + month + "-" + day + " " + hour + ":00";
-        window.open(window.location.href + "&end=" + end)
+        let year = String(e.dataPoint.x.getUTCFullYear())
+        let month = String(e.dataPoint.x.getUTCMonth() + 1)
+        let day = String(e.dataPoint.x.getUTCDate())
+        let hour = String(e.dataPoint.x.getUTCHours())
+        let start = year + "-" + month + "-" + day + "T" + hour + ":00";
+        let interval = 60 * 60;  // clicking on a point shows data of an hour
+        window.open(window.location.pathname + "?start=" + start + "&interval=" + interval.toString());
     }
 }

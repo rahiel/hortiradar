@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from hashlib import md5
 from types import FunctionType
 from typing import Sequence
+import urllib.parse
 
 import ujson as json
 from celery import Celery
@@ -63,7 +64,7 @@ def cache(func, *args, path=None, **kwargs):
             if not loading:
                 redis.set(loading_id, b"loading", ex=loading_cache_time)
                 cache_request.apply_async((func.__name__, args, kwargs, cache_time, key, loading_id), queue="web")
-            return redirect("/hortiradar/loading/{}?redirect={}".format(loading_id.split(":", 1)[1], path))
+            return redirect("/hortiradar/loading/{}?redirect={}".format(loading_id.split(":", 1)[1], urllib.parse.quote(path)))
         else:
             redis.set(loading_id, b"loading", ex=loading_cache_time)
             response = func(*args, force_refresh=force_refresh, cache_time=cache_time, **kwargs)
@@ -180,11 +181,11 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     tsStart = sorted(tsDict)[0]
     tsEnd = sorted(tsDict)[-1]
     temp = datetime(tsStart[0], tsStart[1], tsStart[2], tsStart[3], 0, 0)
-    while temp < datetime(tsEnd[0], tsEnd[1], tsEnd[2], tsEnd[3], 0, 0):
+    while temp <= datetime(tsEnd[0], tsEnd[1], tsEnd[2], tsEnd[3], 0, 0):
         if (temp.year, temp.month, temp.day, temp.hour) in tsDict:
-            ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "value": tsDict[(temp.year, temp.month, temp.day, temp.hour)]})
+            ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": tsDict[(temp.year, temp.month, temp.day, temp.hour)]})
         else:
-            ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "value": 0})
+            ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": 0})
 
         temp += timedelta(hours=1)
 

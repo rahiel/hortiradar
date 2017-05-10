@@ -81,7 +81,16 @@ def get_req_path(request):
 
 def get_period(request, default_period=""):
     period = request.args.get("period", default_period, type=str)
-    if period:
+    interval = request.args.get("interval", None, type=int)
+    if interval:
+        period = "undefined"
+        start = request.args.get("start", "", type=str)
+        if start:
+            start = datetime.strptime(start, "%Y-%m-%dT%H:%M")
+        else:
+            start = round_time(datetime.utcnow())
+        end = start + timedelta(seconds=interval)
+    elif period and period in ["day", "week", "month"]:
         end = round_time(datetime.utcnow())
         if period == "day":
             start = end - timedelta(days=1)
@@ -90,15 +99,6 @@ def get_period(request, default_period=""):
         elif period == "month":
             start = end - timedelta(days=30)
         start = round_time(start)
-    else:                       # TODO: sort out interval
-        period = "week"
-        interval = request.args.get("interval", 60 * 60 * 24 * 7, type=int)
-        end = request.args.get("end", "", type=str)
-        if end:
-            end = datetime.strptime(end, "%Y-%m-%d %H:%M") + timedelta(hours=1)
-        else:
-            end = round_time(datetime.utcnow())
-        start = end + timedelta(seconds=-interval)
     return period, start, end
 
 def display_datetime(dt):
