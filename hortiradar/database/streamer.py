@@ -9,7 +9,6 @@ from redis import StrictRedis
 from requests import ConnectionError, Timeout
 from requests.packages.urllib3.exceptions import ProtocolError, ReadTimeoutError
 
-from keywords import get_db
 from tasks_workers import find_keywords_and_groups
 
 
@@ -26,8 +25,6 @@ class StreamListener(tweepy.StreamListener):
     """
     def __init__(self, api):
         self.api = api
-        self.db = get_db()
-        self.tweets = self.db.tweets  # Mongo collection
 
     def on_status(self, status):
         """Handle arrival of a new tweet."""
