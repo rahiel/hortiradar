@@ -1,10 +1,12 @@
 import argparse
-from datetime import datetime, timedelta
+from datetime import datetime
 
+import flask
 import ujson as json
 
+from app import app, get_period
 from hortiradar import time_format
-from processing import redis, get_cache_key, get_process_top_params, process_top, process_details, round_time
+from processing import get_cache_key, get_process_top_params, process_details, process_top, redis
 
 
 def main():
@@ -29,8 +31,8 @@ def main():
         data = process_top(*arguments, force_refresh=True, cache_time=cache_time)
         group_data.append((key, data))
 
-    end = round_time(datetime.utcnow())
-    start = end - timedelta(weeks=1)
+    with app.test_request_context("/?period=week"):
+        _, start, end, _ = get_period(flask.request, "week")
     params = {"start": start.strftime(time_format), "end": end.strftime(time_format)}
     keyword_data = []
     for (_, group) in group_data:

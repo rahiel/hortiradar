@@ -11,7 +11,6 @@ window.onload = function () {
     let data = keyword_data;
     let contents = [];
     let timeSeries = [];
-    let query_interval;
 
     for (let p of data.timeSeries) {
         timeSeries.push({
@@ -75,7 +74,6 @@ window.onload = function () {
         let day = String(e.dataPoint.x.getUTCDate())
         let hour = String(e.dataPoint.x.getUTCHours())
         let start = year + "-" + month + "-" + day + "T" + hour + ":00";
-        let interval = 60 * 60;  // clicking on a point shows data of an hour
-        window.open(window.location.pathname + "?start=" + start + "&interval=" + interval.toString());
+        window.open(window.location.pathname + "?start=" + start + "&period=hour");
     }
 }

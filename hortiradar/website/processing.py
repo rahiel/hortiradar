@@ -48,9 +48,7 @@ def get_cache_key(func, *args, **kwargs):
 
 # tweety methods return json string
 # internal app functions return python dicts/lists
-def cache(func, *args, path=None, **kwargs):
-    force_refresh = kwargs.pop("force_refresh", None) or False
-    cache_time = kwargs.pop("cache_time", None) or CACHE_TIME
+def cache(func, *args, cache_time=CACHE_TIME, force_refresh=False, path=None, **kwargs):
     loading_cache_time = 60 * 10
     key = get_cache_key(func, *args, **kwargs)
     v = redis.get(key)
@@ -88,12 +86,17 @@ def mark_as_spam(ids: Sequence[str]):
     for id_str in ids:
         tweety.patch_tweet(id_str, data=json.dumps({"spam": 0.8}))
 
-def round_time(dt):
-    """Returns the floor (to the hour) of a datetime object."""
-    return dt - timedelta(minutes=dt.minute, seconds=dt.second, microseconds=dt.microsecond)
+def floor_time(dt, *, hour=False, day=False):
+    if hour:
+        return dt - timedelta(minutes=dt.minute, seconds=dt.second, microseconds=dt.microsecond)
+    elif day:
+        return dt - timedelta(hours=dt.hour, minutes=dt.minute, seconds=dt.second, microseconds=dt.microsecond)
+    else:
+        return Exception("Missing keyword argument")
+
 
 def get_process_top_params(group):
-    end = round_time(datetime.utcnow())
+    end = floor_time(datetime.utcnow(), hour=True)
     start = end + timedelta(days=-1)
     params = {
         "start": start.strftime(time_format), "end": end.strftime(time_format),

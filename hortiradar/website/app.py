@@ -15,7 +15,7 @@ from hortiradar import TOKEN, Tweety, time_format
 from hortiradar.database import GROUPS
 from hortiradar.website import app, db
 from models import User
-from processing import cache, process_details, process_top, round_time
+from processing import cache, floor_time, process_details, process_top
 
 
 bp = Blueprint("horti", __name__, template_folder="templates", static_folder="static")
@@ -81,25 +81,31 @@ def get_req_path(request):
 
 def get_period(request, default_period=""):
     period = request.args.get("period", default_period, type=str)
-    interval = request.args.get("interval", None, type=int)
-    if interval:
-        period = "undefined"
-        start = request.args.get("start", "", type=str)
-        if start:
-            start = datetime.strptime(start, "%Y-%m-%dT%H:%M")
-        else:
-            start = round_time(datetime.utcnow())
-        end = start + timedelta(seconds=interval)
-    elif period and period in ["day", "week", "month"]:
-        end = round_time(datetime.utcnow())
+    if period in ["day", "week", "month"]:
         if period == "day":
+            end = floor_time(datetime.utcnow(), hour=True)
             start = end - timedelta(days=1)
+            cache_time = 60 * 60
         elif period == "week":
+            end = floor_time(datetime.utcnow(), hour=True)
             start = end - timedelta(weeks=1)
+            cache_time = 60 * 60
         elif period == "month":
+            end = floor_time(datetime.utcnow(), day=True)
             start = end - timedelta(days=30)
-        start = round_time(start)
-    return period, start, end
+            cache_time = 60 * 60 * 24
+    elif period == "hour":
+        # when clicking on data points in the time series
+        start = request.args.get("start", "", type=str)
+        start = floor_time(datetime.strptime(start, "%Y-%m-%dT%H:%M"), hour=True)
+        end = start + timedelta(hours=1)
+        cache_time = 60 * 60 * 12
+    else:
+        period = "day"
+        end = floor_time(datetime.utcnow(), hour=True)
+        start = end - timedelta(days=1)
+        cache_time = 60 * 60
+    return period, start, end, cache_time
 
 def display_datetime(dt):
     """Render UTC datetimes to Amsterdam local time."""
@@ -109,7 +115,7 @@ def display_datetime(dt):
 
 def display_group(group: str):
     """Render an internal group name suitable for display."""
-    return {"bloemen": "Bloemen en Planten", "groente_en_fruit": "Groente en Fruit"}.get(group)
+    return {"bloemen": "Bloemen en Planten", "groente_en_fruit": "Groente en Fruit"}.get(group, group)
 
 @bp.route("/")
 def home():
@@ -118,11 +124,11 @@ def home():
         sync_time = sync_time.decode("utf-8")
 
     max_amount = request.args.get("k", 10, type=int)
-    period, start, end = get_period(request, "day")
+    period, start, end, cache_time = get_period(request, "day")
     params = {"start": start.strftime(time_format), "end": end.strftime(time_format), "group": "bloemen"}
-    bloemen = cache(process_top, "bloemen", max_amount, params, path=get_req_path(request))
+    bloemen = cache(process_top, "bloemen", max_amount, params, cache_time=cache_time, path=get_req_path(request))
     params["group"] = "groente_en_fruit"
-    groente_en_fruit = cache(process_top, "groente_en_fruit", max_amount, params, path=get_req_path(request))
+    groente_en_fruit = cache(process_top, "groente_en_fruit", max_amount, params, cache_time=cache_time, path=get_req_path(request))
 
     if isinstance(bloemen, Response):
         return bloemen
@@ -143,9 +149,9 @@ def home():
 def top_widget(group):
     """A small widget showing the top 5 in the group."""
     max_amount = 10  # this is 10, so we re-use the cached data from the top 10
-    _, start, end = get_period(request, "day")
+    _, start, end, cache_time = get_period(request, "day")
     params = {"start": start.strftime(time_format), "end": end.strftime(time_format), "group": group}
-    data = cache(process_top, group, max_amount, params)[:5]
+    data = cache(process_top, group, max_amount, params, cache_time=cache_time)[:5]
     data = [d["label"] for d in data]
     return render_template("widget.html", data=data)
 
@@ -156,9 +162,9 @@ def view_groups():
 
 @bp.route("/groups/<group>")
 def view_group(group):
-    period, start, end = get_period(request, "day")
+    period, start, end, cache_time = get_period(request, "day")
     params = {"start": start.strftime(time_format), "end": end.strftime(time_format), "group": group}
-    keywords = cache(tweety.get_keywords, path=get_req_path(request), **params)
+    keywords = cache(tweety.get_keywords, cache_time=cache_time, path=get_req_path(request), **params)
     if isinstance(keywords, Response):
         return keywords
     total = sum([entry["count"] for entry in keywords])
@@ -168,7 +174,8 @@ def view_group(group):
     nums = range(1, len(keywords) + 1)
     template_data = {
         "nums_keywords": zip(nums, keywords),
-        "group": display_group(group),
+        "group": group,
+        "disp_group": display_group(group),
         "nums": nums,
         "total": format_number(total),
         "period": period,
@@ -179,9 +186,9 @@ def view_group(group):
 
 @bp.route("/keywords/<keyword>")
 def view_keyword(keyword):
-    period, start, end = get_period(request, "week")
+    period, start, end, cache_time = get_period(request, "week")
     params = {"start": start.strftime(time_format), "end": end.strftime(time_format)}
-    keyword_data = cache(process_details, keyword, params, path=get_req_path(request))
+    keyword_data = cache(process_details, keyword, params, cache_time=cache_time, path=get_req_path(request))
     if isinstance(keyword_data, Response):
         return keyword_data
 
@@ -247,7 +254,7 @@ def page_not_found(error):
 @bp.route("/_get_clusters")
 def show_clusters():
     # TODO: currently loading in file with clusters, implement caching of clusters
-    now = round_time(datetime.utcnow())
+    now = floor_time(datetime.utcnow(), hour=True)
     cluster_file = now.strftime("%Y%m%d_%H_clusters.json")
     with open(cluster_file) as f:
         clusters = json.load(f)
