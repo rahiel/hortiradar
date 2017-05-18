@@ -44,7 +44,7 @@ def get_cache_key(func, *args, **kwargs):
         str(arguments),
         str(sort_dict(kwargs))
     )
-    return json.dumps(":".join(k))
+    return json.dumps("cache:" + ":".join(k))
 
 # tweety methods return json string
 # internal app functions return python dicts/lists
