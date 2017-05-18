@@ -138,14 +138,16 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
     for tw in tweets:
         tweet = tw["tweet"]
-        tokens = [t["lemma"] for t in tw["tokens"]]
+        lemmas = [t["lemma"] for t in tw["tokens"]]
+        texts = [t["text"].lower() for t in tw["tokens"]]  # unlemmatized words
+        words = list(set(lemmas + texts))                  # to check for obscene words
 
-        if any(obscene_words.get(t) for t in tokens):
+        if any(obscene_words.get(t) for t in words):
             spam_list.append(tweet["id_str"])
             continue
 
         tweetList.append(tweet["id_str"])
-        wordCloudDict.update(tokens)
+        wordCloudDict.update(lemmas)
 
         dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
         tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
