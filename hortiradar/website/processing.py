@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from hashlib import md5
 from types import FunctionType
 from typing import Sequence
+import random
 import urllib.parse
 
 import ujson as json
@@ -213,7 +214,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         urls.append({"link": url, "occ": count})
 
     data = {
-        "tweets": tweetList[::-1],
+        "tweets": random.sample(tweetList[::-1], 20),
         "num_tweets": len(tweetList),
         "timeSeries": ts,
         "URLs": urls,
