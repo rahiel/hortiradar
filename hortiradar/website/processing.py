@@ -136,6 +136,8 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     tsDict = Counter()
     mapLocations = []
     spam_list = []
+    nodes = {}
+    edges = []
 
     for tw in tweets:
         tweet = tw["tweet"]
@@ -152,6 +154,40 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
         dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
         tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
+
+        try:
+            if tweet["retweeted_status"]["user"]["id_str"] not in nodes:
+                nodes[tweet["retweeted_status"]["user"]["id_str"]] = tweet["retweeted_status"]["user"]["screen_name"]
+
+            if tweet["user"]["id_str"] not in nodes:
+                nodes[tweet["user"]["id_str"]] = tweet["user"]["screen_name"]
+
+            edges.append({"source": tweet["retweeted_status"]["user"]["id_str"], "target": tweet["user"]["id_str"], "value": "retweet"})
+        except KeyError:
+            pass
+
+        try:
+            for obj in tweet["entities"]["user_mentions"]:
+                if obj["id_str"] not in nodes:
+                    nodes[obj["id_str"]] = obj["screen_name"]
+
+                if tweet["user"]["id_str"] not in nodes:
+                    nodes[tweet["user"]["id_str"]] = tweet["user"]["screen_name"]
+
+                edges.append({"source": tweet["user"]["id_str"], "target": obj["id_str"], "value": "mention"})
+        except KeyError:
+            pass
+
+        try:
+            if tweet["in_reply_to_user_id_str"] not in nodes:
+                nodes[tweet["in_reply_to_user_id_str"]] = tweet["in_reply_to_screen_name"]
+            
+            if tweet["user"]["id_str"] not in nodes:
+                nodes[tweet["user"]["id_str"]] = tweet["user"]["screen_name"]
+
+            edges.append({"source": tweet["user"]["id_str"], "target": tweet["in_reply_to_user_id_str"], "value": "reply"})
+        except KeyError:
+            pass
 
         try:
             for obj in tweet["entities"]["media"]:
@@ -213,6 +249,13 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     for (url, count) in Counter(URLList).most_common():
         urls.append({"link": url, "occ": count})
 
+    graph = {"nodes": [], "edges": []}
+    for node in nodes:
+        graph["nodes"].append({"id": nodes[node]})
+
+    for edge in edges:
+        graph["edges"].append({"source": nodes[edge["source"]], "target": nodes[edge["target"]], "value": edge["value"]})
+
     data = {
         "tweets": random.sample(tweetList[::-1], 20),
         "num_tweets": len(tweetList),
@@ -221,7 +264,8 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         "photos": images,
         "tagCloud": wordCloud,
         "locations": mapLocations,
-        "centerloc": avLoc
+        "centerloc": avLoc,
+        "graph": graph
     }
     return data
 
