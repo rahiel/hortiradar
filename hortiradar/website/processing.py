@@ -251,7 +251,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         graph["edges"].append({"source": nodes[edge["source"]], "target": nodes[edge["target"]], "value": edge["value"]})
 
     data = {
-        "tweets": random.sample(tweetList[::-1], 20),
+        "tweets": random.sample(tweetList[::-1], min(20, len(tweetList))),
         "num_tweets": len(tweetList),
         "timeSeries": ts,
         "URLs": urls,
