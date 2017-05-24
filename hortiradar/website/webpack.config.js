@@ -2,6 +2,7 @@ module.exports = {
     entry: {
         home: "./home.ts",
         keyword: "./keyword.ts",
+        interaction_graph: "./interaction_graph.ts",
         loading: "./loading.ts"
     },
     output: {

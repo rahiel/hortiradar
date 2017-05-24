@@ -17,3 +17,4 @@ under the conditions as described in the Apache-2.0 license, included in
 own conditions:
 
 - [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/): `./hortiradar/database/data/obscene_words.txt`
+- [GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.en.html): `./hortiradar/website/interaction_graph.ts`

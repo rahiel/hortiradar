@@ -212,12 +212,15 @@ def view_keyword(keyword):
     num_tweets = keyword_data["num_tweets"]
     del keyword_data["num_tweets"]
 
-    keyword_data = json.dumps(keyword_data)
+    graph = keyword_data["graph"]
+    del keyword_data["graph"]
+
     template_data = {
         "keyword": keyword,
-        "keyword_data": keyword_data,
+        "keyword_data": json.dumps(keyword_data),
         "num_tweets": format_number(num_tweets),
         "urls": urls,
+        "graph": json.dumps(graph),
         "photos": photos,
         "display_tweets": display_tweets,
         "start": display_datetime(start),
