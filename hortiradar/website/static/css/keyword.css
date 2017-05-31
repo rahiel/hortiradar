@@ -34,7 +34,7 @@
     float: left;
 }
 
-#text {
+.imgText {
     z-index:100;
     position:absolute;
     background: rgb(0, 0, 0); /* fallback color */
@@ -44,4 +44,23 @@
     left:5px;
     top:5px;
     padding: 10px;
+}
+
+/* interaction graph */
+.links line {
+    stroke-opacity: 0.7;
+    stroke-width: 1px;
+    fill: none;
+}
+
+.nodes circle {
+    pointer-events: all;
+    stroke: none;
+    stroke-width: 40px;
+}
+
+text {
+    fill: #000;
+    font: 10px sans-serif;
+    pointer-events: none;
 }

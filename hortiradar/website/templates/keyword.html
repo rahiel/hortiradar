@@ -51,8 +51,8 @@
 
 <div class="row">
   <div class="col-md-12">
-    <h2 class="text-center">Interactie Graaf</h2>
-    <canvas id="interactionGraph" width="960" height="600"></canvas>
+    <h2 class="text-center">Interactie Netwerk</h2>
+    <svg id="interactionGraph" width="960" height="600"></svg>
   </div>
 </div>
 
@@ -61,10 +61,10 @@
     <h2 class="text-center">Foto's</h2>
     {% for (p1, p2) in photos %}
       <div id="photoContainer">
-        <img class="twitImage" src="{{ p1["link"] }}"><span id="text">{{ p1["occ"] }}</span>
+        <img class="twitImage" src="{{ p1["link"] }}"><span class="imgText">{{ p1["occ"] }}</span>
       </div>
       <div id="photoContainer">
-        <img class="twitImage" src="{{ p2["link"] }}"><span id="text">{{ p2["occ"] }}</span>
+        <img class="twitImage" src="{{ p2["link"] }}"><span class="imgText">{{ p2["occ"] }}</span>
       </div>
       <br>
     {% endfor %}

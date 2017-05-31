@@ -1,85 +1,118 @@
-// based on: https://bl.ocks.org/mbostock/ad70335eeef6d167bc36fd3c04378048
+// based on: https://bl.ocks.org/mbostock/2675ff61ea5e063ede2b5d63c08020c7, https://bl.ocks.org/mbostock/4e3925cdc804db257a86fdef3a032a45
 // License:	GPL-3.0 (https://opensource.org/licenses/GPL-3.0)
 import * as d3 from "d3";
 
 declare const graph: any;
 
-let canvas = <HTMLCanvasElement> document.getElementById("interactionGraph");
-let context = canvas.getContext("2d");
-let width = canvas.width;
-let height = canvas.height;
+let svg = d3.select("svg");
+let width = +svg.attr("width");
+let height = +svg.attr("height");
 
+let colorMap = {"retweet": "#ffbb2b", "mention": "#00ff00", "reply": "#0000ff"};
+
+svg.append("rect")
+    .attr("width", width)
+    .attr("height", height)
+    .style("fill", "none")
+    .style("pointer-events", "all")
+    .call(d3.zoom()
+          .scaleExtent([1 / 2, 4])
+          .on("zoom", zoomed));
+
+// build the arrow.
+svg.append("svg:defs").selectAll("marker")
+    .data(["end"])      // Different link/path types can be defined here
+    .enter().append("svg:marker")    // This section adds in the arrows
+    .attr("id", String)
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 15)
+    .attr("refY", -1.5)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+    .append("svg:path")
+    .attr("d", "M0,-5L10,0L0,5");
+
+let g = svg.append("g");
+
+function zoomed() {
+    g.attr("transform", d3.event.transform);
+}
 
 let simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function (d: any) { return d.id; }))
-    .force("charge", d3.forceManyBody())
+    .force("link", d3.forceLink().id(function(d) { return d.id; }))
+    .force("charge", d3.forceManyBody().distanceMax(300))
     .force("center", d3.forceCenter(width / 2, height / 2));
 
-function main(graph) {
-    simulation
-        .nodes(graph.nodes)
-        .on("tick", ticked);
+let link = g.append("g")
+    .attr("class", "links")
+    .selectAll("line")
+    .data(graph.edges)
+    .enter().append("line")
+    .attr("stroke", function(d) { return colorMap[d.value]; })
+    .attr("marker-end", "url(#end)");
 
-    simulation.force("link")
-        .links(graph.edges);
+let node = g.append("g")
+    .attr("class", "nodes")
+    .selectAll("circle")
+    .data(graph.nodes)
+    .enter().append("circle")
+    .attr("r", 2.5)
+    .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
 
-    d3.select(canvas)
-        .call(d3.drag()
-              .container(canvas)
-              .subject(dragsubject)
-              .on("start", dragstarted)
-              .on("drag", dragged)
-              .on("end", dragended));
+let text = g.append("g")
+    .attr("class", "labels")
+    .selectAll("g")
+    .data(graph.nodes)
+    .enter().append("g");
 
-    function ticked() {
-        context.clearRect(0, 0, width, height);
+text.append("text")
+    .attr("x", 14)
+    .attr("y", ".31em")
+    .style("font-family", "sans-serif")
+    .style("font-size", "0.7em")
+    .text(function(d) { return d.id; });
 
-        context.beginPath();
-        graph.edges.forEach(drawLink);
-        context.strokeStyle = "#aaa";
-        context.stroke();
+node.append("title")            // mouseover
+    .text(function(d) { return d.id; });
 
-        context.beginPath();
-        graph.nodes.forEach(drawNode);
-        context.fill();
-        context.strokeStyle = "#fff";
-        context.stroke();
-    }
+simulation
+    .nodes(graph.nodes)
+    .on("tick", ticked);
 
-    function dragsubject() {
-        return simulation.find(d3.event.x, d3.event.y);
-    }
+simulation.force("link")
+    .links(graph.edges);
+
+function ticked() {
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+    text
+        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 }
 
-function dragstarted() {
-    if (!d3.event.active) {
-        simulation.alphaTarget(0.3).restart();
-    }
-    d3.event.subject.fx = d3.event.subject.x;
-    d3.event.subject.fy = d3.event.subject.y;
+function dragstarted(d) {
+    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
 }
 
-function dragged() {
-    d3.event.subject.fx = d3.event.x;
-    d3.event.subject.fy = d3.event.y;
+function dragged(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
 }
 
-function dragended() {
-    if (!d3.event.active) {
-        simulation.alphaTarget(0);
-    }
-    d3.event.subject.fx = null;
-    d3.event.subject.fy = null;
+function dragended(d) {
+    if (!d3.event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
 }
-
-function drawLink(d) {
-    context.moveTo(d.source.x, d.source.y);
-    context.lineTo(d.target.x, d.target.y);
-}
-
-function drawNode(d) {
-    context.moveTo(d.x + 3, d.y);
-    context.arc(d.x, d.y, 3, 0, 2 * Math.PI);
-}
-
-main(graph);
