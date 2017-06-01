@@ -214,16 +214,19 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
             wordCloud.append({"text": token, "weight": count})
 
     ts = []
-    tsStart = sorted(tsDict)[0]
-    tsEnd = sorted(tsDict)[-1]
-    temp = datetime(tsStart[0], tsStart[1], tsStart[2], tsStart[3], 0, 0)
-    while temp <= datetime(tsEnd[0], tsEnd[1], tsEnd[2], tsEnd[3], 0, 0):
-        if (temp.year, temp.month, temp.day, temp.hour) in tsDict:
-            ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": tsDict[(temp.year, temp.month, temp.day, temp.hour)]})
-        else:
-            ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": 0})
+    try:
+        tsStart = sorted(tsDict)[0]
+        tsEnd = sorted(tsDict)[-1]
+        temp = datetime(tsStart[0], tsStart[1], tsStart[2], tsStart[3], 0, 0)
+        while temp <= datetime(tsEnd[0], tsEnd[1], tsEnd[2], tsEnd[3], 0, 0):
+            if (temp.year, temp.month, temp.day, temp.hour) in tsDict:
+                ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": tsDict[(temp.year, temp.month, temp.day, temp.hour)]})
+            else:
+                ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": 0})
 
-        temp += timedelta(hours=1)
+            temp += timedelta(hours=1)
+    except IndexError:          # when there are 0 tweets
+        pass
 
     lng = 0
     lat = 0
