@@ -28,6 +28,9 @@ window.onload = function () {
             intervalType: "hour",
             labelAngle: 50
         },
+        axisY : {
+            title: "Aantal tweets"
+        },
         data: [{
             type: "line",
             dataPoints: timeSeries,
