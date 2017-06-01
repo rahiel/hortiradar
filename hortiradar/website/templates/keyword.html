@@ -51,7 +51,51 @@
 
 <div class="row">
   <div class="col-md-12">
-    <h2 class="text-center">Interactie Netwerk</h2>
+    <h2 class="text-center">
+      Interactie Netwerk
+      <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#graphModal"></span>
+    </h2>
+
+    <div class="modal fade" id="graphModal" tabindex="-1" role="dialog" aria-labelledby="graphModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="graphModalLabel">Interactie Netwerk</h4>
+          </div>
+          <div class="modal-body">
+            <p>
+              In het interactie netwerk zie je de interacties tussen gebruikers
+              die tweeten over "{{ keyword }}". De zwarte punten zijn de
+              gebruikers. Plaats de muis op een punt om in een tooltip de naam
+              van de gebruiker te lezen.
+            </p>
+            <p>
+              De lijntjes tussen de punten laten zien om wat voor interactie het
+              gaat. <span style="color: red;">Rode lijnen</span> zijn retweets,
+              <span style="color: green;">groene lijnen</span> zijn mentions en
+              <span style="color: blue;">blauwe lijnen</span> zijn replies.
+
+              De pijltjes tonen de richting van informatieoverdracht. Als A een
+              tweet van B retweet, gaat er informatie van B naar A en wijst de
+              pijl in het netwerk dus ook van B naar A. Als A een reply tweet
+              naar B, wijst A naar B. Als A in een tweet verwijst naar B met een
+              mention, dan wijst A naar B.
+            </p>
+            <p>
+              Je kan het netwerk bewegen door op een lege plek te klikken en te
+              slepen. Je kan ook in- en uitzoomen door op een lege plek te
+              klikken en te scrollen. Individuele gebruikers kan je vastklikken
+              en slepen.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <svg id="interactionGraph" width="960" height="600"></svg>
   </div>
 </div>

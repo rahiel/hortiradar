@@ -8,7 +8,7 @@ let svg = d3.select("svg");
 let width = +svg.attr("width");
 let height = +svg.attr("height");
 
-let colorMap = {"retweet": "#ffbb2b", "mention": "#00ff00", "reply": "#0000ff"};
+let colorMap = {"retweet": "red", "mention": "green", "reply": "blue"};
 
 svg.append("rect")
     .attr("width", width)

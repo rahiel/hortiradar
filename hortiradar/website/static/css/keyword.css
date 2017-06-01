@@ -46,6 +46,10 @@
     padding: 10px;
 }
 
+.glyphicon-question-sign:hover {
+    color: red;
+}
+
 /* interaction graph */
 .links line {
     stroke-opacity: 0.7;

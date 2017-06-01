@@ -155,33 +155,33 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
         tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
 
+        user_id_str = tweet["user"]["id_str"]
         if "retweeted_status" in tweet:
-            rt_id_str = tweet["retweeted_status"]["user"]["id_str"]
-            id_str = tweet["user"]["id_str"]
+            rt_user_id_str = tweet["retweeted_status"]["user"]["id_str"]
 
-            if rt_id_str not in nodes:
-                nodes[rt_id_str] = tweet["retweeted_status"]["user"]["screen_name"]
-            if id_str not in nodes:
-                nodes[id_str] = tweet["user"]["screen_name"]
+            if rt_user_id_str not in nodes:
+                nodes[rt_user_id_str] = tweet["retweeted_status"]["user"]["screen_name"]
+            if user_id_str not in nodes:
+                nodes[user_id_str] = tweet["user"]["screen_name"]
 
-            edges.append({"source": rt_id_str, "target": id_str, "value": "retweet"})
+            edges.append({"source": rt_user_id_str, "target": user_id_str, "value": "retweet"})
 
         if "user_mentions" in tweet["entities"]:
             for obj in tweet["entities"]["user_mentions"]:
                 if obj["id_str"] not in nodes:
                     nodes[obj["id_str"]] = obj["screen_name"]
-                if tweet["user"]["id_str"] not in nodes:
-                    nodes[tweet["user"]["id_str"]] = tweet["user"]["screen_name"]
+                if user_id_str not in nodes:
+                    nodes[user_id_str] = tweet["user"]["screen_name"]
 
-                edges.append({"source": tweet["user"]["id_str"], "target": obj["id_str"], "value": "mention"})
+                edges.append({"source": user_id_str, "target": obj["id_str"], "value": "mention"})
 
         if tweet["in_reply_to_user_id_str"]:
             if tweet["in_reply_to_user_id_str"] not in nodes:
                 nodes[tweet["in_reply_to_user_id_str"]] = tweet["in_reply_to_screen_name"]
-            if tweet["user"]["id_str"] not in nodes:
-                nodes[tweet["user"]["id_str"]] = tweet["user"]["screen_name"]
+            if user_id_str not in nodes:
+                nodes[user_id_str] = tweet["user"]["screen_name"]
 
-            edges.append({"source": tweet["user"]["id_str"], "target": tweet["in_reply_to_user_id_str"], "value": "reply"})
+            edges.append({"source": user_id_str, "target": tweet["in_reply_to_user_id_str"], "value": "reply"})
 
         try:
             for obj in tweet["entities"]["media"]:
