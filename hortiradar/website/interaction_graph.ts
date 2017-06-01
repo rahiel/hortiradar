@@ -1,4 +1,4 @@
-// based on: https://bl.ocks.org/mbostock/2675ff61ea5e063ede2b5d63c08020c7, https://bl.ocks.org/mbostock/4e3925cdc804db257a86fdef3a032a45
+// based on: https://bl.ocks.org/mbostock/2675ff61ea5e063ede2b5d63c08020c7, https://bl.ocks.org/mbostock/4e3925cdc804db257a86fdef3a032a45, http://bl.ocks.org/d3noob/5141278
 // License:	GPL-3.0 (https://opensource.org/licenses/GPL-3.0)
 import * as d3 from "d3";
 
@@ -25,10 +25,10 @@ svg.append("svg:defs").selectAll("marker")
     .enter().append("svg:marker")    // This section adds in the arrows
     .attr("id", String)
     .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 15)
-    .attr("refY", -1.5)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
+    .attr("refX", 13)
+    .attr("refY", -1.0)
+    .attr("markerWidth", 3.5)
+    .attr("markerHeight", 3.5)
     .attr("orient", "auto")
     .append("svg:path")
     .attr("d", "M0,-5L10,0L0,5");
@@ -40,16 +40,15 @@ function zoomed() {
 }
 
 let simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) { return d.id; }))
+    .force("link", d3.forceLink().id(function(d: any) { return d.id; }))
     .force("charge", d3.forceManyBody().distanceMax(300))
     .force("center", d3.forceCenter(width / 2, height / 2));
 
-let link = g.append("g")
-    .attr("class", "links")
-    .selectAll("line")
+let link = g.append("svg:g").selectAll("path")
     .data(graph.edges)
-    .enter().append("line")
-    .attr("stroke", function(d) { return colorMap[d.value]; })
+    .enter().append("svg:path")
+    .attr("class", "link")
+    .attr("stroke", function(d: any) { return colorMap[d.value]; })
     .attr("marker-end", "url(#end)");
 
 let node = g.append("g")
@@ -74,10 +73,10 @@ text.append("text")
     .attr("y", ".31em")
     .style("font-family", "sans-serif")
     .style("font-size", "0.7em")
-    .text(function(d) { return d.id; });
+    .text(function(d: any) { return d.id; });
 
 node.append("title")            // mouseover
-    .text(function(d) { return d.id; });
+    .text(function(d: any) { return d.id; });
 
 simulation
     .nodes(graph.nodes)
@@ -87,17 +86,23 @@ simulation.force("link")
     .links(graph.edges);
 
 function ticked() {
-    link
-        .attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+    link.attr("d", function(d: any) {
+        let dx = d.target.x - d.source.x;
+        let dy = d.target.y - d.source.y;
+        let dr = Math.sqrt(dx * dx + dy * dy);
+        return "M" +
+            d.source.x + "," +
+            d.source.y + "A" +
+            dr + "," + dr + " 0 0,1 " +
+            d.target.x + "," +
+            d.target.y;
+    });
 
     node
-        .attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
+        .attr("cx", function(d: any) { return d.x; })
+        .attr("cy", function(d: any) { return d.y; });
     text
-        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        .attr("transform", function(d: any) { return "translate(" + d.x + "," + d.y + ")"; });
 }
 
 function dragstarted(d) {

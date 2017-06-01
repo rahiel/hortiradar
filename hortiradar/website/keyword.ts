@@ -20,6 +20,7 @@ window.onload = function () {
     }
 
     let chart = new CanvasJS.Chart("splineContainer", {
+        title: {text: ""},
         animationEnabled: true,
         axisX: {
             valueFormatString: "D-M-YYYY HH:00",

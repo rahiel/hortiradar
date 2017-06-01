@@ -51,9 +51,9 @@
 }
 
 /* interaction graph */
-.links line {
+path.link {
     stroke-opacity: 0.7;
-    stroke-width: 1px;
+    stroke-width: 1.5px;
     fill: none;
 }
 

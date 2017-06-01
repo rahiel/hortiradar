@@ -8,7 +8,9 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
+    "@types/canvasjs": "^1.5.30",
     "@types/d3": "^4.9.0",
+    "@types/googlemaps": "^3.26.11",
     "@types/jquery": "^2.0.45",
     "@types/node": "^7.0.22",
     "@types/twitter": "0.0.28",
