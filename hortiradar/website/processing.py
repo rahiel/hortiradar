@@ -93,14 +93,21 @@ def mark_as_spam(ids: Sequence[str]):
 def get_nsfw_prob(image_url: str):
     cache_time = 12 * 60**2
     key = "nsfw:%s" % image_url
-    p = redis.get(key)
-    if p is not None:
+    v = redis.get(key)
+    if v is not None:
         redis.expire(key, cache_time)
-        return float(p)
+        if v == b"415":
+            return 0, 415
+        else:
+            return float(v), 200
 
     r = requests.post("http://localhost:6000", data={"url": image_url})
-    redis.set(key, r.content, ex=cache_time)
-    return float(r.content)
+    if r.status_code == 200:
+        redis.set(key, r.content, ex=cache_time)
+        return float(r.content), r.status_code
+    elif r.status_code == 415:   # Invalid image
+        redis.set(key, b"415", ex=cache_time)
+        return 0, r.status_code
 
 def floor_time(dt, *, hour=False, day=False):
     if hour:
@@ -147,10 +154,11 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     tweetList = []
     imagesList = []
     URLList = []
-    wordCloudDict = Counter()
+    word_cloud_dict = Counter()
     tsDict = Counter()
     mapLocations = []
     spam_list = []
+    image_tweet_id = {}
     nodes = {}
     edges = []
 
@@ -166,7 +174,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
             continue
 
         tweetList.append(tweet["id_str"])
-        wordCloudDict.update(lemmas)
+        word_cloud_dict.update(lemmas)
 
         dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
         tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
@@ -200,17 +208,10 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
             edges.append({"source": user_id_str, "target": tweet["in_reply_to_user_id_str"], "value": "reply"})
 
         try:
-            nsfw = False
             for obj in tweet["entities"]["media"]:
                 image_url = obj["media_url_https"]
-                nsfw_prob = get_nsfw_prob(image_url)
-                if nsfw_prob > 0.8:
-                    spam_list.append(tweet["id_str"])
-                    nsfw = True
-                    break
+                image_tweet_id[image_url] = tweet["id_str"]
                 imagesList.append(image_url)
-            if nsfw:
-                continue
         except KeyError:
             pass
 
@@ -233,10 +234,10 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
     mark_as_spam.apply_async((spam_list,), queue="web")
 
-    wordCloud = []
-    for (token, count) in wordCloudDict.most_common():
+    word_cloud = []
+    for (token, count) in word_cloud_dict.most_common():
         if token.lower() not in stop_words and "http" not in token and len(token) > 1:
-            wordCloud.append({"text": token, "weight": count})
+            word_cloud.append({"text": token, "weight": count})
 
     ts = []
     try:
@@ -264,8 +265,16 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         avLoc = {"lng": 5, "lat": 52}
 
     images = []
+    nsfw_list = []
     for (url, count) in Counter(imagesList).most_common():
-        images.append({"link": url, "occ": count})
+        if len(images) >= 16:
+            break
+        nsfw_prob, status = get_nsfw_prob(url)
+        if status == 200 and nsfw_prob > 0.8:
+            nsfw_list.append(image_tweet_id[url])
+        elif status == 200:
+            images.append({"link": url, "occ": count})
+    mark_as_spam.apply_async((nsfw_list,), queue="web")
 
     urls = []
     for (url, count) in Counter(URLList).most_common():
@@ -290,7 +299,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         "timeSeries": ts,
         "URLs": urls,
         "photos": images,
-        "tagCloud": wordCloud,
+        "tagCloud": word_cloud,
         "locations": mapLocations,
         "centerloc": avLoc,
         "graph": graph
