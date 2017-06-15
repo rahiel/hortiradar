@@ -21,7 +21,7 @@ sudo apt install supervisor
 sudo mkdir /var/log/hortiradar
 sudo cp supervisor.conf /etc/supervisor/conf.d/hortiradar.conf
 sudo cp processing-supervisor.conf /etc/supervisor/conf.d/hortiradar-processor.conf
-sudo systemctl restart supervisor.service
+sudo cp open_nsfw-supervisor.conf /etc/supervisor/conf.d/open_nsfw.conf
 
 sudo apt install nginx
 sudo cp nginx.conf /etc/nginx/sites-enabled/hortiradar.conf
@@ -51,3 +51,22 @@ Copy flask-user files for Dutch translation of login/register/etc. pages:
 cd ~/hortiradar/
 cp -r ./venv/lib/python3*/site-packages/flask_user/translations/ ./website/
 ```
+
+[Install Docker][docker] for the NSFW photo filter. Add the user running the
+Hortiradar to the `docker` group:
+``` shell
+sudo gpasswd -a $USER docker
+```
+logout and login again.
+
+Build the image:
+``` shell
+docker build -t open_nsfw https://raw.githubusercontent.com/rahiel/open_nsfw--/master/Dockerfile
+```
+
+Start everything:
+``` shell
+sudo systemctl restart supervisor.service
+```
+
+[docker]: https://docs.docker.com/engine/installation/

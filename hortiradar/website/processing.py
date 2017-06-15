@@ -6,6 +6,7 @@ from typing import Sequence
 import random
 import urllib.parse
 
+import requests
 import ujson as json
 from celery import Celery
 from flask import redirect
@@ -23,13 +24,15 @@ redis = StrictRedis()
 
 CACHE_TIME = 60 * 60
 
-with open("../database/data/stoplist-nl.txt", "r") as f:
-    stop_words = [w.strip() for w in f]
-    stop_words = {w: 1 for w in stop_words}  # stop words to filter out in word cloud
+def read_data(filename):
+    with open("../database/data/{}".format(filename), "r") as f:
+        entities = [w.strip() for w in f if not w.startswith("#")]
+    return {w: 1 for w in entities}
 
-with open("../database/data/obscene_words.txt", "r") as f:
-    obscene_words = [w.strip() for w in f if not w.startswith("#")]
-    obscene_words = {w: 1 for w in obscene_words}
+
+stop_words = read_data("stoplist-nl.txt")  # stop words to filter out in word cloud
+obscene_words = read_data("obscene_words.txt")
+blocked_users = read_data("blocked_users.txt")
 
 
 def get_cache_key(func, *args, **kwargs):
@@ -86,6 +89,18 @@ def cache_request(func, args, kwargs, cache_time, key, loading_id):
 def mark_as_spam(ids: Sequence[str]):
     for id_str in ids:
         tweety.patch_tweet(id_str, data=json.dumps({"spam": 0.8}))
+
+def get_nsfw_prob(image_url: str):
+    cache_time = 12 * 60**2
+    key = "nsfw:%s" % image_url
+    p = redis.get(key)
+    if p is not None:
+        redis.expire(key, cache_time)
+        return float(p)
+
+    r = requests.post("http://localhost:6000", data={"url": image_url})
+    redis.set(key, r.content, ex=cache_time)
+    return float(r.content)
 
 def floor_time(dt, *, hour=False, day=False):
     if hour:
@@ -145,6 +160,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         texts = [t["text"].lower() for t in tw["tokens"]]  # unlemmatized words
         words = list(set(lemmas + texts))                  # to check for obscene words
 
+        # check for spam
         if any(obscene_words.get(t) for t in words):
             spam_list.append(tweet["id_str"])
             continue
@@ -184,8 +200,17 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
             edges.append({"source": user_id_str, "target": tweet["in_reply_to_user_id_str"], "value": "reply"})
 
         try:
+            nsfw = False
             for obj in tweet["entities"]["media"]:
-                imagesList.append(obj["media_url_https"])
+                image_url = obj["media_url_https"]
+                nsfw_prob = get_nsfw_prob(image_url)
+                if nsfw_prob > 0.8:
+                    spam_list.append(tweet["id_str"])
+                    nsfw = True
+                    break
+                imagesList.append(image_url)
+            if nsfw:
+                continue
         except KeyError:
             pass
 
