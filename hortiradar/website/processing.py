@@ -281,7 +281,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         urls.append({"link": url, "occ": count})
 
     # limit number of nodes/edges
-    edges = random.sample(edges, min(len(edges), 400))
+    edges = random.sample(edges, min(len(edges), 250))
     connected_nodes = set([e["source"] for e in edges] + [e["target"] for e in edges])
 
     graph = {"nodes": [], "edges": []}
