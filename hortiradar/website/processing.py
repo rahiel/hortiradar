@@ -33,6 +33,7 @@ def read_data(filename):
 stop_words = read_data("stoplist-nl.txt")  # stop words to filter out in word cloud
 obscene_words = read_data("obscene_words.txt")
 blocked_users = read_data("blocked_users.txt")
+blacklist = read_data("blacklist.txt")
 
 
 def get_cache_key(func, *args, **kwargs):
@@ -131,17 +132,10 @@ def process_top(group, max_amount, params, force_refresh=False, cache_time=CACHE
     counts = cache(tweety.get_keywords, force_refresh=force_refresh, cache_time=cache_time, **params)
     total = sum([entry["count"] for entry in counts])
 
-    # tags in the first line are still in flowers.txt
-    # tags in the second line are excluded but should be included again in the future
-    # tags in 3rd line are removed from the word lists
-    BLACKLIST = ["fhgt", "fhtf", "fhalv", "fhglazentulp", "fhgt2014", "fhgt2015", "aalsmeer", "westland", "fh2020", "bloemistenklok", "morgenvoordeklok", "fhstf", "floraholland", "fhmagazine", "floranext", "bos",
-                 "aardappel", "bes", "citroen", "kool", "sla", "ui", "wortel", "phoenix", "acer", "jasmijn", "erica", "iris", "fruit", "roos", "palm", "rosa", "viola", "moederdag", "vrouwendag",
-                 "munt", "vrucht", "mosterd", "sweetie", "scheut", "salak", "rapen"
-    ]
     topkArray = []
     for entry in counts:
         if len(topkArray) < max_amount:
-            if entry["keyword"] not in BLACKLIST:
+            if entry["keyword"] not in blacklist:
                 topkArray.append({"label": entry["keyword"], "y": entry["count"] / total})
         else:
             break

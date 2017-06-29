@@ -75,14 +75,6 @@ eustoma,N
 exacum,N
 festuca,N
 fh2020,N
-fhalv,N
-fhglazentulp,N
-fhgt,N
-fhgt2014,N
-fhgt2015,N
-fhmagazine,N
-fhstf,N
-fhtf,N
 ficus,N
 fittonia,N
 floraholland,N
@@ -153,10 +145,8 @@ mannentrouw,N
 maranta,N
 medinilla,N
 miltonia,N
-moederdag,N
 monobos,N
 monstera,N
-morgenvoordeklok,N
 mosplantje,N
 musa,N
 muscari,N
@@ -206,7 +196,6 @@ rhipsalidopsis,N
 rhipsalis,N
 rhododendron,N
 roos,N
-rosa,N
 rouwbloemen,N
 rouwboeket,N
 saintpaulia,N
@@ -239,12 +228,9 @@ tulipa,N
 tulp,N
 tulpendag,N
 twuinbijt,N
-varen corso westland,N
 varend corso,N
 verbena,N
-viola,N
 vriesea,N
-vrouwendag,N
 woonplantvandemaand,N
 yucca,N
 zamioculcas,N
