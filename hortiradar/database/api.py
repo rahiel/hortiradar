@@ -37,7 +37,7 @@ def is_spam(t):
     return t.get("spam") is not None and t["spam"] > spam_level
 
 
-class KeywordsResource(object):
+class KeywordsResource:
     @falcon.before(get_dates)
     def on_get(self, req, resp, start, end):
         """All tracked keywords in the database.
@@ -67,13 +67,13 @@ class KeywordsResource(object):
         data = [{"keyword": kw, "count": c} for kw, c in counts.most_common()]
         resp.body = json.dumps(data)
 
-class GroupsResource(object):
+class GroupsResource:
     @falcon.before(get_dates)
     def on_get(self, req, resp, start, end):
         """The groups currently tagged in the database."""
         resp.body = json.dumps(GROUPS.keys())
 
-class GroupResource(object):
+class GroupResource:
     @falcon.before(get_dates)
     def on_get(self, req, resp, group, start, end):
         """NLP analysis of the tweet text, entities and timestamp of tweets matching
@@ -90,7 +90,7 @@ class GroupResource(object):
             tw = [t for t in tw if not is_spam(t)]
         resp.body = json.dumps(tw)
 
-class KeywordResource(object):
+class KeywordResource:
     @falcon.before(get_dates)
     def on_get(self, req, resp, keyword, start, end):
         """NLP analysis of the tweet text, entities and timestamp of tweets matching keyword."""
@@ -108,7 +108,7 @@ class KeywordResource(object):
             tw = [t for t in tw if not is_spam(t)]
         resp.body = json.dumps(tw)
 
-class KeywordIdsResource(object):
+class KeywordIdsResource:
     @falcon.before(get_dates)
     def on_get(self, req, resp, keyword, start, end):
         """A list of the tweet id's matching keyword."""
@@ -122,7 +122,7 @@ class KeywordIdsResource(object):
             data = [t["tweet"]["id_str"] for t in tw if not is_spam(t)]
         resp.body = json.dumps(data)
 
-class KeywordMediaResource(object):
+class KeywordMediaResource:
     @falcon.before(get_dates)
     def on_get(self, req, resp, keyword, start, end):
         """List of the media entities for tweets matching keyword."""
@@ -137,7 +137,7 @@ class KeywordMediaResource(object):
             data = [t["tweet"] for t in tw if "media" in t["tweet"]["entities"] if not is_spam(t)]
         resp.body = json.dumps(data)
 
-class KeywordUrlsResource(object):
+class KeywordUrlsResource:
     @falcon.before(get_dates)
     def on_get(self, req, resp, keyword, start, end):
         """List of the urls entities for tweets matching keyword."""
@@ -153,7 +153,7 @@ class KeywordUrlsResource(object):
         resp.body = json.dumps(data)
 
 
-class KeywordTextsResource(object):
+class KeywordTextsResource:
     @falcon.before(get_dates)
     def on_get(self, req, resp, keyword, start, end):
         "List of the tweet texts of keyword."
@@ -167,7 +167,7 @@ class KeywordTextsResource(object):
             data = [t["tweet"] for t in tw if not is_spam(t)]
         resp.body = json.dumps(data)
 
-class KeywordUsersResource(object):
+class KeywordUsersResource:
     @falcon.before(get_dates)
     def on_get(self, req, resp, keyword, start, end):
         """List of users who tweeted keyword.
@@ -186,7 +186,7 @@ class KeywordUsersResource(object):
         data = [{"id_str": id_str, "count": c} for id_str, c in counts.most_common()]
         resp.body = json.dumps(data)
 
-class KeywordWordcloudResource(object):
+class KeywordWordcloudResource:
     @falcon.before(get_dates)
     def on_get(self, req, resp, keyword, start, end):
         """Returns words and their counts in all tweets for keyword."""
@@ -204,7 +204,7 @@ class KeywordWordcloudResource(object):
         data = [{"word": w, "count": c} for w, c in words.most_common()]
         resp.body = json.dumps(data)
 
-class KeywordTimeSeriesResource(object):
+class KeywordTimeSeriesResource:
     @falcon.before(get_dates)
     def on_get(self, req, resp, keyword, start, end):
         """Returns a time series with number of tweets from start to end in bins of step.
@@ -246,7 +246,7 @@ class KeywordTimeSeriesResource(object):
         }
         resp.body = json.dumps(data)
 
-class TweetResource(object):
+class TweetResource:
     def on_get(self, req, resp, id_str):
         t = tweets.find_one({"tweet.id_str": id_str}, projection={"datetime": False, "_id": False})
         if t:
@@ -298,7 +298,7 @@ def json_merge_patch_to_mongo_update(patch):
     return update
 
 
-class AuthenticationMiddleware(object):
+class AuthenticationMiddleware:
     def process_request(self, req, resp):
         token = req.get_param("token")
         if token in admins:

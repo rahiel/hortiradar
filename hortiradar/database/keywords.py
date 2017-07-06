@@ -14,7 +14,7 @@ GROUPS = {
 
 
 @attr.s(slots=True)
-class Keyword(object):
+class Keyword:
     lemma = attr.ib()
     pos = attr.ib()
     groups = attr.ib(default=attr.Factory(list))
