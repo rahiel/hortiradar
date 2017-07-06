@@ -99,9 +99,9 @@ class KeywordResource(object):
             "datetime": {"$gte": start, "$lt": end}
         }, projection={
             "tweet.id_str": True, "tokens": True, "tweet.entities": True, "tweet.created_at": True,
-            "tweet.user.id_str": True, "tweet.user.screen_name": True, "tweet.retweeted_status.user.id_str": True, 
+            "tweet.user.id_str": True, "tweet.user.screen_name": True, "tweet.retweeted_status.user.id_str": True,
             "tweet.retweeted_status.user.screen_name": True, "tweet.retweeted_status.id_str": True,
-            "tweet.in_reply_to_user_id_str": True, "tweet.in_reply_to_screen_name": True, 
+            "tweet.in_reply_to_user_id_str": True, "tweet.in_reply_to_screen_name": True,
             "spam": True, "_id": False
         })
         if not want_spam(req):
@@ -280,38 +280,6 @@ class TweetResource(object):
             msg = ("Error: {}. ".format(str(e)) +
                    "This endpoint accepts JSON merge patches as specified in https://tools.ietf.org/html/rfc7396")
             raise falcon.HTTPBadRequest("Bad request", msg)
-
-class KeywordClusterResource(object):
-    @falcon.before(get_dates)
-    def on_get(self, req, resp, keyword, start, end):
-        """NLP analysis of the tweet text, entities and timestamp of tweets matching keyword."""
-        tw = tweets.find({
-            "keywords": keyword,
-            "datetime": {"$gte": start, "$lt": end}
-        }, projection={
-            "tweet.id_str": True, "tokens": True, "tweet.entities": True, "tweet.created_at": True,
-            "tweet.retweeted_status.id_str": True, "tweet.coordinates": True,
-            "spam": True, "_id": False
-        })
-        if not want_spam(req):
-            tw = [t for t in tw if not is_spam(t)]
-        resp.body = json.dumps(tw)
-
-class GroupClusterResource(object):
-    @falcon.before(get_dates)
-    def on_get(self, req, resp, keyword, start, end):
-        """NLP analysis of the tweet text, entities and timestamp of tweets matching keyword."""
-        tw = tweets.find({
-            "groups": group,
-            "datetime": {"$gte": start, "$lt": end}
-        }, projection={
-            "tweet.id_str": True, "tokens": True, "tweet.entities": True, "tweet.created_at": True, 
-            "tweet.retweeted_status.id_str": True, "tweet.coordinates": True,
-            "spam": True, "_id": False
-        })
-        if not want_spam(req):
-            tw = [t for t in tw if not is_spam(t)]
-        resp.body = json.dumps(tw)
 
 
 def json_merge_patch_to_mongo_update(patch):
