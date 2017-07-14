@@ -14,6 +14,8 @@
         - [`/keywords/{keyword}/users`](#keywordskeywordusers)
         - [`/keywords/{keyword}/wordcloud`](#keywordskeywordwordcloud)
         - [`/keywords/{keyword}/series`](#keywordskeywordseries)
+    - [`/groups`](#groups)
+        - [`/groups/{group}`](#groupsgroup)
     - [`/tweet/{id_str}`](#tweetidstr)
 - [Python Wrapper](#python-wrapper)
 
@@ -219,8 +221,8 @@ On GET returns a list with the groups tagged in the database.
 
 #### `/groups/{group}`
 
-On GET returns a list of objects of tweets tagged with `group` with the NLP
-analysis of the tweet text, parsed entities, timestamp and the tagged keywords.
+On GET returns a list of the tagged keywords in the `group`. The list contains
+objects with the `lemma` and `pos` (part of speech) keys.
 
 ### `/tweet/{id_str}`
 

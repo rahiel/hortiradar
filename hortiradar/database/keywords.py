@@ -3,6 +3,10 @@ from os.path import expanduser
 import attr
 import frog
 import pymongo
+import ujson as json
+
+
+from hortiradar import Tweety, TOKEN
 
 
 DATABASE = None
@@ -20,19 +24,38 @@ class Keyword:
     groups = attr.ib(default=attr.Factory(list))
 
 
-def get_keywords():
-    """Gets keywords from the source files. Returns a dictionary where the keys are
-    the lemma's of the keywords and the values the Keyword objects.
+def get_keywords(local=False):
+    """Gets keywords from the `groups` collection in MongoDB. Returns a dictionary
+    where the keys are the lemma's of the keywords and the values the Keyword
+    objects.
+
+    Set `local` to `True` if running on the same server as the database.
     """
     keywords = {}
     for group_name in GROUPS:
-        words = read_keywords(GROUPS[group_name])
+        words = request_keywords(group_name, local)
         for k in words:
             if k.lemma in keywords:
                 keywords[k.lemma].groups.append(group_name)
             else:
                 k.groups.append(group_name)
                 keywords[k.lemma] = k
+    return keywords
+
+
+def request_keywords(group, local=False):
+    """Returns a list of Keyword objects from the keywords in the group."""
+    if local:
+        mongo = pymongo.MongoClient()
+        db = mongo.twitter
+        g = db.groups.find_one({"name": group})["keywords"]
+    else:
+        tweety = Tweety("https://acba.labs.vu.nl/hortiradar/api/", TOKEN)
+        g = json.loads(tweety.get_group(group))
+    keywords = []
+    for keyword in g:
+        k = Keyword(lemma=keyword["lemma"], pos=keyword["pos"])
+        keywords.append(k)
     return keywords
 
 

@@ -8,8 +8,10 @@ from keywords import get_db, get_keywords, GROUPS
 from hortiradar import admins, users, time_format
 
 
-tweets = get_db().tweets
-KEYWORDS = get_keywords()
+db = get_db()
+tweets = db.tweets
+groups = db.groups
+KEYWORDS = get_keywords(local=True)
 
 with open("data/stoplist-nl.txt") as f:
     stop_words = [w.strip() for w in f.readlines()]
@@ -68,27 +70,19 @@ class KeywordsResource:
         resp.body = json.dumps(data)
 
 class GroupsResource:
-    @falcon.before(get_dates)
-    def on_get(self, req, resp, start, end):
+    def on_get(self, req, resp):
         """The groups currently tagged in the database."""
         resp.body = json.dumps(GROUPS.keys())
 
 class GroupResource:
-    @falcon.before(get_dates)
-    def on_get(self, req, resp, group, start, end):
-        """NLP analysis of the tweet text, entities and timestamp of tweets matching
-        group, and the tagged keywords.
-        """
-        tw = tweets.find({
-            "groups": group,
-            "datetime": {"$gte": start, "$lt": end}
-        }, projection={
-            "tweet.id_str": True, "tokens": True, "tweet.entities": True, "tweet.created_at": True,
-            "keywords": True, "spam": True, "_id": False
-        })
-        if not want_spam(req):
-            tw = [t for t in tw if not is_spam(t)]
-        resp.body = json.dumps(tw)
+    def on_get(self, req, resp, group):
+        """List of keywords in the group."""
+        g = groups.find_one({"name": group})
+        try:
+            data = g["keywords"]
+        except KeyError:
+            data = []
+        resp.body = json.dumps(data)
 
 class KeywordResource:
     @falcon.before(get_dates)
