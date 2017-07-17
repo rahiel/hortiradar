@@ -40,6 +40,7 @@ class Tweety:
         self.get_keyword_series = wrap_api("get", "/keywords/{}/series", name="get_keyword_series")
         self.get_groups = wrap_api("get", "/groups", name="get_groups")
         self.get_group = wrap_api("get", "/groups/{}", name="get_group")
+        self.put_group = wrap_api("put", "/groups/{}", name="put_group")
         self.get_tweet = wrap_api("get", "/tweet/{}", name="get_tweet")
         self.delete_tweet = wrap_api("delete", "/tweet/{}", name="delete_tweet")
         #  tweety.patch_tweet(id_str, data=json.dumps({"spam": 1.0}))

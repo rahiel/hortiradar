@@ -84,6 +84,14 @@ class GroupResource:
             data = []
         resp.body = json.dumps(data)
 
+    def on_put(self, req, resp, group):
+        """Update group wordlist."""
+        g = groups.find_one({"name": group})
+        if not g:
+            raise falcon.HTTPNotFound()
+        keywords = json.load(req.bounded_stream)
+        groups.update_one({"name": group}, {"$set": {"keywords": keywords}})
+
 class KeywordResource:
     @falcon.before(get_dates)
     def on_get(self, req, resp, keyword, start, end):
@@ -145,7 +153,6 @@ class KeywordUrlsResource:
         else:
             data = [t["tweet"] for t in tw if t["tweet"]["entities"]["urls"] if not is_spam(t)]
         resp.body = json.dumps(data)
-
 
 class KeywordTextsResource:
     @falcon.before(get_dates)
@@ -299,13 +306,14 @@ class AuthenticationMiddleware:
             pass                # admins can access everything
         elif token in users:
             p = req.path
+            m = req.method
             # users may not access /keywords/{keyword}, /keywords/{keyword}/texts,
-            # /tweet/{id_str} and /groups/{group}
+            # /tweet/{id_str} and PUT on /groups/{group}
             if (p.startswith("/keywords/") and (p.endswith("/texts") or p.count("/") == 2) or
-                p.startswith("/tweet/") or p.startswith("/groups/")):
-                raise falcon.HTTPNotFound()
+                p.startswith("/tweet/") or (p.startswith("/groups/") and m == "PUT")):
+                raise falcon.HTTPForbidden()
         else:
-            raise falcon.HTTPNotFound()
+            raise falcon.HTTPForbidden()
 
 
 app = application = falcon.API(middleware=AuthenticationMiddleware())

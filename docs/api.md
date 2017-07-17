@@ -221,8 +221,12 @@ On GET returns a list with the groups tagged in the database.
 
 #### `/groups/{group}`
 
-On GET returns a list of the tagged keywords in the `group`. The list contains
-objects with the `lemma` and `pos` (part of speech) keys.
+On GET returns a list of the keywords in the group. The list contains objects
+with the `lemma` and `pos` (part of speech) keys.
+
+On PUT: replaces the keywords of the group with the supplied data. The data
+should be a JSON encoded list of keyword objects containing `lemma` and `pos`
+keys.
 
 ### `/tweet/{id_str}`
 

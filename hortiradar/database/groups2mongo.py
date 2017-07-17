@@ -12,4 +12,5 @@ for (group_name, filename) in GROUPS.items():
             lemma, pos = line.strip().split(",")
             keywords.append({"lemma": lemma, "pos": pos})
     group = {"name": group_name, "keywords": keywords}
+    db.groups.delete_many({"name": group_name})
     db.groups.insert_one(group)
