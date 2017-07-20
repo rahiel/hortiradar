@@ -11,7 +11,8 @@
     <p>
       Van {{ start }} tot {{ end }} zijn er {{ total }} tweets gevonden in de groep {{ disp_group }}.
       Hieronder het overzicht. Het percentage is van het totaal aantal tweets in
-      deze groep.
+      deze groep. Zie <a href="{{ url_for("horti.view_keywords_in_group", group=group) }}">hier</a> voor
+      de complete lijst van trefwoorden in deze groep.
     </p>
 
   </div>

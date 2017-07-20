@@ -7,7 +7,7 @@ from babel.dates import format_datetime, get_timezone
 from flask import Blueprint, render_template, render_template_string, request
 from flask_babel import Babel
 from flask_mail import Mail
-from flask_user import SQLAlchemyAdapter, UserManager, login_required
+from flask_user import SQLAlchemyAdapter, UserManager, login_required, roles_required
 from redis import StrictRedis
 from werkzeug.wrappers import Response
 
@@ -113,9 +113,26 @@ def display_datetime(dt):
     dutch_timezone = get_timezone("Europe/Amsterdam")
     return format_datetime(dt, babel_datetime_format, tzinfo=dutch_timezone, locale="nl")
 
-def display_group(group: str):
+def display_group(group: str) -> str:
     """Render an internal group name suitable for display."""
     return {"bloemen": "Bloemen en Planten", "groente_en_fruit": "Groente en Fruit"}.get(group, group)
+
+def display_pos(pos: str) -> str:
+    p = {
+        "ADJ": "bijvoeglijk naamwoord",
+        "BW": "bijwoord ",
+        "LET": "leesteken",
+        "LID": "lidwoord",
+        "N": "zelfstandig naamwoord",
+        "SPEC": "eigennaam / onbekend",
+        "TSW": "tussenwerpsel",
+        "TW": "telwoord",
+        "VG": "voegwoord",
+        "VNW": "voornaamwoord",
+        "VZ": "voorzetsel",
+        "WW": "werkwoord"
+    }
+    return p.get(pos, pos)
 
 @bp.route("/")
 def home():
@@ -183,6 +200,22 @@ def view_group(group):
         "end": display_datetime(end)
     }
     return render_template("group.html", title=make_title(template_data["group"]), **template_data)
+
+@bp.route("/groups/<group>/keywords")
+def view_keywords_in_group(group):
+    """Show a list of all the keywords in the group."""
+    keywords = cache(tweety.get_group, group, cache_time=60 * 60, path=get_req_path(request))
+    if isinstance(keywords, Response):
+        return keywords
+    keywords.sort(key=lambda x: x["lemma"])
+    for k in keywords:
+        k["pos"] = display_pos(k["pos"])
+    template_data = {
+        "disp_group": display_group(group),
+        "title": make_title("Trefwoorden in {}".format(display_group(group))),
+        "keywords": keywords
+    }
+    return render_template("group_keywords.html", **template_data)
 
 @bp.route("/keywords/<keyword>")
 def view_keyword(keyword):
@@ -263,18 +296,10 @@ def show_clusters():
         clusters = json.load(f)
     return jsonify(clusters)
 
-@bp.route("/members")
-@login_required
-def members_page():
-    return render_template_string("""
-    {% extends "base.html" %}
-    {% block content %}
-        <h2>Members page</h2>
-        <p>This page can only be accessed by authenticated users.</p><br/>
-        <p><a href={{ url_for('home') }}>Home page</a> (anyone)</p>
-        <p><a href={{ url_for('members_page') }}>Members page</a> (login required)</p>
-    {% endblock %}
-    """)
+@bp.route("/admin")
+@roles_required("admin")
+def admin_page():
+    return render_template("admin.html", title=make_title("Admin"))
 
 def make_title(page):
     return page + " — Hortiradar"
