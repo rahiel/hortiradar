@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import falcon
 import ujson as json
 
-from keywords import get_db, get_keywords, GROUPS
+from keywords import get_db, get_keywords
 from hortiradar import admins, users, time_format
 
 
@@ -72,7 +72,9 @@ class KeywordsResource:
 class GroupsResource:
     def on_get(self, req, resp):
         """The groups currently tagged in the database."""
-        resp.body = json.dumps(GROUPS.keys())
+        gs = groups.find({}, projection={"name": True, "_id": False})
+        group_names = [g["name"] for g in gs]
+        resp.body = json.dumps(group_names)
 
 class GroupResource:
     def on_get(self, req, resp, group):

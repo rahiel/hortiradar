@@ -4,15 +4,14 @@ import re
 import CommonMark
 import ujson as json
 from babel.dates import format_datetime, get_timezone
-from flask import Blueprint, render_template, render_template_string, request
+from flask import Blueprint, render_template, request
 from flask_babel import Babel
 from flask_mail import Mail
-from flask_user import SQLAlchemyAdapter, UserManager, login_required, roles_required
+from flask_user import SQLAlchemyAdapter, UserManager, login_required, roles_required, current_user
 from redis import StrictRedis
 from werkzeug.wrappers import Response
 
 from hortiradar import TOKEN, Tweety, time_format
-from hortiradar.database import GROUPS
 from hortiradar.website import app, db
 from models import User
 from processing import cache, floor_time, process_details, process_top
@@ -31,7 +30,6 @@ user_manager = UserManager(db_adapter, app)     # Initialize Flask-User
 tweety = Tweety("http://127.0.0.1:8888", TOKEN)
 redis = StrictRedis()
 
-groups = sorted(GROUPS.keys())
 
 def render_markdown(filename):
     parser = CommonMark.Parser()
@@ -175,6 +173,7 @@ def top_widget(group):
 @bp.route("/groups/")
 @bp.route("/groups")
 def view_groups():
+    groups = cache(tweety.get_groups)
     return render_template("groups.html", title=make_title("Groepen"), groups=groups)
 
 @bp.route("/groups/<group>")

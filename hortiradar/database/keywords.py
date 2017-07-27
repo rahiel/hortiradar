@@ -11,10 +11,6 @@ from hortiradar import Tweety, TOKEN
 
 DATABASE = None
 FROG = None
-GROUPS = {
-    "bloemen": "data/flowers.txt",
-    "groente_en_fruit": "data/fruitsandveg.txt"
-}
 
 
 @attr.s(slots=True)
@@ -32,7 +28,8 @@ def get_keywords(local=False):
     Set `local` to `True` if running on the same server as the database.
     """
     keywords = {}
-    for group_name in GROUPS:
+    groups = request_groups(local)
+    for group_name in groups:
         words = request_keywords(group_name, local)
         for k in words:
             if k.lemma in keywords:
@@ -43,11 +40,21 @@ def get_keywords(local=False):
     return keywords
 
 
+def request_groups(local=False):
+    if local:
+        db = pymongo.MongoClient().twitter
+        gs = db.groups.find({}, projection={"name": True, "_id": False})
+        groups = [g["name"] for g in gs]
+    else:
+        tweety = Tweety("https://acba.labs.vu.nl/hortiradar/api/", TOKEN)
+        groups = json.loads(tweety.get_groups())
+    return groups
+
+
 def request_keywords(group, local=False):
     """Returns a list of Keyword objects from the keywords in the group."""
     if local:
-        mongo = pymongo.MongoClient()
-        db = mongo.twitter
+        db = pymongo.MongoClient().twitter
         g = db.groups.find_one({"name": group})["keywords"]
     else:
         tweety = Tweety("https://acba.labs.vu.nl/hortiradar/api/", TOKEN)
