@@ -15,7 +15,7 @@ db = get_db()
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--wordlist", help="wordlist(s) to insert into Mongo", nargs="+", type=argparse.FileType("r"))
+parser.add_argument("--wordlist", help="wordlist(s) to insert into Mongo", nargs="+", type=str)
 parser.add_argument("--name", help="name(s) for the wordlists", nargs="+", type=str)
 parser.add_argument("-a", "--all", help="insert all wordlists in data into Mongo", action="store_true")
 args = parser.parse_args()
