@@ -1,4 +1,5 @@
 from configparser import ConfigParser
+from time import time
 
 from redis import StrictRedis
 import ujson as json
@@ -9,6 +10,7 @@ from tasks_master import insert_tweet
 
 
 keywords = get_keywords()
+keywords_sync_time = time()
 
 config = ConfigParser()
 config.read("tasks_workers.ini")
@@ -21,6 +23,10 @@ rt_cache_time = 60 * 60 * 6
 @app.task
 def find_keywords_and_groups(id_str, text, retweet_id_str):
     """Find the keywords and associated groups in the tweet."""
+    global keywords, keywords_sync_time
+    if (time() - keywords_sync_time) > 60 * 60:
+        keywords = get_keywords()
+        keywords_sync_time = time()
     # First check if retweets are already processed in the cache
     if retweet_id_str:
         key = "t:%s" % retweet_id_str
