@@ -7,11 +7,12 @@ declare const display_tweets: number;
 const searchParams = new URLSearchParams(window.location.search);
 
 
-window.onload = function () {
-    let data = keyword_data;
-    let contents = [];
-    let timeSeries = [];
+window.onload = function () {   
+    render_information(keyword_data);
+}
 
+function render_information(data) {
+    let timeSeries = [];
     for (let p of data.timeSeries) {
         timeSeries.push({
             x: new Date(Date.UTC(p.year, p.month-1, p.day, p.hour)),
@@ -39,7 +40,8 @@ window.onload = function () {
     });
     chart.render();
 
-    for (let i = 0; i < display_tweets; i++) {
+    let stopcriterion = Math.min(display_tweets,data.tweets.length) // if there are less than display_tweets in the dataset
+    for (let i = 0; i < stopcriterion; i++) {
         let tweet = document.getElementById(`tweet${i}`);
         twttr.widgets.createTweet(data.tweets[i], tweet, {
             conversation: "none",
@@ -53,7 +55,7 @@ window.onload = function () {
     $.each(data.tagCloud, function (index) {
         words.push({ text: data.tagCloud[index].text, weight: data.tagCloud[index].weight });
     });
-    $("#wordcloudDiv").jQCloud(words, {
+    $("#wordcloudDiv").empty().jQCloud(words, {
         autoResize: false
     });
 
@@ -80,4 +82,5 @@ window.onload = function () {
         let start = year + "-" + month + "-" + day + "T" + hour + ":00";
         window.open(window.location.pathname + "?start=" + start + "&period=hour");
     }
+
 }

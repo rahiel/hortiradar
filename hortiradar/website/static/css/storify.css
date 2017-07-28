@@ -1,0 +1,127 @@
+.axis path,
+.axis line {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font-family: sans-serif;
+  font-size: 16px;
+}
+
+.timeline-label {
+  font-family: sans-serif;
+  font-size: 16px;
+}
+
+#timeline2 .axis {
+  transform: translate(0px,40px);
+  -ms-transform: translate(0px,40px); /* IE 9 */
+  -webkit-transform: translate(0px,40px); /* Safari and Chrome */
+  -o-transform: translate(0px,40px); /* Opera */
+  -moz-transform: translate(0px,40px); /* Firefox */
+}
+
+.group {
+  width: 290px;
+}
+
+.colorstory {
+  height: 125px; 
+  width: 10px; 
+  float: left;
+  border-radius: 8pt;
+}
+
+div.tooltip {
+  position: absolute;
+  text-align: center;
+  width: 250px;
+  height: 50px;
+  padding: 8px;
+  font: 16px sans-serif;
+  background: #CCCCCC;
+  border: solid 2px #aaa;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+#splineContainer {
+    width: 100%;
+    height: 300px;
+}
+
+#wordcloudDiv {
+    width:100%;
+    height: 500px;
+}
+
+#mapDiv {
+  width:100%;
+  height: 220px;
+}
+
+#graphContainer {
+  min-width: 200px;
+  width:100%;
+  overflow:hidden;
+}
+
+#urls {
+  width: 350px;
+}
+
+.graphDiv {
+  width:100%;
+  height: 350px;
+}
+
+.tweetdiv {
+  width: 430px;
+}
+
+.twitImage {
+  height: 172px;
+  width: 215px;
+}
+
+#photoContainer {
+    position:relative;
+    float: left;
+}
+
+.imgText {
+    z-index:100;
+    position:absolute;
+    background: rgb(0, 0, 0); /* fallback color */
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-weight:bold;
+    left:5px;
+    top:5px;
+    padding: 10px;
+}
+
+.glyphicon-question-sign:hover {
+    color: red;
+}
+
+/* interaction graph */
+path.link {
+    stroke-opacity: 0.7;
+    stroke-width: 1.5px;
+    fill: none;
+}
+
+.nodes circle {
+    pointer-events: all;
+    stroke: none;
+    stroke-width: 40px;
+}
+
+text {
+    fill: #000;
+    font: 10px sans-serif;
+    pointer-events: none;
+}
