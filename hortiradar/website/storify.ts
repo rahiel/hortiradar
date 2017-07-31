@@ -1,24 +1,14 @@
-// inter-action graph based on: https://bl.ocks.org/mbostock/2675ff61ea5e063ede2b5d63c08020c7, https://bl.ocks.org/mbostock/4e3925cdc804db257a86fdef3a032a45, http://bl.ocks.org/d3noob/5141278
-// License: GPL-3.0 (https://opensource.org/licenses/GPL-3.0)
-
-// timeline based on: https://github.com/denisemauldin/d3-timeline
-// License: MIT
-
 import * as $ from "jquery";
 import * as d3 from "d3";
-import { render_graph } from "./interaction_graph.ts"
-import { render_information } from "./keyword.ts"
+import { render_graph } from "./interaction_graph";
+import { render_information } from "./keyword";
 
-const URLSearchParams = require("url-search-params");
-
-declare const APP_ROOT: string;
 declare const storify_data: any;
 declare const timeline_data: any;
 declare const display_tweets: number;
 declare const num_stories: number;
 declare const timeline_start_ts: number;
 declare const timeline_end_ts: number;
-const searchParams = new URLSearchParams(window.location.search);
 
 window.onload = function () {
 
@@ -58,7 +48,7 @@ function update_information(data) {
     d3.select('#urls').selectAll('tbody').remove();
     let urltable = d3.select('#urls');
     let tbody = urltable.append('tbody');
-    
+
     let rows = tbody.selectAll('tr')
       .data(data.urls)
       .enter()
@@ -96,7 +86,7 @@ function update_information(data) {
 }
 
 function build_timeline(colorScale) {
-    
+
     // Add tooltip div
     let infobox = d3.select("body").append("div")
     .attr("class", "tooltip")
@@ -141,7 +131,7 @@ function build_timeline(colorScale) {
     .display("circle")
     .background(d3.rgb("#EEEEEE"));
 
-    let tlsvg = d3.select("#timelineBgnd").append("svg").attr("width", width)
+    let tlsvg = d3.select("#timelineBgnd").append("svg").attr("width", tlwidth)
     .datum(timeline_data).call(tlchart);
 }
 
@@ -151,7 +141,7 @@ function change_data(loc,colorScale) {
 
     d3.select("#storyColor")
     .attr('style','width: 100%; height: 25px; background-color: '+colorScale(loc));
-    
+
     d3.select("#storySummary").selectAll('div').remove();
 
     let displaySummary = d3.select("#storySummary")

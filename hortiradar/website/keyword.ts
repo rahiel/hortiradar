@@ -7,11 +7,11 @@ declare const display_tweets: number;
 const searchParams = new URLSearchParams(window.location.search);
 
 
-window.onload = function () {   
+window.onload = function () {
     render_information(keyword_data);
 }
 
-function render_information(data) {
+export function render_information(data) {
     let timeSeries = [];
     for (let p of data.timeSeries) {
         timeSeries.push({

@@ -5,7 +5,7 @@ import * as d3 from "d3";
 declare const graph: any;
 
 
-function render_graph(graph) {
+export function render_graph(graph) {
 
     let svg = d3.select("svg#interactionGraph");
     let width = +svg.attr("width");
@@ -124,7 +124,7 @@ function render_graph(graph) {
         d.fx = null;
         d.fy = null;
     }
-    
+
 }
 
-render_graph(graph)
+render_graph(graph);
