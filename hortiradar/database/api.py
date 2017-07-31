@@ -1,5 +1,6 @@
 from collections import Counter
 from datetime import datetime, timedelta
+from time import time
 
 import falcon
 import ujson as json
@@ -11,7 +12,9 @@ from hortiradar import admins, users, time_format
 db = get_db()
 tweets = db.tweets
 groups = db.groups
+
 KEYWORDS = get_keywords(local=True)
+keywords_sync_time = time()
 
 with open("data/stoplist-nl.txt") as f:
     stop_words = [w.strip() for w in f.readlines()]
@@ -46,6 +49,10 @@ class KeywordsResource:
         Returns a sorted list with the keywords and their counts.
         Takes the "group" GET parameters for the keyword group.
         """
+        global KEYWORDS, keywords_sync_time
+        if (time() - keywords_sync_time) > 60 * 60:
+            KEYWORDS = get_keywords(local=True)
+            keywords_sync_time = time()
         query = {
             "num_keywords": {"$gt": 0},
             "datetime": {"$gte": start, "$lt": end}
