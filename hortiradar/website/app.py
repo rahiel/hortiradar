@@ -174,6 +174,8 @@ def top_widget(group):
 @bp.route("/groups")
 def view_groups():
     groups = cache(tweety.get_groups)
+    if isinstance(groups, Response):
+        return groups
     return render_template("groups.html", title=make_title("Groepen"), groups=groups)
 
 @bp.route("/groups/<group>")
@@ -206,9 +208,10 @@ def view_keywords_in_group(group):
     keywords = cache(tweety.get_group, group, cache_time=60 * 60, path=get_req_path(request))
     if isinstance(keywords, Response):
         return keywords
-    keywords.sort(key=lambda x: x["lemma"])
-    for k in keywords:
-        k["pos"] = display_pos(k["pos"])
+    if keywords:
+        keywords.sort(key=lambda x: x["lemma"])
+        for k in keywords:
+            k["pos"] = display_pos(k["pos"])
     template_data = {
         "disp_group": display_group(group),
         "title": make_title("Trefwoorden in {}".format(display_group(group))),
@@ -291,9 +294,11 @@ def storify_keyword(keyword):
         keyword_data["graph"] = json.dumps(keyword_data["graph"])
 
         keyword_data["summarytweet"] = keyword_data["tweets"][0]
-        
-        timeline_info = {"label": i, "times": [{"starting_time": timeline_start, "display": "circle", "tokens": ["token1"]}],{"starting_time": timeline_end, "display": "circle", "tokens": ["token1"]}}
-        
+
+        # FIXME
+        # timeline_info = {"label": i, "times": [{"starting_time": timeline_start, "display": "circle", "tokens": ["token1"]}, {"starting_time": timeline_end, "display": "circle", "tokens": ["token1"]}]}
+        timeline_info = {}
+
         storify_data.append(keyword_data)
         timeline_data.append(timeline_info)
 
@@ -352,8 +357,8 @@ def show_clusters():
 
 @bp.route("/admin")
 @roles_required("admin")
-def admin_page():
-    return render_template("admin.html", title=make_title("Admin"))
+def admin_panel():
+    return render_template("admin_panel.html", title=make_title("Admin"))
 
 def make_title(page):
     return page + " — Hortiradar"
