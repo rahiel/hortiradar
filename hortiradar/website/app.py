@@ -275,37 +275,35 @@ def storify_keyword(keyword):
     storify_data = []
     timeline_data = []
 
-    for i in range(10):
-        keyword_data['urls'] = keyword_data["URLs"][:16]
-        for url in keyword_data['urls']:
-            url["display_url"] = shorten(url["link"], 45)
-        if not keyword_data['urls']:
-            keyword_data['urls'].append({"occ": 0, "link": "#", "display_url": "Geen URLs gevonden"})
-        del keyword_data["URLs"]
-
-        keyword_data["tagCloud"] = keyword_data["tagCloud"][:200]
-
-        display_tweets = 11
-        keyword_data["tweets"] = keyword_data["tweets"][:display_tweets]
-
-        num_tweets = keyword_data["num_tweets"]
-        del keyword_data["num_tweets"]
-
-        keyword_data["graph"] = json.dumps(keyword_data["graph"])
-
-        keyword_data["summarytweet"] = keyword_data["tweets"][0]
-
-        # FIXME
-        # timeline_info = {"label": i, "times": [{"starting_time": timeline_start, "display": "circle", "tokens": ["token1"]}, {"starting_time": timeline_end, "display": "circle", "tokens": ["token1"]}]}
-        timeline_info = {}
-
-        storify_data.append(keyword_data)
-        timeline_data.append(timeline_info)
-
     # TEMPORARY CODE FOR TEST
     import calendar
     timeline_start = calendar.timegm(start.timetuple())*1000
     timeline_end = calendar.timegm(end.timetuple())*1000
+    
+    keyword_data['urls'] = keyword_data["URLs"][:16]
+    for url in keyword_data['urls']:
+        url["display_url"] = shorten(url["link"], 45)
+    if not keyword_data['urls']:
+        keyword_data['urls'].append({"occ": 0, "link": "#", "display_url": "Geen URLs gevonden"})
+    del keyword_data["URLs"]
+
+    keyword_data["tagCloud"] = keyword_data["tagCloud"][:200]
+
+    display_tweets = 11
+    keyword_data["tweets"] = keyword_data["tweets"][:display_tweets]
+
+    num_tweets = keyword_data["num_tweets"]
+    del keyword_data["num_tweets"]
+
+    keyword_data["graph"] = json.dumps(keyword_data["graph"])
+
+    keyword_data["summarytweet"] = keyword_data["tweets"][0]
+
+    for i in range(10):
+        timeline_info = {"label": i, "times": [{"starting_time": timeline_start, "display": "circle", "tokens": ["token1"]}, {"starting_time": timeline_end, "display": "circle", "tokens": ["token1"]}]}
+
+        storify_data.append(keyword_data)
+        timeline_data.append(timeline_info)
 
     template_data = {
         "keyword": keyword,

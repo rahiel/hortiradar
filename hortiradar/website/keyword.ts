@@ -1,14 +1,17 @@
 import * as $ from "jquery";
+import { render_graph } from "./interaction_graph";
 const URLSearchParams = require("url-search-params");
 
 declare const APP_ROOT: string;
 declare const keyword_data: any;
+declare const graph: any;
 declare const display_tweets: number;
 const searchParams = new URLSearchParams(window.location.search);
 
 
 window.onload = function () {
     render_information(keyword_data);
+    render_graph(graph);
 }
 
 export function render_information(data) {

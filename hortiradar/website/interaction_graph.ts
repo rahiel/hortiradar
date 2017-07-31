@@ -7,6 +7,7 @@ declare const graph: any;
 
 export function render_graph(graph) {
 
+    d3.selectAll("svg#interactionGraph > *").remove();
     let svg = d3.select("svg#interactionGraph");
     let width = +svg.attr("width");
     let height = +svg.attr("height");
@@ -126,5 +127,3 @@ export function render_graph(graph) {
     }
 
 }
-
-render_graph(graph);
