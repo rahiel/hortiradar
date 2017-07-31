@@ -155,5 +155,57 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqcloud/1.0.4/jqcloud.css">
 <script src="https://platform.twitter.com/widgets.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA0adISATP5Nhic-ghCRijy6KOirg-k60"></script>
+<script src="{{ url_for("horti.static", filename="d3-timelines.js") }}"></script>
+<script type="text/javascript">
+function build_timeline(colorScale) {
+
+  // Add tooltip div
+  var infobox = d3.select("body").append("div")
+  .attr("class", "tooltip")
+  .style("opacity", 1e-6);
+
+  var tlwidth = 900; // TODO: should be made platform aware
+
+  var tlchart = d3.timelines()
+  .width(tlwidth*5) // TODO: relative to interval
+  .colors(colorScale)
+  .stack()
+  .showTimeAxisTick()
+  .allowZoom(false)
+  .itemHeight(15)
+  .beginning(timeline_start_ts)
+  .ending(timeline_end_ts)
+  .tickFormat({
+      format: function(d) { return d3.timeFormat("%y-%m-%d %I %p")(d) },
+      tickTime: d3.timeHour,
+      tickInterval: 6,
+      tickSize: 5,
+  })
+  .rotateTicks(30)
+  .hover(function (cluster, i, story) {
+      var colors = tlchart.colors();
+      infobox
+      .attr("style","border-color: "+colors(i))
+      .text("Cluster-time: " + d3.timeFormat("%y-%m-%d %I %p")(new Date(cluster.starting_time)) + "\nTokens:" + cluster.tokens)
+      .style("left", (d3.event.pageX ) + "px")
+      .style("top", (d3.event.pageY) + "px");
+  })
+  .mouseover(function (cluster, i, story) {
+      infobox.transition()
+      .duration(100)
+      .style("opacity",1);
+  })
+  .mouseout(function (cluster, i, story) {
+      infobox.transition()
+      .style("opacity",1e-6);
+  })
+  .scroll(function (x, scale) {})
+  .display("circle")
+  .background(d3.rgb("#EEEEEE"));
+
+  var tlsvg = d3.select("#timelineBgnd").append("svg").attr("width", tlwidth)
+  .datum(timeline_data).call(tlchart);
+}
+</script>
 <script src="{{ url_for("horti.static", filename="storify.js") }}"></script>
 {% endblock %}
