@@ -3,6 +3,7 @@ module.exports = {
         home: "./home.ts",
         keyword: "./keyword.ts",
         interaction_graph: "./interaction_graph.ts",
+        storify: "./storify.ts",
         loading: "./loading.ts"
     },
     output: {
