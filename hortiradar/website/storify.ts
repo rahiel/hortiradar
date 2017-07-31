@@ -94,14 +94,14 @@ function update_information(data) {
 
 }
 
-// function build_timeline(colorScale) {
+function build_timeline(colorScale) {
 
-//     // Add tooltip div
-//     let infobox = d3.select("body").append("div")
-//     .attr("class", "tooltip")
-//     .style("opacity", 1e-6);
+    // Add tooltip div
+    let infobox = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 1e-6);
 
-//     let tlwidth = 900; // TODO: should be made platform aware
+    let tlwidth = 900; // TODO: should be made platform aware
 
 //     let tlchart = d3.timelines()
 //     .width(tlwidth*5) // TODO: relative to interval
@@ -142,7 +142,7 @@ function update_information(data) {
 
 //     let tlsvg = d3.select("#timelineBgnd").append("svg").attr("width", tlwidth)
 //     .datum(timeline_data).call(tlchart);
-// }
+}
 
 function change_data(loc,colorScale) {
 

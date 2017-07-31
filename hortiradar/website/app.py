@@ -297,10 +297,9 @@ def storify_keyword(keyword):
 
     keyword_data["graph"] = json.dumps(keyword_data["graph"])
 
-    keyword_data["summarytweet"] = keyword_data["tweets"][0]
-
     for i in range(10):
         timeline_info = {"label": i, "times": [{"starting_time": timeline_start, "display": "circle", "tokens": ["token1"]}, {"starting_time": timeline_end, "display": "circle", "tokens": ["token1"]}]}
+        keyword_data["summarytweet"] = keyword_data["tweets"][i]
 
         storify_data.append(keyword_data)
         timeline_data.append(timeline_info)
