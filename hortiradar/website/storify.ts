@@ -2,6 +2,7 @@ import * as $ from "jquery";
 import * as d3 from "d3";
 import { render_graph } from "./interaction_graph";
 import { render_information } from "./keyword";
+import { timelines } from "d3-timelines";
 
 declare const storify_data: any;
 declare const timeline_data: any;
@@ -30,7 +31,8 @@ window.onload = function () {
     .attr('style',function(d,x){ return "background-color: "+colorScale(x) });
 
     newStory
-    .append('div').attr("id",function(d,x){ return "sumtweet"+x });
+    .append('div')
+    .attr("id",function(d,x){ return "sumtweet"+x });
 
     build_timeline(colorScale)
 
@@ -103,45 +105,45 @@ function build_timeline(colorScale) {
 
     let tlwidth = 900; // TODO: should be made platform aware
 
-//     let tlchart = d3.timelines()
-//     .width(tlwidth*5) // TODO: relative to interval
-//     .colors(colorScale)
-//     .stack()
-//     .showTimeAxisTick()
-//     .allowZoom(false)
-//     .itemHeight(15)
-//     .beginning(timeline_start_ts)
-//     .ending(timeline_end_ts)
-//     .tickFormat({
-//         format: function(d) { return d3.timeFormat("%y-%m-%d %I %p")(d) },
-//         tickTime: d3.timeHour,
-//         tickInterval: 6,
-//         tickSize: 5,
-//     })
-//     .rotateTicks(30)
-//     .hover(function (cluster, i, story) {
-//         let colors = tlchart.colors();
-//         infobox
-//         .attr("style","border-color: "+colors(i))
-//         .text("Cluster-time: " + d3.timeFormat("%y-%m-%d %I %p")(new Date(cluster.starting_time)) + "\nTokens:" + cluster.tokens)
-//         .style("left", (d3.event.pageX ) + "px")
-//         .style("top", (d3.event.pageY) + "px");
-//     })
-//     .mouseover(function (cluster, i, story) {
-//         infobox.transition()
-//         .duration(100)
-//         .style("opacity",1);
-//     })
-//     .mouseout(function (cluster, i, story) {
-//         infobox.transition()
-//         .style("opacity",1e-6);
-//     })
-//     .scroll(function (x, scale) {})
-//     .display("circle")
-//     .background(d3.rgb("#EEEEEE"));
+    let tlchart = timelines()
+    .width(tlwidth*5) // TODO: relative to interval
+    .colors(colorScale)
+    .stack()
+    .showTimeAxisTick()
+    .allowZoom(false)
+    .itemHeight(15)
+    .beginning(timeline_start_ts)
+    .ending(timeline_end_ts)
+    .tickFormat({
+        format: function(d) { return d3.timeFormat("%y-%m-%d %I %p")(d) },
+        tickTime: d3.timeHour,
+        tickInterval: 6,
+        tickSize: 5,
+    })
+    .rotateTicks(30)
+    .hover(function (cluster, i, story) {
+        let colors = tlchart.colors();
+        infobox
+        .attr("style","border-color: "+colors(i))
+        .text("Cluster-time: " + d3.timeFormat("%y-%m-%d %I %p")(new Date(cluster.starting_time)) + "\nTokens:" + cluster.tokens)
+        .style("left", (d3.event.pageX ) + "px")
+        .style("top", (d3.event.pageY) + "px");
+    })
+    .mouseover(function (cluster, i, story) {
+        infobox.transition()
+        .duration(100)
+        .style("opacity",1);
+    })
+    .mouseout(function (cluster, i, story) {
+        infobox.transition()
+        .style("opacity",1e-6);
+    })
+    .scroll(function (x, scale) {})
+    .display("circle")
+    .background(d3.rgb("#EEEEEE"));
 
-//     let tlsvg = d3.select("#timelineBgnd").append("svg").attr("width", tlwidth)
-//     .datum(timeline_data).call(tlchart);
+    let tlsvg = d3.select("#timelineBgnd").append("svg").attr("width", tlwidth)
+    .datum(timeline_data).call(tlchart);
 }
 
 function change_data(loc,colorScale) {
