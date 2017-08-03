@@ -28,7 +28,7 @@ window.onload = function () {
     newStory
     .append('div')
     .attr('class','colorstory')
-    .attr('style',function(d,x){ return "background-color: "+colorScale(x) });
+    .attr('style', function(d, x) { return "background-color: " + colorScale(x); });
 
     newStory
     .append('div')
@@ -65,11 +65,11 @@ function update_information(data) {
       .enter()
       .append('tr');
 
-    rows.append('td').html(function(d) {return d.occ});
+    rows.append('td').html(function (d: any) { return d.occ; });
     let cell = rows.append('td')
     cell.append('a')
-    .attr('href', function(d) {return d.link} )
-    .html(function(d) {return d.display_url});
+        .attr('href', function (d: any) { return d.link; } )
+        .html(function (d: any) { return d.display_url; });
 
     d3.select('#tweetlist').selectAll('div.tweetdiv').remove();
     let tweetlist = d3.select('#tweetlist')
