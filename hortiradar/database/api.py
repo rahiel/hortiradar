@@ -7,6 +7,7 @@ import ujson as json
 
 from keywords import get_db, get_keywords
 from hortiradar import admins, users, time_format
+from hortiradar.database import stop_words
 
 
 db = get_db()
@@ -15,10 +16,6 @@ groups = db.groups
 
 KEYWORDS = get_keywords(local=True)
 keywords_sync_time = time()
-
-with open("data/stoplist-nl.txt") as f:
-    stop_words = [w.strip() for w in f.readlines()]
-    stop_words = {w: 1 for w in stop_words}  # stop words to filter out in word cloud
 
 
 def get_dates(req, resp, resource, params):

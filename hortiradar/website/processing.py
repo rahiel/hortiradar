@@ -13,6 +13,7 @@ from flask import redirect
 from redis import StrictRedis
 
 from hortiradar import Tweety, TOKEN, time_format
+from hortiradar.database import stop_words, obscene_words, blocked_users, blacklist
 
 
 broker_url = "amqp://guest@localhost:5672/hortiradar"
@@ -23,17 +24,6 @@ tweety = Tweety("http://127.0.0.1:8888", TOKEN)
 redis = StrictRedis()
 
 CACHE_TIME = 60 * 60
-
-def read_data(filename):
-    with open("../database/data/{}".format(filename), "r") as f:
-        entities = [w.strip() for w in f if not w.startswith("#")]
-    return {w: 1 for w in entities}
-
-
-stop_words = read_data("stoplist-nl.txt")  # stop words to filter out in word cloud
-obscene_words = read_data("obscene_words.txt")
-blocked_users = read_data("blocked_users.txt")
-blacklist = read_data("blacklist.txt")
 
 
 def get_cache_key(func, *args, **kwargs):
@@ -300,6 +290,16 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     }
     return data
 
+def process_storify(prod, params, force_refresh=False, cache_time=CACHE_TIME):
+
+    stories = cache(load_stories, prod, params, cache_time=cache_time, path=get_req_path(request))
+
+    # TODO: load_stories loads closed stories from story DB and active stories from redis!
+
+    ts = calendar.timegm(datetime.strftime(val,"%a %b %d %H:%M:%S +0000 %Y").timetuple())*1000
+
+
+    return data
 
 funs = {
     "process_details": process_details,
