@@ -1,18 +1,22 @@
 import ujson as json
-
 from tweepy.api import API
 from tweepy.models import Status
 
-# TODO: maybe make stop_words part of variables for database package? like get_db currently
-with open("/home/rahiel/hortiradar/hortiradar/database/data/stoplist-nl.txt", encoding='utf-8') as f:
-    stop_words = [w.strip("\n") for w in f.readlines()]
+from hortiradar.database import stop_words
+
 
 class ExtendedTweet:
     
     def __init__(self,tweetDict):
         self.tweet = Status.parse(API(),tweetDict["tweet"])
-        self.keywords = tweetDict["keywords"]
-        self.groups = tweetDict["groups"]
+        try:
+            self.keywords = tweetDict["keywords"]
+        except KeyError:
+            pass
+        try:
+            self.groups = tweetDict["groups"]
+        except KeyError:
+            pass
         self.tokens = []
         self.filt_tokens = []
         for token in tweetDict["tokens"]:
@@ -30,21 +34,12 @@ class ExtendedTweet:
         else:
             return False
 
-    def print_tokens(self):
-        print([str(token) for token in self.filt_tokens])
-
 class Token:
 
     def __init__(self,tokenDict):
         self.lemma = tokenDict["lemma"]
         self.pos = tokenDict["pos"]
         self.posprob = tokenDict["posprob"]
-
-    def __str__(self):
-        return self.lemma
-
-    def __repr__(self):
-        return self.lemma
 
     def __hash__(self):
         return hash(self.lemma)
@@ -53,7 +48,13 @@ class Token:
         return self.lemma == other.lemma
 
     def filter_token(self):
-        if ("LET" in self.pos or "BW" in self.pos or "WW" in self.pos):
+        pos_to_filter = ["BW","LET","LID","VG","TSW","VZ","VNW"] # ["LET", "BW", "WW"] # previous version
+        match = False
+        for ptag in pos_to_filter:
+            if ptag in self.pos:
+                match = True
+                break
+        if match:
             return True
         elif ("http" in self.lemma.lower() or self.lemma.lower() in stop_words):
             return True

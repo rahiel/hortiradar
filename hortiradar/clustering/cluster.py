@@ -1,45 +1,45 @@
 from collections import Counter
 from datetime import datetime
-import json
+import random
 
-from hortiradar.clustering.util import jac #, cos_sim
+import ujson as json
 
-## TODO: preload config at once for complete package and fix absolute path
-from configparser import ConfigParser
-Config = ConfigParser()
-Config.read('/home/rahiel/hortiradar/hortiradar/clustering/config.ini')
+from hortiradar.clustering import Config, tweet_time_format
+from util import jac, cos_sim, round_time
+
 
 class Cluster:
-    def __init__(self,ext_tweet):
-        self.tokens = set(ext_tweet.tokens)
-        self.filt_tokens = set(ext_tweet.filt_tokens)
-        self.tweets = [ext_tweet]   
-        self.token_counts = Counter(ext_tweet.tokens)
-        self.tweet_counts = Counter(ext_tweet.tweet.id_str)
-        self.created_at = datetime.utcnow()
+    tweet_threshold = Config.getfloat('Parameters','tweet_threshold')
 
-    def __str__(self):
-        return ",".join([token.lemma for token in self.filt_tokens])
+    def __init__(self):
+        self.created_at = round_time(datetime.utcnow())
+        self.tokens = set()
+        self.filt_tokens = set()
+        self.tweets = []   
+        self.token_counts = Counter()
+        self.tweet_counts = Counter()
 
     def is_similar(self,ext_tweet,algorithm="jaccard"):
         t = set(ext_tweet.tokens)
         if algorithm == "jaccard":
-            return jac(self.filt_tokens,set(ext_tweet.filt_tokens)) >= Config.getfloat('Parameters','tweet_jac_threshold')
+            return jac(self.filt_tokens,set(ext_tweet.filt_tokens)) >= tweet_threshold
+        elif algorithm == "cosine_similarity":
+            return cos_sim(self.filt_tokens,set(ext_tweet.filt_tokens)) >= tweet_threshold
         else:
             raise NotImplementedError("This algorithm is not yet implemented.")
 
     def add_tweet(self,ext_tweet):
-        self.tweets.append(ext_tweet)
-        self.tweet_counts[ext_tweet.tweet.id_str] += 1
+        self.tokens.update(ext_tweet.tokens)
         self.filt_tokens.update(ext_tweet.filt_tokens)
+        self.tweets.append(ext_tweet)
         self.token_counts.update(ext_tweet.tokens)
-        for token in ext_tweet.tokens:
-            self.tokens.add(token)
+        self.tweet_counts[ext_tweet.tweet.id_str] += 1
 
     def get_best_tweet(self):
+        ext_tweets = [tweet for tweet in self.tweets]
         similarities = [jac(self.filt_tokens,set(tweet.filt_tokens)) for tweet in self.tweets]
         max_idx = similarities.index(max(similarities))
-        return self.tweets[max_idx].tweet.text
+        return ext_tweets[max_idx].tweet.id_str
 
     def get_wordcloud(self):
         wordcloud = []
@@ -119,23 +119,82 @@ class Cluster:
 
         return hashtags
 
-    def write_to_file(self,loc=""):
-        outputloc = loc+self.created_at.strftime("cluster_%Y%m%d_%H%M%S_%f")
-        with open(outputloc,w) as f:
-            json.dump(self.get_json,f)
+    def get_interaction_graph(self):
+        nodes = {}
+        edges = []
+        for ext_tweet in self.tweets:
+            tweet = ext_tweet.tweet
+            user_id_str = tweet.user.id_str
+            try:
+                rt_user_id_str = tweet.retweeted_status.user.id_str
 
-    def get_json(self):
-        loc_result = self.get_locations()
-        
+                if rt_user_id_str not in nodes:
+                    nodes[rt_user_id_str] = tweet.retweeted_status.user.screen_name
+                if user_id_str not in nodes:
+                    nodes[user_id_str] = tweet.user.screen_name
+
+                edges.append({"source": rt_user_id_str, "target": user_id_str, "value": "retweet"})
+            except AttributeError:
+                pass
+
+            try:
+                for obj in tweet.entities["user_mentions"]:
+                    if obj["id_str"] not in nodes:
+                        nodes[obj["id_str"]] = obj.screen_name
+                    if user_id_str not in nodes:
+                        nodes[user_id_str] = tweet.user.screen_name
+
+                    edges.append({"source": user_id_str, "target": obj.id_str, "value": "mention"})
+            except AttributeError:
+                pass
+
+            try:
+                if tweet.in_reply_to_user_id_str not in nodes:
+                    nodes[tweet.in_reply_to_user_id_str] = tweet.in_reply_to_screen_name
+                if user_id_str not in nodes:
+                    nodes[user_id_str] = tweet.user.screen_name
+
+                edges.append({"source": user_id_str, "target": tweet.in_reply_to_user_id_str, "value": "reply"})
+            except AttributeError:
+                pass
+
+        graph = {"nodes": [], "edges": []}
+        for node in nodes:
+            graph["nodes"].append({"id": nodes[node]})
+
+        for edge in edges:
+            source = edge["source"]
+            target = edge["target"]
+            graph["edges"].append({"source": nodes[source], "target": nodes[target], "value": edge["value"]})
+
+        return graph
+
+    def get_tokens(self):
+        return [token.lemma for token in self.filt_tokens]
+
+    def get_jsondict(self):
         jDict = {}
-        jDict["tokens"] = [token.lemma for token in self.filt_tokens]
-        jDict["num_tweets"] = len(self.tweets)
-        jDict["locations"] = loc_result["locs"]
-        jDict["avLoc"] = loc_result["avLoc"]
-        jDict["images"] = self.get_images()
-        jDict["urls"] = self.get_URLs()
-        jDict["wordcloud"] = self.get_wordcloud()
-        jDict["hashtags"] = self.get_hashtags()
-        jDict["best_tweet"] = self.get_best_tweet()
+
+        jDict["cluster_time"] = datetime.strftime(self.created_at,tweet_time_format)
+
         jDict["tweets"] = [tw.tweet.id_str for tw in self.tweets]
+        jDict["summary_tweet"] = self.get_best_tweet()
+
+        jDict["tokens"] = self.get_tokens()
+        
+        jDict["timeSeries"] = self.get_timeseries()
+        
+        jDict["photos"] = self.get_images()
+        jDict["URLs"] = self.get_URLs()
+        jDict["tagCloud"] = self.get_wordcloud()
+        jDict["hashtags"] = self.get_hashtags()
+        
+        loc_result = self.get_locations()
+        jDict["locations"] = loc_result["locs"]
+        jDict["centerloc"] = loc_result["avLoc"]
+
+        jDict["graph"] = self.get_interaction_graph()
+
+        jDict["cluster_details"] = self.get_cluster_details()
+
         return jDict

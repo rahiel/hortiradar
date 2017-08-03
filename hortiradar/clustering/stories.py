@@ -1,14 +1,12 @@
-import calendar
 from collections import Counter
 from datetime import datetime
-import json
+import random
 
-from hortiradar.clustering.util import jac, round_time, get_time_passed
+import ujson as json
 
-## TODO: preload config at once for complete package and fix absolute path
-from configparser import ConfigParser
-Config = ConfigParser()
-Config.read('/home/rahiel/hortiradar/hortiradar/clustering/config.ini')
+from hortiradar.clustering import Config, tweet_time_format
+from util import jac, cos_sim, round_time
+
 
 class Stories:
     """
@@ -30,11 +28,12 @@ class Stories:
     time_series:            List of number of tweets per hour in story
     """
     max_idle = Config.getint('Parameters','max_idle')
-    J_threshold = Config.getfloat('Parameters','cluster_jac_threshold')
-    J_original_threshold = Config.getfloat('Parameters','cluster_original_jac_threshold')
+    threshold = Config.getfloat('Parameters','cluster_threshold')
+    original_threshold = Config.getfloat('Parameters','cluster_original_threshold')
 
     def __init__(self,c):
-        self.created_at = datetime.utcnow()
+        self.created_at = round_time(datetime.utcnow())
+        self.origin = c.cluster_time
         self.last_edited = 0
         
         self.tokens = c.tokens
@@ -44,29 +43,37 @@ class Stories:
         self.original_filt_tokens = c.filt_tokens
         
         self.tweets = Counter(c.tweets)
+        self.clusters = [c]
         self.token_counts = c.token_counts
         self.first_tweet_time = min([tw.tweet.created_at for tw in self.tweets])
-        self.time_series = self.calc_TS()
+        self.time_series = self.get_timeseries()
 
-    def __str__(self):
-        return ",".join([token.lemma for token in self.filt_tokens])
+        self.max_idle = max_idle
 
-    def is_similar(self,c): ## was CalcMatch
+    def is_similar(self,c,algorithm="jaccard"): ## was CalcMatch
         """Calculate if the cluster matches to the story"""
-        currentJaccard = jac(self.filt_tokens,c.filt_tokens)
-        originalJaccard = jac(self.original_filt_tokens,c.filt_tokens)
-        return (currentJaccard >= self.J_threshold and originalJaccard >= self.J_original_threshold)
-
+        if algorithm == "jaccard":
+            current = jac(self.filt_tokens,c.filt_tokens)
+            original = jac(self.original_filt_tokens,c.filt_tokens)
+            return (current >= threshold and original >= original_threshold)
+        elif algorithm == "cosine_similarity":
+            current = cos_sim(self.filt_tokens,c.filt_tokens)
+            original = cos_sim(self.original_filt_tokens,c.filt_tokens)
+            return (current >= threshold and original >= original_threshold)
+        else:
+            raise NotImplementedError("This algorithm is not yet implemented.")
+    
     def add_cluster(self,c): ## was addTime
         """Add a new cluster to the story"""
-        self.tokens.update(c.tokens)
-        self.filt_tokens.update(c.filt_tokens)
+        self.tokens = c.tokens
+        self.filt_tokens = c.filt_tokens
         self.token_counts.update(c.token_counts)
+        self.clusters.append(c)
         for tweet in c.tweets:
             self.tweets[tweet] += 1
         
         self.first_tweet_time = min([tw.tweet.created_at for tw in self.tweets])
-        self.time_series = self.calc_TS()
+        self.time_series = self.get_timeseries()
 
     def add_delay(self):
         """Update idle time counter"""
@@ -78,30 +85,37 @@ class Stories:
 
     def end_story(self):
         """Add closing time to Story and calculate time series"""
-        self.closed_at = datetime.utcnow()
+        self.closed_at = round_time(datetime.utcnow())
 
-    def calc_TS(self):
-        """Given an array of datetime objects, return the time series."""
-        rounded_times = [round_time(tw.tweet.created_at) for tw in self.tweets]
-        TS_counter = Counter(rounded_times)
+    def get_timeseries(self):
+        tsDict = Counter()
+        for tw in self.tweets:
+            tweet = tw.tweet
+            dt = datetime.strptime(tweet["created_at"], tweet_time_format)
+            tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
 
-        start = min(rounded_times)
-        end = max(rounded_times)
+        ts = []
+        if self.tweets:
+            tsStart = sorted(tsDict)[0]
+            tsEnd = sorted(tsDict)[-1]
+            temp = datetime(tsStart[0], tsStart[1], tsStart[2], tsStart[3], 0, 0)
+            while temp <= datetime(tsEnd[0], tsEnd[1], tsEnd[2], tsEnd[3], 0, 0):
+                if (temp.year, temp.month, temp.day, temp.hour) in tsDict:
+                    ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": tsDict[(temp.year, temp.month, temp.day, temp.hour)]})
+                else:
+                    ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": 0})
 
-        TS_length = int(get_time_passed(start,end))+1
-        TS = [0]*TS_length
+                temp += timedelta(hours=1)
 
-        for dt in rounded_times:
-            interval = int(get_time_passed(dt,end))
-            TS[interval] += 1
-
-        self.time_series = TS
+        return ts
 
     def get_best_tweet(self):
         ext_tweets = [tweet for tweet in self.tweets]
-        similarities = [jac(self.filt_tokens,set(tweet.filt_tokens)) for tweet in self.tweets]
+        new_similarities = [jac(self.filt_tokens,set(tweet.filt_tokens)) for tweet in self.tweets]
+        orig_similarities = [jac(self.original_filt_tokens,set(tweet.filt_tokens)) for tweet in self.tweets]
+        similarities = np.multiply(new_similarities,orig_similarities).tolist()
         max_idx = similarities.index(max(similarities))
-        return ext_tweets[max_idx].tweet.text
+        return ext_tweets[max_idx].tweet.id_str
 
     def get_wordcloud(self):
         wordcloud = []
@@ -188,32 +202,92 @@ class Stories:
 
         return wordcloud
 
-    def write_to_file(self,loc=""):
-        outputloc = loc+self.created_at.strftime("story_%Y%m%d_%H%M%S_%f")
-        with open(outputloc,w) as f:
-            json.dump(self.get_json,f)
+    def get_interaction_graph(self):
+        nodes = {}
+        edges = []
+        for ext_tweet in self.tweets:
+            tweet = ext_tweet.tweet
+            user_id_str = tweet.user.id_str
+            try:
+                rt_user_id_str = tweet.retweeted_status.user.id_str
 
-    def get_json(self): ## was writeJSON
+                if rt_user_id_str not in nodes:
+                    nodes[rt_user_id_str] = tweet.retweeted_status.user.screen_name
+                if user_id_str not in nodes:
+                    nodes[user_id_str] = tweet.user.screen_name
+
+                edges.append({"source": rt_user_id_str, "target": user_id_str, "value": "retweet"})
+            except AttributeError:
+                pass
+
+            try:
+                for obj in tweet.entities["user_mentions"]:
+                    if obj["id_str"] not in nodes:
+                        nodes[obj["id_str"]] = obj.screen_name
+                    if user_id_str not in nodes:
+                        nodes[user_id_str] = tweet.user.screen_name
+
+                    edges.append({"source": user_id_str, "target": obj.id_str, "value": "mention"})
+            except AttributeError:
+                pass
+
+            try:
+                if tweet.in_reply_to_user_id_str not in nodes:
+                    nodes[tweet.in_reply_to_user_id_str] = tweet.in_reply_to_screen_name
+                if user_id_str not in nodes:
+                    nodes[user_id_str] = tweet.user.screen_name
+
+                edges.append({"source": user_id_str, "target": tweet.in_reply_to_user_id_str, "value": "reply"})
+            except AttributeError:
+                pass
+
+        graph = {"nodes": [], "edges": []}
+        for node in nodes:
+            graph["nodes"].append({"id": nodes[node]})
+
+        for edge in edges:
+            source = edge["source"]
+            target = edge["target"]
+            graph["edges"].append({"source": nodes[source], "target": nodes[target], "value": edge["value"]})
+
+        return graph
+
+    def get_cluster_details(self):
+        cluster_info = []
+        for c in self.clusters:
+            cl_info = {}
+            cl_info["time"] = datetime.strftime(c.created_at,tweet_time_format)
+            cl_info["tokens"] = c.get_tokens()
+            cluster_info.append(cl_info)
+
+        return cluster_info
+
+    def get_jsondict(self):
         """Builds the dict for output to JSON"""
-        loc_result = self.get_locations()
-        
         jDict = {}
-        jDict["startStory"] = datetime.strftime(self.created_at,"%Y-%m-%d %Hh")
-        try:
-            jDict["endStory"] = datetime.strftime(self.closed_at,"%Y-%m-%d %Hh")
-        except AttributeError:
-            pass
-        jDict["firstTweetTime"] = calendar.timegm(self.first_tweet_time.timetuple())
-        jDict["ts"] = self.time_series
-        jDict["original_wordcloud"] = self.get_original_wordcloud()
         
-        jDict["num_tweets"] = len(self.tweets)
-        jDict["locations"] = loc_result["locs"]
-        jDict["avLoc"] = loc_result["avLoc"]
-        jDict["images"] = self.get_images()
-        jDict["urls"] = self.get_URLs()
-        jDict["wordcloud"] = self.get_wordcloud()
-        jDict["hashtags"] = self.get_hashtags()
-        jDict["best_tweet"] = self.get_best_tweet()
+        jDict["startStory"] = datetime.strftime(self.created_at,tweet_time_format)
+        try:
+            jDict["endStory"] = datetime.strftime(self.closed_at+timedelta(hours=1),tweet_time_format)
+        except AttributeError:
+            jDict["endStory"] = datetime.strftime(round_time(datetime.utcnow())+timedelta(hours=1),tweet_time_format)
+
         jDict["tweets"] = [tw.tweet.id_str for tw in self.tweets]
+        jDict["summary_tweet"] = self.get_best_tweet()
+
+        jDict["timeSeries"] = self.get_timeseries()
+        
+        jDict["photos"] = self.get_images()
+        jDict["URLs"] = self.get_URLs()
+        jDict["tagCloud"] = self.get_wordcloud()
+        jDict["hashtags"] = self.get_hashtags()
+        
+        loc_result = self.get_locations()
+        jDict["locations"] = loc_result["locs"]
+        jDict["centerloc"] = loc_result["avLoc"]
+
+        jDict["graph"] = self.get_interaction_graph()
+
+        jDict["cluster_details"] = self.get_cluster_details()
+        
         return jDict
