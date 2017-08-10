@@ -5,11 +5,12 @@ import random
 import ujson as json
 
 from hortiradar.clustering import Config, tweet_time_format
-from util import jac, cos_sim, round_time
+from .util import jac, cos_sim, round_time
+
+tweet_threshold = Config.getfloat('storify:parameters','tweet_threshold')
 
 
 class Cluster:
-    tweet_threshold = Config.getfloat('Parameters','tweet_threshold')
 
     def __init__(self):
         self.created_at = round_time(datetime.utcnow())
@@ -45,7 +46,7 @@ class Cluster:
         wordcloud = []
         for token in self.token_counts:
             if token in self.filt_tokens:
-                wordcloud.append({"text": token.lemma, "weight": self.token_counts[token]})
+                wordcloud.append({"text": token.lemma.encode('utf-8'), "weight": self.token_counts[token]})
 
         return wordcloud
 
@@ -170,7 +171,10 @@ class Cluster:
         return graph
 
     def get_tokens(self):
-        return [token.lemma for token in self.filt_tokens]
+        return [token.lemma.encode('utf-8') for token in self.filt_tokens]
+
+    def get_cluster_details(self):
+        return {"time": datetime.strftime(self.created_at,tweet_time_format), "tokens": self.get_tokens()}
 
     def get_jsondict(self):
         jDict = {}
@@ -194,7 +198,5 @@ class Cluster:
         jDict["centerloc"] = loc_result["avLoc"]
 
         jDict["graph"] = self.get_interaction_graph()
-
-        jDict["cluster_details"] = self.get_cluster_details()
 
         return jDict

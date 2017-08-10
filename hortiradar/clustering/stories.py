@@ -1,11 +1,16 @@
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 
+import numpy as np
 import ujson as json
 
 from hortiradar.clustering import Config, tweet_time_format
-from util import jac, cos_sim, round_time
+from .util import jac, cos_sim, round_time
+
+max_idle = Config.getint('storify:parameters','max_idle')
+threshold = Config.getfloat('storify:parameters','cluster_threshold')
+original_threshold = Config.getfloat('storify:parameters','cluster_original_threshold')
 
 
 class Stories:
@@ -27,13 +32,10 @@ class Stories:
     tweets:                 Set of tweets corresponding to the story
     time_series:            List of number of tweets per hour in story
     """
-    max_idle = Config.getint('Parameters','max_idle')
-    threshold = Config.getfloat('Parameters','cluster_threshold')
-    original_threshold = Config.getfloat('Parameters','cluster_original_threshold')
 
     def __init__(self,c):
         self.created_at = round_time(datetime.utcnow())
-        self.origin = c.cluster_time
+        self.origin = c.created_at
         self.last_edited = 0
         
         self.tokens = c.tokens
@@ -91,7 +93,8 @@ class Stories:
         tsDict = Counter()
         for tw in self.tweets:
             tweet = tw.tweet
-            dt = datetime.strptime(tweet["created_at"], tweet_time_format)
+            # dt = datetime.strptime(tweet.created_at, tweet_time_format)
+            dt = tweet.created_at
             tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
 
         ts = []
@@ -121,7 +124,7 @@ class Stories:
         wordcloud = []
         for token in self.token_counts:
             if token in self.filt_tokens:
-                wordcloud.append({"text": token.lemma, "weight": self.token_counts[token]})
+                wordcloud.append({"text": token.lemma.encode('utf-8'), "weight": self.token_counts[token]})
 
         return wordcloud
 
@@ -198,7 +201,7 @@ class Stories:
     def get_original_wordcloud(self):
         wordcloud = []
         for token in self.original_filt_tokens:
-            wordcloud.append({"text": token.lemma, "weight": self.token_counts[token]})
+            wordcloud.append({"text": token.lemma.encode('utf-8'), "weight": self.token_counts[token]})
 
         return wordcloud
 
@@ -255,10 +258,7 @@ class Stories:
     def get_cluster_details(self):
         cluster_info = []
         for c in self.clusters:
-            cl_info = {}
-            cl_info["time"] = datetime.strftime(c.created_at,tweet_time_format)
-            cl_info["tokens"] = c.get_tokens()
-            cluster_info.append(cl_info)
+            cluster_info.append(c.get_cluster_details())
 
         return cluster_info
 

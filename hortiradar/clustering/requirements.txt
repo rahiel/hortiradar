@@ -1,0 +1,6 @@
+gensim
+numpy
+redis
+sklearn
+tweepy
+ujson

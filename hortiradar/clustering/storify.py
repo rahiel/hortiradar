@@ -7,15 +7,13 @@ import ujson as json
 
 from hortiradar.clustering import ExtendedTweet, Cluster, Stories, tweet_time_format
 from hortiradar.database import get_db
-from util import round_time
+from .util import round_time
 
 
 db = get_db()
 groups = [g["name"] for g in db.groups.find({}, projection={"name": True, "_id": False})]
 storiesdb = db.stories
 tweetsdb = db.tweets
-
-storiesdb.create_index([("groups", 1), ("datetime", 1)])
 
 redis = StrictRedis()
 
@@ -128,7 +126,7 @@ def run_storify(stories,group):
     tweets, corpus = get_tweets(start,end,group)
     
     if tweets:        
-        clusters = cluster_tweets(tweets,corpus)                
+        clusters = cluster_tweets(tweets,corpus)
 
         stories = storify_clusters(stories,clusters)
         stories,finished_stories = find_finished_stories(stories)
