@@ -4,7 +4,7 @@ from .keywords import get_db
 
 
 def read_data(filename):
-    with open(dirname(__file__)+"/database/data/{}".format(filename), "r") as f:
+    with open(dirname(__file__)+"/data/{}".format(filename), "r", encoding="utf-8") as f:
         entities = [w.strip() for w in f if not w.startswith("#")]
     return {w: 1 for w in entities}
 
