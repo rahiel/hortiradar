@@ -363,8 +363,8 @@ class RoleForm(FlaskForm):
     action = SelectField("action", choices=[("add", "add"), ("remove", "remove")], validators=[DataRequired()])
 
 
-@roles_required("admin")
 @bp.route("/admin", methods=("GET", "POST"))
+@roles_required("admin")
 def admin():
     form = RoleForm()
     users = User.query.all()
