@@ -1,19 +1,24 @@
-from datetime import datetime, timedelta
 import re
+from datetime import datetime, timedelta
 
 import CommonMark
 import ujson as json
 from babel.dates import format_datetime, get_timezone
-from flask import Blueprint, render_template, request
+from flask import Blueprint, redirect, render_template, request, url_for
 from flask_babel import Babel
 from flask_mail import Mail
-from flask_user import SQLAlchemyAdapter, UserManager, login_required, roles_required, current_user
+from flask_user import SQLAlchemyAdapter, UserManager, current_user, login_required, roles_required
+from flask_wtf import FlaskForm
 from redis import StrictRedis
+from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.wrappers import Response
+from wtforms import StringField, SelectField
+from wtforms.validators import AnyOf, DataRequired, NoneOf
+
 
 from hortiradar import TOKEN, Tweety, time_format
 from hortiradar.website import app, db
-from models import User
+from models import Role, User
 from processing import cache, floor_time, process_details, process_top
 
 
@@ -352,10 +357,51 @@ def show_clusters():
         clusters = json.load(f)
     return jsonify(clusters)
 
-@bp.route("/admin")
+class RoleForm(FlaskForm):
+    username = StringField("username", validators=[DataRequired()])
+    role = StringField("role", validators=[DataRequired(), NoneOf(["admin"])])
+    action = SelectField("action", choices=[("add", "add"), ("remove", "remove")], validators=[DataRequired()])
+
+
 @roles_required("admin")
-def admin_panel():
-    return render_template("admin_panel.html", title=make_title("Admin"))
+@bp.route("/admin", methods=("GET", "POST"))
+def admin():
+    form = RoleForm()
+    users = User.query.all()
+    usernames = [u.username for u in users]
+    form.username.validators.append(AnyOf(usernames, message="Username not found."))
+    if form.validate_on_submit():
+        user = User.query.filter(User.username == form.username.data).one()
+
+        try:
+            role = Role.query.filter(Role.name == form.role.data).one()
+        except NoResultFound:
+            role = Role(name=form.role.data)
+            db.session.add(role)
+
+        if form.action.data == "add":
+            if role not in user.roles:
+                user.roles.append(role)
+                db.session.add(user)
+        elif form.action.data == "remove":
+            if role in user.roles:
+                user.roles.remove(role)
+                db.session.add(user)
+
+        db.session.commit()
+        return redirect(url_for("horti.admin"))
+
+    # display roles
+    roles = {}
+    for user in users:
+        roles[user.username] = ", ".join(sorted([r.name for r in user.roles]))
+
+    template_data = {
+        "form": form,
+        "users": users,
+        "roles": roles
+    }
+    return render_template("admin.html", title=make_title("Admin"), **template_data)
 
 def make_title(page):
     return page + " — Hortiradar"

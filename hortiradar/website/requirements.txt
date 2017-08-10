@@ -5,6 +5,7 @@ eventlet
 flask
 flask-babel
 flask-user<0.7
+flask-wtf
 gevent
 gunicorn
 hiredis

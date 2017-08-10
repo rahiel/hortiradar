@@ -13,3 +13,17 @@
     <a class="btn btn-default" href="{{ url_for(route, period=period_button, **route_kwargs) }}" role="button">{{ period_label }}</a>
   {% endif %}
 {% endmacro %}
+
+{% macro render_field(field) %}
+  <div class="form-group">
+    {{ field.label }}
+    {{ field(class="form-control", **kwargs)|safe }}
+    {% if field.errors %}
+      <ul class="alert alert-danger">
+        {% for error in field.errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+{% endmacro %}
