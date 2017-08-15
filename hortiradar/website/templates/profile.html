@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% set active_page = "horti.profile" %}
+{% block content %}
+<div class="row">
+  <div class="col-md-12">
+
+    <h1>Welkom, {{ current_user.username }}!</h1>
+
+    <p>U kunt de volgende groepen aanpassen:</p>
+
+    <ul>
+      {% for group in groups %}
+        <li><a>{{ group }}</a></li>
+      {% endfor %}
+    </ul>
+
+  </div>
+</div>
+{% endblock %}

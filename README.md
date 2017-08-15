@@ -18,3 +18,5 @@ own conditions:
 
 - [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/): `./hortiradar/database/data/obscene_words.txt`
 - [GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.en.html): `./hortiradar/website/interaction_graph.ts`
+
+Look at `LEGAL.txt` for the free software licenses of code used in this project.

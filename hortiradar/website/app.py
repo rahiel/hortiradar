@@ -224,6 +224,10 @@ def view_keywords_in_group(group):
     }
     return render_template("group_keywords.html", **template_data)
 
+@bp.route("/groups/<group>/edit")
+def edit_group(group):
+    pass
+
 @bp.route("/keywords/<keyword>")
 def view_keyword(keyword):
     period, start, end, cache_time = get_period(request, "week")
@@ -402,6 +406,16 @@ def admin():
         "roles": roles
     }
     return render_template("admin.html", title=make_title("Admin"), **template_data)
+
+
+@bp.route("/profile")
+@login_required
+def profile():
+    groups = [display_group(r.name[2:]) for r in current_user.roles if r.name.startswith("g:")]
+    template_data = {
+        "groups": groups
+    }
+    return render_template("profile.html", title=make_title("Profiel"), **template_data)
 
 def make_title(page):
     return page + " — Hortiradar"

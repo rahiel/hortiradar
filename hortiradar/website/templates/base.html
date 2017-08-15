@@ -50,11 +50,45 @@
             {{ render_nav(active_page, "horti.api", "horti.api", {}, "API") }}
             {{ render_nav(active_page, "horti.about", "horti.about", {}, "Over") }}
           </ul>
+          <ul class="nav navbar-nav navbar-right">
+            {% if current_user.is_authenticated %}
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ current_user.username }} <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li><a href="{{ url_for("horti.profile") }}">Profiel</a></li>
+                  <li role="separator" class="divider"></li>
+                  <li><a href="{{ url_for("user.logout") }}">Log uit</a></li>
+                </ul>
+              </li>
+            {% else %}
+              <li><a href="{{ url_for("horti.profile") }}">Log In</a></li>
+            {% endif %}
+          </ul>
         </div>{# /.navbar-collapse #}
       </div>{# /.container #}
     </nav>
 
     <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          {# This flash_messages block is code from the Flask-User project, see LEGAL.txt
+             in the root directory for its license. #}
+          {# One-time system messages called Flash messages #}
+          {% block flash_messages %}
+            {%- with messages = get_flashed_messages(with_categories=true) -%}
+              {% if messages %}
+                {% for category, message in messages %}
+                  {% if category=='error' %}
+                    {% set category='danger' %}
+                  {% endif %}
+                  <div class="alert alert-{{category}}">{{ message|safe }}</div>
+                {% endfor %}
+              {% endif %}
+            {%- endwith %}
+          {% endblock %}
+        </div>
+      </div>
+
       {% block content %}{% endblock %}
 
       <div class="row" id="footer">
