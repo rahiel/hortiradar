@@ -4,6 +4,7 @@ module.exports = {
         keyword: "./keyword.ts",
         interaction_graph: "./interaction_graph.ts",
         storify: "./storify.ts",
+        edit_group: "./edit_group.ts",
         loading: "./loading.ts"
     },
     output: {

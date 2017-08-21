@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% set active_page = "horti.edit_group" %}
+{% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <div id="success" class="alert alert-success" role="alert" style="display:none"></div>
+
+    <h1>{{ group }}</h1>
+
+    <p>
+      Hier kunt u de trefwoorden aanpassen die in de groep "{{ group }}" geanalyseerd
+      worden.
+    </p>
+
+    <h2>Verwijderen</h2>
+    <p>
+      Hier ziet u de huidige trefwoorden in de groep. Vink hier een trefwoord
+      aan om deze uit de groep te verwijderen.
+    </p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Lemma</th>
+          <th>Woordsoort</th>
+          <th>Verwijder?</th>
+        </tr>
+      </thead>
+      {% for keyword in keywords %}
+        <tr class="keyword">
+          <td class="lemma">{{ keyword["lemma"] }}</td>
+          <td class="pos">{{ keyword["pos"] }}</td>
+          <td><input class="delete" type="checkbox"></td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    <button type="button" id="deleteButton" class="btn btn-danger">Verwijder</button>
+
+  </div>
+</div>
+<script src="{{ url_for("horti.static", filename="edit_group.js") }}"></script>
+{% endblock %}

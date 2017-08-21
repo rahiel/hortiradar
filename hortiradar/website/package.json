@@ -10,14 +10,14 @@
   "devDependencies": {
     "@types/canvasjs": "^1.5.30",
     "@types/d3": "^4.10.0",
-    "@types/googlemaps": "^3.26.17",
+    "@types/googlemaps": "^3.26.20",
     "@types/jquery": "^2.0.45",
-    "@types/node": "^8.0.17",
+    "@types/node": "^8.0.24",
     "@types/twitter": "0.0.28",
-    "awesome-typescript-loader": "^3.2.2",
+    "awesome-typescript-loader": "^3.2.3",
     "source-map-loader": "^0.2.1",
     "typescript": "^2.4.2",
-    "webpack": "^3.4.1"
+    "webpack": "^3.5.5"
   },
   "dependencies": {
     "d3": "^4.10.0",

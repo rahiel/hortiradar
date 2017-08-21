@@ -9,8 +9,8 @@
     <p>U kunt de volgende groepen aanpassen:</p>
 
     <ul>
-      {% for group in groups %}
-        <li><a>{{ group }}</a></li>
+      {% for (group, label) in groups %}
+        <li><a href="{{ url_for("horti.edit_group", group=group) }}">{{ label }}</a></li>
       {% endfor %}
     </ul>
 

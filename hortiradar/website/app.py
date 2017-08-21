@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import CommonMark
 import ujson as json
 from babel.dates import format_datetime, get_timezone
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_babel import Babel
 from flask_mail import Mail
 from flask_user import SQLAlchemyAdapter, UserManager, current_user, login_required, roles_required
@@ -121,21 +121,25 @@ def display_group(group: str) -> str:
     return {"bloemen": "Bloemen en Planten", "groente_en_fruit": "Groente en Fruit"}.get(group, group)
 
 def display_pos(pos: str) -> str:
-    p = {
-        "ADJ": "bijvoeglijk naamwoord",
-        "BW": "bijwoord ",
-        "LET": "leesteken",
-        "LID": "lidwoord",
-        "N": "zelfstandig naamwoord",
-        "SPEC": "eigennaam / onbekend",
-        "TSW": "tussenwerpsel",
-        "TW": "telwoord",
-        "VG": "voegwoord",
-        "VNW": "voornaamwoord",
-        "VZ": "voorzetsel",
-        "WW": "werkwoord"
-    }
-    return p.get(pos, pos)
+    return display_pos.p.get(pos, pos)
+display_pos.p = {
+    "ADJ": "bijvoeglijk naamwoord",
+    "BW": "bijwoord ",
+    "LET": "leesteken",
+    "LID": "lidwoord",
+    "N": "zelfstandig naamwoord",
+    "SPEC": "eigennaam / onbekend",
+    "TSW": "tussenwerpsel",
+    "TW": "telwoord",
+    "VG": "voegwoord",
+    "VNW": "voornaamwoord",
+    "VZ": "voorzetsel",
+    "WW": "werkwoord"
+}
+
+def parse_pos(text: str) -> str:
+    return parse_pos.p.get(text, text)
+parse_pos.p = {v: k for (k, v) in display_pos.p.items()}
 
 @bp.route("/")
 def home():
@@ -224,9 +228,43 @@ def view_keywords_in_group(group):
     }
     return render_template("group_keywords.html", **template_data)
 
-@bp.route("/groups/<group>/edit")
+@bp.route("/groups/<group>/edit", methods=["GET", "POST"])
+@login_required
 def edit_group(group):
-    pass
+    if ("g:" + group) not in [r.name for r in current_user.roles]:
+        flash("U heeft geen rechten om de groep \"{}\" aan te passen.".format(display_group(group)), "error")
+        return redirect(url_for("horti.home"))
+    if request.method == "GET":
+        keywords = cache(tweety.get_group, group, cache_time=60 * 60, path=get_req_path(request))
+        if isinstance(keywords, Response):
+            return keywords
+        if keywords:
+            keywords.sort(key=lambda x: x["lemma"])
+            for k in keywords:
+                k["pos"] = display_pos(k["pos"])
+        template_data = {
+            "keywords": keywords,
+            "group": display_group(group),
+            "title": make_title("{} aanpassen".format(group))
+        }
+        return render_template("edit_group.html", **template_data)
+    elif request.method == "POST":
+        data = json.loads(request.data)
+        if data["action"] == "delete":
+            keywords = data["keywords"]
+            for k in keywords:
+                k["pos"] = parse_pos(k["pos"])
+            keywords = [(k["lemma"], k["pos"]) for k in keywords]
+
+            current_keywords = json.loads(tweety.get_group(group))
+            current_keywords = [(k["lemma"], k["pos"]) for k in current_keywords]
+
+            new_keywords = set(current_keywords) - set(keywords)
+            new_keywords = [{"lemma": k[0], "pos": k[1]} for k in new_keywords]
+
+            tweety.put_group(group, data=json.dumps(new_keywords))
+            cache(tweety.get_group, group, cache_time=60 * 60, force_refresh=True)
+            return jsonify({"status": "ok"})
 
 @bp.route("/keywords/<keyword>")
 def view_keyword(keyword):
@@ -340,7 +378,7 @@ def api():
 def loading(loading_id):
     if request.method == "GET":
         return render_template("loading.html", title=make_title("Laden"))
-    else:
+    elif request.method == "POST":
         loading = redis.get("loading:" + loading_id)
         if loading in [b"done", None]:
             status = "done"
@@ -411,9 +449,10 @@ def admin():
 @bp.route("/profile")
 @login_required
 def profile():
-    groups = [display_group(r.name[2:]) for r in current_user.roles if r.name.startswith("g:")]
+    groups = [r.name[2:] for r in current_user.roles if r.name.startswith("g:")]
+    labels = [display_group(g) for g in groups]
     template_data = {
-        "groups": groups
+        "groups": zip(groups, labels),
     }
     return render_template("profile.html", title=make_title("Profiel"), **template_data)
 
