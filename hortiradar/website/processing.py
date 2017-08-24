@@ -1,6 +1,7 @@
 from collections import Counter
 from datetime import datetime, timedelta
 from hashlib import md5
+import operator
 from types import FunctionType
 from typing import Sequence
 import random
@@ -14,6 +15,7 @@ from redis import StrictRedis
 
 from hortiradar import Tweety, TOKEN, time_format
 from hortiradar.database import stop_words, obscene_words, blocked_users, blacklist
+from hortiradar.clustering.storify import load_stories
 
 
 broker_url = "amqp://guest@localhost:5672/hortiradar"
@@ -290,20 +292,30 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     }
     return data
 
-def process_storify(prod, params, force_refresh=False, cache_time=CACHE_TIME):
+def process_stories(group, start, end, force_refresh=False, cache_time=CACHE_TIME):
+    active,closed = load_stories(group, start, end)
 
-    stories = cache(load_stories, prod, params, cache_time=cache_time, path=get_req_path(request))
+    actlen = {}
+    closelen = {}
+    for s in active:
+        actlen[s] = len(s["tweets"])
 
-    # TODO: load_stories loads closed stories from story DB and active stories from redis!
+    srt_active = sorted(actlen.items(), key=operator.itemgetter(1))
+    sorted_active = [s[0] for s in srt_active]
 
-    ts = calendar.timegm(datetime.strftime(val,"%a %b %d %H:%M:%S +0000 %Y").timetuple())*1000
+    for s in closed: 
+        closedlen[s] = len(s["tweets"])
 
+    srt_closed = sorted(closedlen.items(), key=operator.itemgetter(1))
+    sorted_closed = [s[0] for s in srt_closed]
 
-    return data
+    return sorted_active, sorted_closed
+
 
 funs = {
     "process_details": process_details,
     "process_top": process_top,
+    "process_stories": process_stories,
 }
 for f in dir(tweety):
     attr = eval("tweety.{}".format(f))

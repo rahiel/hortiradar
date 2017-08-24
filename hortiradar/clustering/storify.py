@@ -136,6 +136,12 @@ def run_storify(stories,group):
 
     return stories
 
+def load_stories(group, start, end):
+    closed = storiesdb.find({"groups": group, "datetime": {"$gte": start, "$lt": end})
+    active = redis.get("s:{gr}".format(gr=group))
+
+    return [json.loads(s) for s in active], [json.loads(s) for s in closed]
+
 stories = {}
 for group in groups:
     k = "s:{gr}".format(gr=group)

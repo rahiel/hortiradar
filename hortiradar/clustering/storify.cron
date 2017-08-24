@@ -1,0 +1,7 @@
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+HORTI=/home/rahiel/hortiradar
+
+# m h dom mon dow user  command
+30 * * * * root cd $HORTI/hortiradar/clustering && $HORTI/venv/bin/python ./storify.py

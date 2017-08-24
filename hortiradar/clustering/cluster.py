@@ -174,7 +174,7 @@ class Cluster:
         return [token.lemma.encode('utf-8') for token in self.filt_tokens]
 
     def get_cluster_details(self):
-        return {"time": datetime.strftime(self.created_at,tweet_time_format), "tokens": self.get_tokens()}
+        return {"starting_time": timegm(self.created_at.timetuple())*1000, "display": "circle", "tokens": self.get_tokens()}
 
     def get_jsondict(self):
         jDict = {}

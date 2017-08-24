@@ -1,4 +1,5 @@
 import re
+from calendar import timegm
 from datetime import datetime, timedelta
 
 import CommonMark
@@ -19,7 +20,7 @@ from wtforms.validators import AnyOf, DataRequired, NoneOf
 from hortiradar import TOKEN, Tweety, time_format
 from hortiradar.website import app, db
 from models import Role, User
-from processing import cache, floor_time, process_details, process_top
+from processing import cache, floor_time, process_details, process_top, process_storify
 
 
 bp = Blueprint("horti", __name__, template_folder="templates", static_folder="static")
@@ -311,48 +312,63 @@ def view_keyword(keyword):
     }
     return render_template("keyword.html", title=make_title(keyword), **template_data)
 
-@bp.route("/clustering/<keyword>")
-def storify_keyword(keyword):
+@bp.route("/clustering/<group>")
+def storify_keyword(group):
     period, start, end, cache_time = get_period(request, "week")
-    params = {"start": start.strftime(time_format), "end": end.strftime(time_format)}
-    keyword_data = cache(process_details, keyword, params, cache_time=cache_time, path=get_req_path(request))
-    if isinstance(keyword_data, Response):
-        return keyword_data
-
+    active_stories, closed_stories = cache(process_storify, group, start, end, cache_time=cache_time, path=get_req_path(request))
+    
     storify_data = []
     timeline_data = []
 
-    # TEMPORARY CODE FOR TEST
-    import calendar
-    timeline_start = calendar.timegm(start.timetuple())*1000
-    timeline_end = calendar.timegm(end.timetuple())*1000
-    
-    keyword_data['urls'] = keyword_data["URLs"][:16]
-    for url in keyword_data['urls']:
-        url["display_url"] = shorten(url["link"], 45)
-    if not keyword_data['urls']:
-        keyword_data['urls'].append({"occ": 0, "link": "#", "display_url": "Geen URLs gevonden"})
-    del keyword_data["URLs"]
-
-    keyword_data["tagCloud"] = keyword_data["tagCloud"][:200]
+    timeline_start = timegm(start.timetuple())*1000
+    timeline_end = timegm(end.timetuple())*1000
 
     display_tweets = 11
-    keyword_data["tweets"] = keyword_data["tweets"][:display_tweets]
+    display_active_stories = 5
+    display_closed_stories = 5
 
-    num_tweets = keyword_data["num_tweets"]
-    del keyword_data["num_tweets"]
+    for story in active_stories:
+        if not (len(storify_data) < display_active_stories):
+            break
+        story['urls'] = story["URLs"][:16]
+        for url in story['urls']:
+            url["display_url"] = shorten(url["link"], 45)
+        if not story['urls']:
+            story['urls'].append({"occ": 0, "link": "#", "display_url": "Geen URLs gevonden"})
+        del story["URLs"]
 
-    # keyword_data["graph"] = json.dumps(keyword_data["graph"])
+        story["tagCloud"] = story["tagCloud"][:200]
 
-    for i in range(10):
-        timeline_info = {"label": i, "times": [{"starting_time": timeline_start, "display": "circle", "tokens": ["token1"]}, {"starting_time": timeline_end, "display": "circle", "tokens": ["token1"]}]}
-        keyword_data["summarytweet"] = keyword_data["tweets"][i]
+        story["tweets"] = story["tweets"][:display_tweets]
+        story["summarytweet"] = story["summary_tweet"]
+        
+        timeline_info = {"label": len(storify_data), "times": story["cluster_details"]}
+
+        storify_data.append(keyword_data)
+        timeline_data.append(timeline_info)
+
+    for story in closed_stories:
+        if not (len(storify_data) < display_active_stories+display_closed_stories):
+            break
+        story['urls'] = story["URLs"][:16]
+        for url in story['urls']:
+            url["display_url"] = shorten(url["link"], 45)
+        if not story['urls']:
+            story['urls'].append({"occ": 0, "link": "#", "display_url": "Geen URLs gevonden"})
+        del story["URLs"]
+
+        story["tagCloud"] = story["tagCloud"][:200]
+
+        story["tweets"] = story["tweets"][:display_tweets]
+        story["summarytweet"] = story["summary_tweet"]
+        
+        timeline_info = {"label": len(storify_data), "times": story["cluster_details"]}
 
         storify_data.append(keyword_data)
         timeline_data.append(timeline_info)
 
     template_data = {
-        "keyword": keyword,
+        "group": group,
         "storify_data": json.dumps(storify_data),
         "timeline_data": json.dumps(timeline_data),
         "timeline_start_ts": timeline_start,
@@ -363,7 +379,7 @@ def storify_keyword(keyword):
         "end": display_datetime(end),
         "period": period
     }
-    return render_template("storify.html", title=make_title(keyword), **template_data)
+    return render_template("storify.html", title=make_title(group), **template_data)
 
 @bp.route("/about")
 def about():
@@ -389,15 +405,6 @@ def loading(loading_id):
 @app.errorhandler(404)
 def page_not_found(error):
     return render_template("page_not_found.html"), 404
-
-@bp.route("/_get_clusters")
-def show_clusters():
-    # TODO: currently loading in file with clusters, implement caching of clusters
-    now = floor_time(datetime.utcnow(), hour=True)
-    cluster_file = now.strftime("%Y%m%d_%H_clusters.json")
-    with open(cluster_file) as f:
-        clusters = json.load(f)
-    return jsonify(clusters)
 
 class RoleForm(FlaskForm):
     username = StringField("username", validators=[DataRequired()])
