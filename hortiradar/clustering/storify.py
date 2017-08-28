@@ -142,15 +142,17 @@ def load_stories(group, start, end):
 
     return [json.loads(s) for s in active], [json.loads(s) for s in closed]
 
-stories = {}
-for group in groups:
-    k = "s:{gr}".format(gr=group)
-    v = redis.get(k)
-    if v:
-        stories[group] = v
-    else:
-        stories[group] = []
 
-    stories[group] = run_storify(stories[group],group)
+if __name__ == "__main__":
+    stories = {}
+    for group in groups:
+        k = "s:{gr}".format(gr=group)
+        v = redis.get(k)
+        if v:
+            stories[group] = v
+        else:
+            stories[group] = []
 
-    redis.set(k,stories[group],ex=60*90)
+        stories[group] = run_storify(stories[group],group)
+
+        redis.set(k,stories[group],ex=60*90)
