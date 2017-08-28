@@ -125,7 +125,7 @@ def display_pos(pos: str) -> str:
     return display_pos.p.get(pos, pos)
 display_pos.p = {
     "ADJ": "bijvoeglijk naamwoord",
-    "BW": "bijwoord ",
+    "BW": "bijwoord",
     "LET": "leesteken",
     "LID": "lidwoord",
     "N": "zelfstandig naamwoord",
@@ -245,14 +245,15 @@ def edit_group(group):
                 k["pos"] = display_pos(k["pos"])
         template_data = {
             "keywords": keywords,
-            "group": display_group(group),
+            "group": group,
+            "disp_group": display_group(group),
             "title": make_title("{} aanpassen".format(group))
         }
         return render_template("edit_group.html", **template_data)
     elif request.method == "POST":
         data = json.loads(request.data)
+        keywords = data["keywords"]
         if data["action"] == "delete":
-            keywords = data["keywords"]
             for k in keywords:
                 k["pos"] = parse_pos(k["pos"])
             keywords = [(k["lemma"], k["pos"]) for k in keywords]
@@ -266,6 +267,21 @@ def edit_group(group):
             tweety.put_group(group, data=json.dumps(new_keywords))
             cache(tweety.get_group, group, cache_time=60 * 60, force_refresh=True)
             return jsonify({"status": "ok"})
+        elif data["action"] == "add":
+            # TODO: process lemma's with frog
+
+            keywords = [(k["lemma"], k["pos"]) for k in keywords]
+
+            current_keywords = json.loads(tweety.get_group(group))
+            current_keywords = [(k["lemma"], k["pos"]) for k in current_keywords]
+
+            new_keywords = set(current_keywords) | set(keywords)
+            new_keywords = [{"lemma": k[0], "pos": k[1]} for k in new_keywords]
+
+            tweety.put_group(group, data=json.dumps(new_keywords))
+            cache(tweety.get_group, group, cache_time=60 * 60, force_refresh=True)
+            return jsonify({"status": "ok"})
+
 
 @bp.route("/keywords/<keyword>")
 def view_keyword(keyword):

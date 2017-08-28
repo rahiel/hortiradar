@@ -5,17 +5,59 @@
   <div class="col-md-12">
     <div id="success" class="alert alert-success" role="alert" style="display:none"></div>
 
-    <h1>{{ group }}</h1>
+    <h1>{{ disp_group }}</h1>
 
     <p>
-      Hier kunt u de trefwoorden aanpassen die in de groep "{{ group }}" geanalyseerd
+      Hier kunt u de trefwoorden aanpassen die in de groep "{{ disp_group }}" geanalyseerd
       worden.
     </p>
+
+    <h2>Toevoegen</h2>
+    <p>
+      Hier kunt u trefwoorden aan de groep toevoegen. Een trefwoord bestaat uit
+      het lemma en de woordsoort. Het lemma is de kanonieke vorm van een woord.
+      Voor zelfstandige naamwoorden is het lemma de enkelvoud, en voor
+      werkwoorden <a href="http://taaladvies.net/taal/advies/term/45/infinitief/">de infinitief</a>.
+    </p>
+
+    <p>
+      Klik op de "+" om nog een lemma toe te voegen. Laat het lemma leeg als u er teveel heeft
+      goegevoegd.
+    </p>
+
+    <form id="lemmaForm">
+      <div class="form-group lemma-group">
+        <label for="lemma">lemma</label>
+        <input class="form-control lemma" name="lemma" type="text" value="">
+
+        <label for="woordsoort">woordsoort</label>
+        <select class="form-control woordsoort" name="woordsoort">
+          <option value="ADJ">bijvoeglijk naamwoord</option>
+          <option value="BW">bijwoord</option>
+          <option value="SPEC">eigennaam / onbekend</option>
+          <option value="LET">leesteken</option>
+          <option value="LID">lidwoord</option>
+          <option value="TW">telwoord</option>
+          <option value="TSW">tussenwerpsel</option>
+          <option value="VG">voegwoord</option>
+          <option value="VNW">voornaamwoord</option>
+          <option value="VZ">voorzetsel</option>
+          <option value="WW">werkwoord</option>
+          <option value="N">zelfstandig naamwoord</option>
+        </select>
+        <hr>
+      </div>
+      <button type="button" id="addFormButton" class="btn btn-default text-right">+</button>
+
+      <br><br>
+      <button type="button" id="addKeywordsButton" class="btn btn-primary">Toevoegen</button>
+    </form>
 
     <h2>Verwijderen</h2>
     <p>
       Hier ziet u de huidige trefwoorden in de groep. Vink hier een trefwoord
-      aan om deze uit de groep te verwijderen.
+      aan om deze voor verwijdering te selecteren. Klik vervolgens op het
+      "Verwijder" knopje onderaan om de verwijdering uit te voeren.
     </p>
 
     <table class="table">
