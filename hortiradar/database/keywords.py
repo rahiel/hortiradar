@@ -5,7 +5,6 @@ import frog
 import pymongo
 import ujson as json
 
-
 from hortiradar import Tweety, TOKEN
 
 

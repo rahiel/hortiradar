@@ -4,8 +4,7 @@ from typing import Sequence
 import ujson as json
 from redis import StrictRedis
 
-from keywords import get_db
-from selderij import app
+from hortiradar.database import app, get_db
 
 
 redis = StrictRedis()

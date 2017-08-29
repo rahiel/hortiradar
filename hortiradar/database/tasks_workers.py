@@ -1,3 +1,4 @@
+import os
 from configparser import ConfigParser
 from time import time
 from typing import Sequence
@@ -5,20 +6,19 @@ from typing import Sequence
 from redis import StrictRedis
 import ujson as json
 
-from keywords import get_frog, get_keywords
-from selderij import app
-from tasks_master import insert_tweet
+from hortiradar.database import app, get_frog, get_keywords, insert_tweet
 
 
-keywords = get_keywords()
-keywords_sync_time = time()
+if os.environ.get("ROLE") == "worker":
+    keywords = get_keywords()
+    keywords_sync_time = time()
 
-config = ConfigParser()
-config.read("tasks_workers.ini")
-posprob_minimum = config["workers"].getfloat("posprob_minimum")
+    config = ConfigParser()
+    config.read(os.path.dirname(__file__) + "/tasks_workers.ini")
+    posprob_minimum = config["workers"].getfloat("posprob_minimum")
 
-redis = StrictRedis()
-rt_cache_time = 60 * 60 * 6
+    redis = StrictRedis()
+    rt_cache_time = 60 * 60 * 6
 
 
 @app.task
