@@ -1,5 +1,5 @@
-import calendar
 from collections import Counter
+from datetime import datetime
 from math import sqrt
 
 def round_time(dt,interval="hour"):
@@ -12,7 +12,8 @@ def round_time(dt,interval="hour"):
     return dt
 
 def dt_to_ts(dt):
-    return calendar.timegm(dt.timetuple())
+    diff = dt - datetime(1970, 1, 1) # use POSIX epoch
+    return diff.total_seconds()
 
 def jac(a,b):
     """ return the Jaccard similarity of two sets"""
