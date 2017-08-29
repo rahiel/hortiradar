@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 from time import time
+from typing import Sequence
 
 from redis import StrictRedis
 import ujson as json
@@ -57,3 +58,13 @@ def find_keywords_and_groups(id_str, text, retweet_id_str):
     if retweet_id_str:
         data = [kw, groups, tokens]
         redis.set(key, json.dumps(data), ex=rt_cache_time)
+
+
+@app.task
+def lemmatize(key: str, texts: Sequence[str]):
+    lemmas = []
+    frog = get_frog()
+    for text in texts:
+        tokens = frog.process(text)
+        lemmas.append(tokens[0]["lemma"])
+    insert_tweet.apply_async((key, lemmas), queue="master")

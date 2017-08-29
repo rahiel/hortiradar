@@ -69,9 +69,20 @@ function addKeywords() {
     }).then(function (j) {
         if (j.status === "ok") {
             window.location.replace(window.location.origin + window.location.pathname + "?a=success");
+        } else if (j.status === "diff") {
+            let diff = j.diff;
+
+            for (let form of forms) {
+                let lemma = form.getElementsByClassName("lemma")[0].value;
+                if (diff.hasOwnProperty(lemma)) {
+                    let alert = form.getElementsByClassName("alert")[0];
+                    alert.textContent = `Uw lemma is veranderd van ${lemma} naar ${diff[lemma]}`;
+                    alert.style.display = "block";
+                    lemma = diff[lemma];
+                }
+            }
         }
     });
-
 }
 document.getElementById("addKeywordsButton").onclick = addKeywords;
 

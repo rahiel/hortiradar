@@ -1,6 +1,9 @@
 import re
 from calendar import timegm
 from datetime import datetime, timedelta
+from random import choice
+from string import ascii_letters
+from time import sleep
 
 import CommonMark
 import ujson as json
@@ -17,6 +20,7 @@ from wtforms import StringField, SelectField
 from wtforms.validators import AnyOf, DataRequired, NoneOf
 
 from hortiradar import TOKEN, Tweety, time_format
+from hortiradar.database import lemmatize
 from hortiradar.website import app, db
 from models import Role, User
 from processing import cache, floor_time, process_details, process_top, process_stories
@@ -267,12 +271,27 @@ def edit_group(group):
             cache(tweety.get_group, group, cache_time=60 * 60, force_refresh=True)
             return jsonify({"status": "ok"})
         elif data["action"] == "add":
-            # TODO: process lemma's with frog
-
             keywords = [(k["lemma"], k["pos"]) for k in keywords]
+            user_lemmas = [k[0] for k in keywords]
+
+            key = "".join([choice(ascii_letters) for _ in range(11)])
+            lemmatize.apply_async((key, user_lemmas), queue="workers")
 
             current_keywords = json.loads(tweety.get_group(group))
             current_keywords = [(k["lemma"], k["pos"]) for k in current_keywords]
+
+            processed_lemmas = None
+            while processed_lemmas is None:
+                processed_lemmas = redis.get(key)
+                sleep(0.1)
+            processed_lemmas = json.loads(processed_lemmas)
+
+            diff = {}
+            for (p, u) in zip(processed_lemmas, user_lemmas):
+                if u != p:
+                    diff[u] = p
+            if diff:
+                return jsonify({"status": "diff", "diff": diff})
 
             new_keywords = set(current_keywords) | set(keywords)
             new_keywords = [{"lemma": k[0], "pos": k[1]} for k in new_keywords]

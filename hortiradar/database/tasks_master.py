@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Sequence
 
 import ujson as json
 from redis import StrictRedis
@@ -32,3 +33,8 @@ def insert_tweet(id_str, keywords, groups, tokens):
         tweet["spam"] = 0.7
     db.tweets.insert_one(tweet)
     redis.delete(key)
+
+
+@app.task
+def insert_lemma(key: str, lemmas: Sequence[str]):
+    redis.set(key, json.dumps(lemmas), ex=60 * 30)
