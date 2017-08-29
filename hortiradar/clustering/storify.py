@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import pickle
 
 import gensim
 from redis import StrictRedis
@@ -149,10 +150,11 @@ if __name__ == "__main__":
         k = "s:{gr}".format(gr=group)
         v = redis.get(k)
         if v:
-            stories[group] = v
+            stories[group] = pickle.loads(v)
         else:
             stories[group] = []
 
         stories[group] = run_storify(stories[group],group)
 
-        redis.set(k,stories[group],ex=60*90)
+        stories_out = pickle.dumps(stories[group])
+        redis.set(k,stories_out,ex=60*90)

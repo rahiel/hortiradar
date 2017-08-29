@@ -5,7 +5,7 @@ import random
 import ujson as json
 
 from hortiradar.clustering import Config, tweet_time_format
-from .util import jac, cos_sim, round_time
+from .util import jac, cos_sim, round_time, dt_to_ts
 
 tweet_threshold = Config.getfloat('storify:parameters','tweet_threshold')
 
@@ -13,12 +13,20 @@ tweet_threshold = Config.getfloat('storify:parameters','tweet_threshold')
 class Cluster:
 
     def __init__(self):
-        self.created_at = round_time(datetime.utcnow())
+        now = datetime.utcnow()
+        self.id = dt_to_ts(now)
+        self.created_at = round_time(now)
         self.tokens = set()
         self.filt_tokens = set()
         self.tweets = []   
         self.token_counts = Counter()
         self.tweet_counts = Counter()
+
+    def __eq__(self,other):
+        if type(other) == Cluster:
+            return self.id == other.id
+        else:
+            return False
 
     def is_similar(self,ext_tweet,algorithm="jaccard"):
         t = set(ext_tweet.tokens)

@@ -6,7 +6,7 @@ import numpy as np
 import ujson as json
 
 from hortiradar.clustering import Config, tweet_time_format
-from .util import jac, cos_sim, round_time
+from .util import jac, cos_sim, round_time, dt_to_ts
 
 max_idle = Config.getint('storify:parameters','max_idle')
 threshold = Config.getfloat('storify:parameters','cluster_threshold')
@@ -34,7 +34,9 @@ class Stories:
     """
 
     def __init__(self,c):
-        self.created_at = round_time(datetime.utcnow())
+        now = datetime.utcnow()
+        self.id = dt_to_ts(now)
+        self.created_at = round_time(now)
         self.origin = c.created_at
         self.last_edited = 0
         
@@ -51,6 +53,12 @@ class Stories:
         self.time_series = self.get_timeseries()
 
         self.max_idle = max_idle
+
+    def __eq__(self,other):
+        if type(other) == Stories:
+            return self.id == other.id
+        else:
+            return False
 
     def is_similar(self,c,algorithm="jaccard"): ## was CalcMatch
         """Calculate if the cluster matches to the story"""

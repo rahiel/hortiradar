@@ -1,3 +1,4 @@
+import calendar
 from collections import Counter
 from math import sqrt
 
@@ -9,6 +10,9 @@ def round_time(dt,interval="hour"):
     elif interval == "day":
         dt = dt.replace(hour=0,minute=0,second=0,microsecond=0)
     return dt
+
+def dt_to_ts(dt):
+    return calendar.timegm(dt.timetuple())
 
 def jac(a,b):
     """ return the Jaccard similarity of two sets"""
