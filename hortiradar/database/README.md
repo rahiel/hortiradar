@@ -114,6 +114,15 @@ directory like so:
 password = "the password"
 ```
 
+## Configuration
+
+Redis requires some kernel configuration for best performance:
+
+``` shell
+sudo cp 60-redis.conf /etc/sysctl.d
+sudo service procps start
+```
+
 # Workers
 
 We use a distributed task queue to process the incoming tweets in parallel.
