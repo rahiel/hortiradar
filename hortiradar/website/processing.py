@@ -14,7 +14,7 @@ from flask import redirect
 from redis import StrictRedis
 
 from hortiradar import Tweety, TOKEN, time_format
-from hortiradar.database import stop_words, obscene_words, blocked_users, blacklist
+from hortiradar.database import stop_words, obscene_words, blacklist
 from hortiradar.clustering.storify import load_stories
 
 

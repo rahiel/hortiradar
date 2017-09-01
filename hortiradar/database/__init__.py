@@ -13,5 +13,4 @@ def read_data(filename):
 
 stop_words = read_data("stoplist-nl.txt")  # stop words to filter out in word cloud
 obscene_words = read_data("obscene_words.txt")
-blocked_users = read_data("blocked_users.txt")
 blacklist = read_data("blacklist.txt")
