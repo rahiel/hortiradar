@@ -116,11 +116,14 @@ password = "the password"
 
 ## Configuration
 
-Redis requires some kernel configuration for best performance:
+Redis and MongoDB require some system configuration for best performance:
 
 ``` shell
 sudo cp 60-redis.conf /etc/sysctl.d
 sudo service procps start
+sudo apt install sysfsutils
+sudo cp 60-mongodb.conf /etc/sysfs.d/
+sudo systemctl restart sysfsutils.service
 ```
 
 # Workers
