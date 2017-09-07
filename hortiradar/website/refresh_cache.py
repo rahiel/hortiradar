@@ -30,11 +30,11 @@ def main():
         key = get_cache_key(process_top, *arguments)
         data = process_top(*arguments, force_refresh=True, cache_time=cache_time)
         group_data.append((key, data))
+        redis.set(key, json.dumps(data), ex=cache_time)
 
     with app.test_request_context("/?period=week"):
         _, start, end, _ = get_period(flask.request, "week")
     params = {"start": start.strftime(time_format), "end": end.strftime(time_format)}
-    keyword_data = []
     for (_, group) in group_data:
         for keyword in group:
             prod = keyword["label"]
@@ -42,13 +42,9 @@ def main():
                 print("Caching keyword: {}".format(prod))
             key = get_cache_key(process_details, prod, params)
             data = process_details(prod, params, force_refresh=True, cache_time=cache_time)
-            keyword_data.append((key, data))
+            redis.set(key, json.dumps(data), ex=cache_time)
+
     end_time = get_time()
-
-    # Now populate the cache with the new data
-    for (key, data) in group_data + keyword_data:
-        redis.set(key, json.dumps(data), ex=cache_time)
-
     sync_time = "{} - {}".format(start_time, end_time) if start_time != end_time else start_time
     redis.set("sync_time", sync_time)
 
