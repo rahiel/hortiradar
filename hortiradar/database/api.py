@@ -19,7 +19,7 @@ keywords_sync_time = time()
 
 
 def get_dates(req, resp, resource, params):
-    """Parse the 'start' and 'end' datetime parameters."""
+    """Parse the `start` and `end` datetime parameters."""
     try:
         start = req.get_param("start")
         start = datetime.strptime(start, time_format) if start else datetime(2001, 1, 1)
@@ -80,6 +80,15 @@ class GroupsResource:
         group_names = [g["name"] for g in gs]
         resp.body = json.dumps(group_names)
 
+    def on_post(self, req, resp):
+        """Add a new group to the system."""
+        name = req.get_param("name")
+        gs = groups.find({}, projection={"name": True, "_id": False})
+        group_names = [g["name"] for g in gs]
+        if name not in group_names and len(name) > 0:
+            group = {"name": name}
+            groups.insert_one(group)
+
 class GroupResource:
     def on_get(self, req, resp, group):
         """List of keywords in the group."""
@@ -97,6 +106,9 @@ class GroupResource:
             raise falcon.HTTPNotFound()
         keywords = json.load(req.bounded_stream)
         groups.update_one({"name": group}, {"$set": {"keywords": keywords}})
+
+    def on_delete(self, req, resp, group):
+        groups.delete_one({"name": group})
 
 class KeywordResource:
     @falcon.before(get_dates)
@@ -313,10 +325,11 @@ class AuthenticationMiddleware:
         elif token in users:
             p = req.path
             m = req.method
-            # users may not access /keywords/{keyword}, /keywords/{keyword}/texts,
-            # /tweet/{id_str} and PUT on /groups/{group}
-            if (p.startswith("/keywords/") and (p.endswith("/texts") or p.count("/") == 2) or
-                p.startswith("/tweet/") or (p.startswith("/groups/") and m == "PUT")):
+            # users may not access:
+            if (p.startswith("/keywords/") and (p.endswith("/texts") or p.count("/") == 2) or  # /keywords/{keyword}, /keywords/{keyword}/texts
+                p.startswith("/tweet/") or  # /tweet/{id_str}
+                p.startswith("/groups/") and m in ["DELETE", "PUT"] or  # PUT/DELETE on /groups/{group}
+                p.startswith("/groups") and m == "POST"):   # POST on /groups
                 raise falcon.HTTPForbidden()
         else:
             raise falcon.HTTPForbidden()
