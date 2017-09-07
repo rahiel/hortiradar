@@ -6,7 +6,7 @@ from typing import Sequence
 from redis import StrictRedis
 import ujson as json
 
-from hortiradar.database import app, get_frog, get_keywords, insert_tweet
+from hortiradar.database import app, get_frog, get_keywords, insert_tweet, insert_lemma
 
 
 if os.environ.get("ROLE") == "worker":
@@ -67,4 +67,4 @@ def lemmatize(key: str, texts: Sequence[str]):
     for text in texts:
         tokens = frog.process(text)
         lemmas.append(tokens[0]["lemma"])
-    insert_tweet.apply_async((key, lemmas), queue="master")
+    insert_lemma.apply_async((key, lemmas), queue="master")

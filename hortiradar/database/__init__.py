@@ -2,7 +2,7 @@ from os.path import dirname
 
 from .keywords import get_db, get_frog, get_keywords
 from .selderij import app
-from .tasks_master import insert_tweet
+from .tasks_master import insert_lemma, insert_tweet
 from .tasks_workers import lemmatize
 
 
