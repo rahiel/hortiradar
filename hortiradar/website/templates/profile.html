@@ -6,13 +6,30 @@
 
     <h1>Welkom, {{ current_user.username }}!</h1>
 
-    <p>U kunt de volgende groepen aanpassen:</p>
+    {% if is_admin %}
+      <h2>Admin</h2>
 
-    <ul>
-      {% for (group, label) in groups %}
-        <li><a href="{{ url_for("horti.edit_group", group=group) }}">{{ label }}</a></li>
-      {% endfor %}
-    </ul>
+      <p>
+        U bent een administrator, ga naar de <a href="{{ url_for("horti.admin") }}">admin pagina</a> om
+        globale aanpassing aan de Hortiradar uit te voeren.
+      </p>
+    {% endif %}
+
+    <h2>Groepen</h2>
+    {% if has_group %}
+      <p>U kunt de volgende groepen aanpassen:</p>
+
+      <ul>
+        {% for (group, label) in groups %}
+          <li><a href="{{ url_for("horti.edit_group", group=group) }}">{{ label }}</a></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>
+        Er zijn geen groepen die u kunt aanpassen. Vraag een administrator om
+        hulp als dat wel zou moeten zijn.
+      </p>
+    {% endif %}
 
   </div>
 </div>

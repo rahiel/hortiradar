@@ -490,10 +490,15 @@ def admin():
 @bp.route("/profile")
 @login_required
 def profile():
-    groups = [r.name[2:] for r in current_user.roles if r.name.startswith("g:")]
+    roles = [r.name for r in current_user.roles]
+    groups = [n[2:] for n in roles if n.startswith("g:")]
     labels = [display_group(g) for g in groups]
+    has_group = len(groups) > 0
+    is_admin = "admin" in roles
     template_data = {
         "groups": zip(groups, labels),
+        "has_group": has_group,
+        "is_admin": is_admin
     }
     return render_template("profile.html", title=make_title("Profiel"), **template_data)
 
