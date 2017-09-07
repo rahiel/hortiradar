@@ -45,7 +45,7 @@ def get_cache_key(func, *args, **kwargs):
 
 # tweety methods return json string
 # internal app functions return python dicts/lists
-def cache(func, *args, cache_time=CACHE_TIME, force_refresh=False, path=None, **kwargs):
+def cache(func, *args, cache_time=CACHE_TIME, force_refresh=False, path="", **kwargs):
     loading_cache_time = 60 * 10
     key = get_cache_key(func, *args, **kwargs)
     v = redis.get(key)

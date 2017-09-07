@@ -1,8 +1,28 @@
 {% extends "base.html" %}
 {% set active_page = "horti.admin" %}
+{% from "_helpers.html" import render_field %}
 {% block content %}
 <div class="row">
   <div class="col-md-12">
+
+    <h1>Groups</h1>
+
+    <ul>
+      {% for group in groups %}
+        <li>{{ group }}</li>
+      {% endfor %}
+    </ul>
+
+    <h2>Group Management</h2>
+
+    <p>Here you can add/remove groups.</p>
+
+    <form method="POST" action="{{ url_for("horti.admin") }}">
+      {{ group_form.csrf_token }}
+      {{ render_field(group_form.name) }}
+      {{ render_field(group_form.action) }}
+      <button type="submit" class="btn btn-primary">Change</button>
+    </form>
 
     <h1>Users</h1>
 
@@ -29,12 +49,11 @@
 
     <p>Here you can add/remove roles of existing users.</p>
 
-    {% from "_helpers.html" import render_field %}
     <form method="POST" action="{{ url_for("horti.admin") }}">
-      {{ form.csrf_token }}
-      {{ render_field(form.username) }}
-      {{ render_field(form.role) }}
-      {{ render_field(form.action) }}
+      {{ role_form.csrf_token }}
+      {{ render_field(role_form.username) }}
+      {{ render_field(role_form.role) }}
+      {{ render_field(role_form.action) }}
       <button type="submit" class="btn btn-primary">Change</button>
     </form>
 

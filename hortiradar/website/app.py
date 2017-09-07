@@ -445,15 +445,19 @@ class RoleForm(FlaskForm):
     role = StringField("role", validators=[DataRequired(), NoneOf(["admin"])])
     action = SelectField("action", choices=[("add", "add"), ("remove", "remove")], validators=[DataRequired()])
 
+class GroupForm(FlaskForm):
+    name = StringField("group name", validators=[DataRequired()])
+    action = SelectField("action", choices=[("add", "add"), ("remove", "remove")], validators=[DataRequired()])
 
 @bp.route("/admin", methods=("GET", "POST"))
 @roles_required("admin")
 def admin():
-    form = RoleForm()
+    role_form = RoleForm()
     users = User.query.all()
     usernames = [u.username for u in users]
-    form.username.validators.append(AnyOf(usernames, message="Username not found."))
-    if form.validate_on_submit():
+    role_form.username.validators.append(AnyOf(usernames, message="Username not found."))
+    if role_form.validate_on_submit():
+        form = role_form
         user = User.query.filter(User.username == form.username.data).one()
 
         try:
@@ -474,15 +478,37 @@ def admin():
         db.session.commit()
         return redirect(url_for("horti.admin"))
 
+    group_form = GroupForm()
+    if group_form.validate_on_submit():
+        form = group_form
+        name = form.name.data
+        if form.action.data == "add":
+            tweety.post_groups(name=name)
+        elif form.action.data == "remove":
+            tweety.delete_group(name)
+        groups = cache(tweety.get_groups, force_refresh=True)
+        return redirect(url_for("horti.admin"))
+
+    # display groups
+    have_groups = False
+    while not have_groups:
+        groups = cache(tweety.get_groups)
+        if not isinstance(groups, Response):
+            have_groups = True
+            groups.sort()
+        sleep(0.2)
+
     # display roles
     roles = {}
     for user in users:
         roles[user.username] = ", ".join(sorted([r.name for r in user.roles]))
 
     template_data = {
-        "form": form,
+        "role_form": role_form,
         "users": users,
-        "roles": roles
+        "roles": roles,
+        "groups": groups,
+        "group_form": group_form
     }
     return render_template("admin.html", title=make_title("Admin"), **template_data)
 
