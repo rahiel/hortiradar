@@ -9,7 +9,7 @@
 
     <ul>
       {% for group in groups %}
-        <li>{{ group }}</li>
+        <li><a href="{{ url_for("horti.view_group", group=group) }}">{{ group }}</a></li>
       {% endfor %}
     </ul>
 
