@@ -54,7 +54,10 @@ def request_keywords(group, local=False):
     """Returns a list of Keyword objects from the keywords in the group."""
     if local:
         db = pymongo.MongoClient().twitter
-        g = db.groups.find_one({"name": group})["keywords"]
+        try:
+            g = db.groups.find_one({"name": group})["keywords"]
+        except KeyError:        # new groups don't have keywords yet
+            g = []
     else:
         tweety = Tweety("https://acba.labs.vu.nl/hortiradar/api/", TOKEN)
         g = json.loads(tweety.get_group(group))
