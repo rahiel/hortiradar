@@ -375,10 +375,12 @@ def storify_keyword(group):
 
         story["tweets"] = story["tweets"][:display_tweets]
         story["summarytweet"] = story["summary_tweet"]
+        del story["summary_tweet"]
 
         timeline_info = {"label": len(storify_data), "times": story["cluster_details"]}
+        del story["cluster_details"]
 
-        storify_data.append(keyword_data)  # TODO: keyword_data is undefined
+        storify_data.append(story)
         timeline_data.append(timeline_info)
 
     for story in closed_stories:
@@ -395,10 +397,12 @@ def storify_keyword(group):
 
         story["tweets"] = story["tweets"][:display_tweets]
         story["summarytweet"] = story["summary_tweet"]
+        del story["summary_tweet"]
 
         timeline_info = {"label": len(storify_data), "times": story["cluster_details"]}
+        del story["cluster_details"]
 
-        storify_data.append(keyword_data)
+        storify_data.append(story)
         timeline_data.append(timeline_info)
 
     template_data = {
