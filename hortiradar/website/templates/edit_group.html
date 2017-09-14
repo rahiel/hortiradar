@@ -58,10 +58,18 @@
         </select>
         <hr>
       </div>
-      <button type="button" id="addFormButton" class="btn btn-default text-right">+</button>
+      <button type="button" id="addFormButton" class="btn btn-default text-right">
+        <i class="fa fa-plus" aria-hidden="true"></i>
+      </button>
 
       <br><br>
-      <button type="button" id="addKeywordsButton" class="btn btn-primary">Toevoegen</button>
+      <div id="addKeywordsDiv">
+        <button type="button" id="addKeywordsButton" class="btn btn-primary">Toevoegen</button>
+        <span id="loading" style="display:none;">
+          <i class="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
+        </span>
+      </div>
+
     </form>
 
     <h2>Verwijderen</h2>
@@ -88,7 +96,8 @@
       {% endfor %}
     </table>
 
-    <button type="button" id="deleteButton" class="btn btn-danger">Verwijder</button>
+    <button type="button" id="deleteButton" class="btn btn-danger">
+      <i class="fa fa-trash-o fa-lg"></i> Verwijder</button>
 
   </div>
 </div>

@@ -4,6 +4,7 @@
     "build": "webpack --optimize-minimize --display-optimization-bailout",
     "webpack": "webpack",
     "start": "webpack --watch",
+    "postinstall": "mkdir -p static/fonts && cp node_modules/font-awesome/fonts/* ./static/fonts && cp node_modules/font-awesome/css/font-awesome.min.css ./static/css",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "license": "Apache-2.0",
@@ -15,6 +16,7 @@
     "@types/node": "^8.0.27",
     "@types/twitter": "0.0.28",
     "awesome-typescript-loader": "^3.2.3",
+    "font-awesome": "^4.7.0",
     "source-map-loader": "^0.2.1",
     "typescript": "^2.5.2",
     "webpack": "^3.5.6"

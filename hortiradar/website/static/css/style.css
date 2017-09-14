@@ -13,6 +13,10 @@ body {
     }
 }
 
+#addKeywordsDiv {
+    display: flex;
+}
+
 /* Generated with TWBSColor: http://work.smarchal.com/twbscolor/css/defdd1a3e18a35583e0000000 */
 .navbar-default {
   background-color: #defdd1;

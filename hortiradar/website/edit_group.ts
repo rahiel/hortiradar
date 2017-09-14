@@ -60,6 +60,8 @@ function addKeywords() {
         }
     }
 
+    document.getElementById("loading").style.display = "block";
+
     fetch(window.location.pathname, {
         method: "POST",
         credentials: "same-origin",
@@ -70,6 +72,7 @@ function addKeywords() {
         if (j.status === "ok") {
             window.location.replace(window.location.origin + window.location.pathname + "?a=success");
         } else if (j.status === "diff") {
+            document.getElementById("loading").style.display = "none";
             let diff = j.diff;
 
             for (let form of forms) {
@@ -78,7 +81,7 @@ function addKeywords() {
                     let alert = form.getElementsByClassName("alert")[0];
                     alert.textContent = `Uw lemma is veranderd van ${lemma} naar ${diff[lemma]}`;
                     alert.style.display = "block";
-                    lemma = diff[lemma];
+                    form.getElementsByClassName("lemma")[0].value = diff[lemma];
                 }
             }
         }
