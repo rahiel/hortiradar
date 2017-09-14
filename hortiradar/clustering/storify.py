@@ -141,7 +141,18 @@ def load_stories(group, start, end):
     closed = storiesdb.find({"groups": group, "datetime": {"$gte": start, "$lt": end}})
     active = redis.get("s:{gr}".format(gr=group))
 
-    return pickle.loads(active), [json.loads(s) for s in closed]
+    if active:
+        active_out = pickle.loads(active)
+    else:
+        active_out = []
+
+    if closed:
+        closed_out = [json.loads(s) for s in closed]
+    else:
+        closed_out = []
+
+
+    return active_out, closed_out
 
 
 if __name__ == "__main__":
