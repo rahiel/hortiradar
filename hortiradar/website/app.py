@@ -349,7 +349,12 @@ def view_keyword(keyword):
 @bp.route("/clustering/<group>")
 def storify_keyword(group):
     period, start, end, cache_time = get_period(request, "week")
-    active_stories, closed_stories = cache(process_stories, group, start, end, cache_time=cache_time, path=get_req_path(request))
+    story_data = cache(process_stories, group, start, end, cache_time=cache_time, path=get_req_path(request))
+
+    if isinstance(story_data, Response):
+        return story_data
+    
+    active_stories, closed_stories = story_data
 
     storify_data = []
     timeline_data = []
