@@ -295,19 +295,8 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 def process_stories(group, start, end, force_refresh=False, cache_time=CACHE_TIME):
     active,closed = load_stories(group, start, end)
 
-    actlen = {}
-    closelen = {}
-    for s in active:
-        actlen[s] = len(s["tweets"])
-
-    srt_active = sorted(actlen.items(), key=operator.itemgetter(1))
-    sorted_active = [s[0] for s in srt_active]
-
-    for s in closed: 
-        closedlen[s] = len(s["tweets"])
-
-    srt_closed = sorted(closedlen.items(), key=operator.itemgetter(1))
-    sorted_closed = [s[0] for s in srt_closed]
+    sorted_active = sorted(active, key=lambda x: len(x["tweets"]))
+    sorted_closed = sorted(closed, key=lambda x: len(x["tweets"]))
 
     return sorted_active, sorted_closed
 
