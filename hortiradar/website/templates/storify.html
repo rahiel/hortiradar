@@ -8,12 +8,12 @@
 
 <div class="row">
   <div class="col-md-8">
-    <p>Hieronder de onderwerpen die besproken met betrekking tot het trefwoord "{{ keyword }}" van {{ start }} tot {{ end }}. Klik op een cluster om de informatie-pagina van het desbetreffende cluster te openen.</p>
+    <p>Hieronder de onderwerpen die besproken met betrekking tot de group "{{ group }}" van {{ start }} tot {{ end }}. Klik op een cluster om de informatie-pagina van het desbetreffende cluster te openen.</p>
   </div>
   <div class="col-md-4 text-right">
-    {{ render_button("horti.view_keyword", {"keyword": keyword}, period, "day", "Dag") }}
-    {{ render_button("horti.view_keyword", {"keyword": keyword}, period, "week", "Week") }}
-    {{ render_button("horti.view_keyword", {"keyword": keyword}, period, "month", "Maand") }}
+    {{ render_button("horti.storify_keyword", {"group": group}, period, "day", "Dag") }}
+    {{ render_button("horti.storify_keyword", {"group": group}, period, "week", "Week") }}
+    {{ render_button("horti.storify_keyword", {"group": group}, period, "month", "Maand") }}
   </div>
 </div>
 
