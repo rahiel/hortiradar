@@ -1,5 +1,5 @@
 # Installation
 
 ``` shell
-sudo cp storify.cron /etc/cron.d/
+sudo cp storify.cron /etc/cron.d/storify
 ```
