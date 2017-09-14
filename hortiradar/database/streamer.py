@@ -88,6 +88,15 @@ def clean_tweet(j):
     if j.get("retweeted_status"):
         j["retweeted_status"] = clean_tweet(j["retweeted_status"])
 
+    # truncated tweets, replace data with extended_tweet
+    if j["truncated"]:
+        if j.get("extended_tweet"):
+            ext = j["extended_tweet"]
+            if ext.get("full_text"):
+                j["text"] = ext["full_text"]
+            del j["extended_tweet"]
+    del j["truncated"]
+
     return j
 
 
