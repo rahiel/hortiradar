@@ -24,10 +24,12 @@ if os.environ.get("ROLE") == "worker":
 @app.task
 def find_keywords_and_groups(id_str, text, retweet_id_str):
     """Find the keywords and associated groups in the tweet."""
+    # refresh keywords
     global keywords, keywords_sync_time
     if (time() - keywords_sync_time) > 60 * 60:
         keywords = get_keywords()
         keywords_sync_time = time()
+
     # First check if retweets are already processed in the cache
     if retweet_id_str:
         key = "t:%s" % retweet_id_str

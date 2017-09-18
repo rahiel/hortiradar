@@ -29,12 +29,12 @@ class StreamListener(tweepy.StreamListener):
     def on_status(self, status):
         """Handle arrival of a new tweet."""
         j = clean_tweet(status._json)
-        redis.set("t:" + status.id_str, json.dumps(j))
+        redis.set("t:" + j["id_str"], json.dumps(j))
         if "retweeted_status" in j:
             retweet_id_str = j["retweeted_status"]["id_str"]
         else:
             retweet_id_str = None
-        find_keywords_and_groups.apply_async((status.id_str, status.text, retweet_id_str), queue="workers")
+        find_keywords_and_groups.apply_async((j["id_str"], j["text"], retweet_id_str), queue="workers")
 
     def on_delete(self, status_id, user_id):
         """A user deleted a tweet, respect their decision by also deleting it
