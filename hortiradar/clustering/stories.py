@@ -219,19 +219,18 @@ class Stories:
         for ext_tweet in self.tweets:
             tweet = ext_tweet.tweet
             user_id_str = tweet.user.id_str
-            try:
-                rt_user_id_str = tweet.retweeted_status.user.id_str
+            if hasattr(tweet,"retweeted_status"):
+                if tweet.retweeted_status.user.id_str:
+                    rt_user_id_str = tweet.retweeted_status.user.id_str
 
-                if rt_user_id_str not in nodes:
-                    nodes[rt_user_id_str] = tweet.retweeted_status.user.screen_name
-                if user_id_str not in nodes:
-                    nodes[user_id_str] = tweet.user.screen_name
+                    if rt_user_id_str not in nodes:
+                        nodes[rt_user_id_str] = tweet.retweeted_status.user.screen_name
+                    if user_id_str not in nodes:
+                        nodes[user_id_str] = tweet.user.screen_name
 
-                edges.append({"source": rt_user_id_str, "target": user_id_str, "value": "retweet"})
-            except AttributeError:
-                pass
+                    edges.append({"source": rt_user_id_str, "target": user_id_str, "value": "retweet"})
 
-            try:
+            if "user_mentions" in tweet.entities:
                 for obj in tweet.entities["user_mentions"]:
                     if obj["id_str"] not in nodes:
                         nodes[obj["id_str"]] = obj.screen_name
@@ -239,18 +238,15 @@ class Stories:
                         nodes[user_id_str] = tweet.user.screen_name
 
                     edges.append({"source": user_id_str, "target": obj.id_str, "value": "mention"})
-            except AttributeError:
-                pass
+            
+            if hasattr(tweet,"in_reply_to_user_id_str")
+                if tweet.in_reply_to_user_id_str:
+                    if tweet.in_reply_to_user_id_str not in nodes:
+                        nodes[tweet.in_reply_to_user_id_str] = tweet.in_reply_to_screen_name
+                    if user_id_str not in nodes:
+                        nodes[user_id_str] = tweet.user.screen_name
 
-            try:
-                if tweet.in_reply_to_user_id_str not in nodes:
-                    nodes[tweet.in_reply_to_user_id_str] = tweet.in_reply_to_screen_name
-                if user_id_str not in nodes:
-                    nodes[user_id_str] = tweet.user.screen_name
-
-                edges.append({"source": user_id_str, "target": tweet.in_reply_to_user_id_str, "value": "reply"})
-            except AttributeError:
-                pass
+                    edges.append({"source": user_id_str, "target": tweet.in_reply_to_user_id_str, "value": "reply"})
 
         graph = {"nodes": [], "edges": []}
         for node in nodes:
