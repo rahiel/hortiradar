@@ -295,8 +295,8 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 def process_stories(group, start, end, force_refresh=False, cache_time=CACHE_TIME):
     active,closed = load_stories(group, start, end)
 
-    sorted_active = sorted(active, key=lambda x: len(x["tweets"]))
-    sorted_closed = sorted(closed, key=lambda x: len(x["tweets"]))
+    sorted_active = sorted(active, key=lambda x: len(x["tweets"]), reverse=True)
+    sorted_closed = sorted(closed, key=lambda x: len(x["tweets"]), reverse=True)
 
     return sorted_active, sorted_closed
 
