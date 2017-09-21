@@ -239,7 +239,7 @@ class Stories:
 
                     edges.append({"source": user_id_str, "target": obj.id_str, "value": "mention"})
             
-            if hasattr(tweet,"in_reply_to_user_id_str")
+            if hasattr(tweet,"in_reply_to_user_id_str"):
                 if tweet.in_reply_to_user_id_str:
                     if tweet.in_reply_to_user_id_str not in nodes:
                         nodes[tweet.in_reply_to_user_id_str] = tweet.in_reply_to_screen_name
