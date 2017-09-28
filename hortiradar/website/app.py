@@ -67,10 +67,6 @@ def shorten(text: str, limit: int) -> str:
     else:
         return text[:limit - 1] + "…"
 
-def format_number(number):
-    """Format number using , as thousands separator."""
-    return "{:,}".format(number)
-
 def jsonify(*args, **kwargs):
     if args and kwargs:
         raise ValueError
@@ -113,6 +109,10 @@ def get_period(request, default_period=""):
         start = end - timedelta(days=1)
         cache_time = 60 * 60
     return period, start, end, cache_time
+
+def display_number(number):
+    """Format number using , as thousands separator."""
+    return "{:,}".format(number)
 
 def display_datetime(dt):
     """Render UTC datetimes to Amsterdam local time."""
@@ -201,14 +201,14 @@ def view_group(group):
     total = sum([entry["count"] for entry in keywords])
     for keyword in keywords:
         keyword["percentage"] = "{:.2f}".format(keyword["count"] / total * 100)
-        keyword["count"] = format_number(keyword["count"])
+        keyword["count"] = display_number(keyword["count"])
     nums = range(1, len(keywords) + 1)
     template_data = {
         "nums_keywords": zip(nums, keywords),
         "group": group,
         "disp_group": display_group(group),
         "nums": nums,
-        "total": format_number(total),
+        "total": display_number(total),
         "period": period,
         "start": display_datetime(start),
         "end": display_datetime(end)
@@ -228,7 +228,8 @@ def view_keywords_in_group(group):
     template_data = {
         "disp_group": display_group(group),
         "title": make_title("Trefwoorden in {}".format(display_group(group))),
-        "keywords": keywords
+        "keywords": keywords,
+        "total": len(keywords)
     }
     return render_template("group_keywords.html", **template_data)
 
@@ -335,7 +336,7 @@ def view_keyword(keyword):
     template_data = {
         "keyword": keyword,
         "keyword_data": json.dumps(keyword_data),
-        "num_tweets": format_number(num_tweets),
+        "num_tweets": display_number(num_tweets),
         "urls": urls,
         "graph": json.dumps(graph),
         "photos": photos,
