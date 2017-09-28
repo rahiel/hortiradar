@@ -44,13 +44,20 @@ def find_keywords_and_groups(id_str, text, retweet_id_str):
     tokens = frog.process(text)  # a list of dictionaries with frog's analysis per token
     kw = []
     groups = []
-    for t in tokens:
+    for (i, t) in enumerate(tokens):
         lemma = t["lemma"].lower()
         k = keywords.get(lemma, None)
         if k is not None:
             if t["posprob"] > posprob_minimum:
                 if not t["pos"].startswith(k.pos + "("):
                     continue
+
+            # when the second to last keyword is matched and the very last keyword is "…"
+            # then we have a false match because the second to last keyword was truncated
+            if i == (len(tokens) - 2):
+                if tokens[-1]["text"] == "…":
+                    continue
+
             kw.append(lemma)
             groups += k.groups
     kw, groups = list(set(kw)), list(set(groups))
