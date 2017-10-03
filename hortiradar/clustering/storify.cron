@@ -4,4 +4,4 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 HORTI=/home/rahiel/hortiradar
 
 # m h dom mon dow user  command
-30 * * * * rahiel cd $HORTI/hortiradar/clustering && $HORTI/venv/bin/python ./storify.py
+30 * * * * rahiel cd $HORTI/hortiradar/clustering && chronic $HORTI/venv/bin/python ./storify.py 2>&1 | telegram-send -gc --stdin --pre
