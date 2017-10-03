@@ -28,7 +28,7 @@ class StreamListener(tweepy.StreamListener):
 
     def on_status(self, status):
         """Handle arrival of a new tweet."""
-        j = clean_tweet(status._json)
+        j = filter_tweet(clean_tweet(status._json))
         redis.set("t:" + j["id_str"], json.dumps(j))
         if "retweeted_status" in j:
             retweet_id_str = j["retweeted_status"]["id_str"]
@@ -96,6 +96,63 @@ def clean_tweet(j):
                 j["text"] = ext["full_text"]
             del j["extended_tweet"]
     del j["truncated"]
+
+    return j
+
+
+def filter_tweet(j):
+    """Filter the tweet JSON from data we won't use."""
+    del j["display_text_range"]
+    del j["timestamp_ms"]
+
+    def filter_entities(entities):
+        if entities.get("media"):
+            for m in entities["media"]:
+                del m["url"]
+                del m["display_url"]
+                del m["expanded_url"]
+                del m["indices"]
+                del m["sizes"]
+
+        if entities.get("hashtags"):
+            for h in entities["hashtags"]:
+                del h["indices"]
+
+        if entities.get("symbols"):
+            for s in entities["symbols"]:
+                del s["indices"]
+
+        if entities.get("urls"):
+            for u in entities["urls"]:
+                del u["indices"]
+                del u["display_url"]
+                del u["url"]
+
+        if entities.get("user_mentions"):
+            for m in entities["user_mentions"]:
+                del m["indices"]
+                del m["name"]
+
+        return entities
+
+    j["entities"] = filter_entities(j["entities"])
+    if j.get("extended_entities"):
+        j["extended_entities"] = filter_entities("extended_entities")
+
+    del j["user"]["time_zone"]
+    del j["user"]["contributors_enabled"]
+    del j["user"]["profile_background_color"]
+    del j["user"]["profile_background_image_url_https"]
+    del j["user"]["profile_background_tile"]
+    del j["user"]["profile_banner_url"]
+    del j["user"]["profile_image_url_https"]
+    del j["user"]["profile_link_color"]
+    del j["user"]["profile_sidebar_border_color"]
+    del j["user"]["profile_sidebar_fill_color"]
+    del j["user"]["profile_text_color"]
+    del j["user"]["profile_use_background_image"]
+    del j["user"]["default_profile"]
+    del j["user"]["default_profile_image"]
 
     return j
 
