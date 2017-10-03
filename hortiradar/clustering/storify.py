@@ -150,7 +150,7 @@ def load_stories(group, start, end):
         active_out = []
 
     if closed:
-        closed_out = [json.loads(s) for s in closed]
+        closed_out = [s for s in closed]
     else:
         closed_out = []
 
