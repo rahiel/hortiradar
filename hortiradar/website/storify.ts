@@ -150,6 +150,8 @@ function change_data(loc,colorScale) {
 
     let data = storify_data[loc]
 
+    document.getElementById("numTweets").textContent = data.num_tweets;
+
     d3.select("#storyColor")
     .attr('style','width: 100%; height: 25px; border-radius: 8px; background-color: '+colorScale(loc));
 

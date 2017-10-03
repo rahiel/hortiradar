@@ -347,6 +347,22 @@ def view_keyword(keyword):
     }
     return render_template("keyword.html", title=make_title(keyword), **template_data)
 
+def filter_story(story,display_tweets):
+    story['urls'] = story["URLs"][:16]
+    for url in story['urls']:
+        url["display_url"] = shorten(url["link"], 45)
+    if not story['urls']:
+        story['urls'].append({"occ": 0, "link": "#", "display_url": "Geen URLs gevonden"})
+    del story["URLs"]
+
+    story["tagCloud"] = story["tagCloud"][:200]
+
+    story["num_tweets"] = len(story["tweets"])
+    story["tweets"] = story["tweets"][:display_tweets]
+    story["summarytweet"] = story["summary_tweet"]
+    del story["summary_tweet"]
+    return story
+
 @bp.route("/clustering/<group>")
 def storify_keyword(group):
     period, start, end, cache_time = get_period(request, "week")
@@ -364,25 +380,13 @@ def storify_keyword(group):
     timeline_end = timegm(end.timetuple()) * 1000
 
     display_tweets = 11
-    display_active_stories = 5
+    display_active_stories = 10
     display_closed_stories = 5
 
     for story in active_stories:
         if not (len(storify_data) < display_active_stories):
             break
-        story['urls'] = story["URLs"][:16]
-        for url in story['urls']:
-            url["display_url"] = shorten(url["link"], 45)
-        if not story['urls']:
-            story['urls'].append({"occ": 0, "link": "#", "display_url": "Geen URLs gevonden"})
-        del story["URLs"]
-
-        story["tagCloud"] = story["tagCloud"][:200]
-
-        story["tweets"] = story["tweets"][:display_tweets]
-        story["summarytweet"] = story["summary_tweet"]
-        del story["summary_tweet"]
-
+        story = filter_story(story,display_tweets)
         timeline_info = {"label": len(storify_data), "times": story["cluster_details"]}
         del story["cluster_details"]
 
@@ -392,19 +396,7 @@ def storify_keyword(group):
     for story in closed_stories:
         if not (len(storify_data) < display_active_stories + display_closed_stories):
             break
-        story['urls'] = story["URLs"][:16]
-        for url in story['urls']:
-            url["display_url"] = shorten(url["link"], 45)
-        if not story['urls']:
-            story['urls'].append({"occ": 0, "link": "#", "display_url": "Geen URLs gevonden"})
-        del story["URLs"]
-
-        story["tagCloud"] = story["tagCloud"][:200]
-
-        story["tweets"] = story["tweets"][:display_tweets]
-        story["summarytweet"] = story["summary_tweet"]
-        del story["summary_tweet"]
-
+        story = filter_story(story,display_tweets)
         timeline_info = {"label": len(storify_data), "times": story["cluster_details"]}
         del story["cluster_details"]
 
@@ -418,7 +410,7 @@ def storify_keyword(group):
         "timeline_start_ts": timeline_start,
         "timeline_end_ts": timeline_end,
         "display_tweets": display_tweets,
-        "num_stories": min(10, len(storify_data)),
+        "num_stories": min(display_active_stories + display_closed_stories, len(storify_data)),
         "start": display_datetime(start),
         "end": display_datetime(end),
         "period": period
