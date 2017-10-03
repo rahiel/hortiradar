@@ -13,7 +13,7 @@ tweet_threshold = Config.getfloat('storify:parameters','tweet_threshold')
 
 class Cluster:
 
-    def __init__(self):
+    def __init__(self,tt=None):
         now = datetime.utcnow()
         self.id = dt_to_ts(now)
         self.created_at = round_time(now)
@@ -23,6 +23,8 @@ class Cluster:
         self.token_counts = Counter()
         self.tweet_counts = Counter()
 
+        self.tweet_threshold = tt if tt else tweet_threshold
+
     def __eq__(self,other):
         if type(other) == Cluster:
             return self.id == other.id
@@ -30,11 +32,10 @@ class Cluster:
             return False
 
     def is_similar(self,ext_tweet,algorithm="jaccard"):
-        t = set(ext_tweet.tokens)
         if algorithm == "jaccard":
-            return jac(self.filt_tokens,set(ext_tweet.filt_tokens)) >= tweet_threshold
+            return jac(self.filt_tokens,set(ext_tweet.filt_tokens)) >= self.tweet_threshold
         elif algorithm == "cosine_similarity":
-            return cos_sim(self.filt_tokens,set(ext_tweet.filt_tokens)) >= tweet_threshold
+            return cos_sim(self.filt_tokens,set(ext_tweet.filt_tokens)) >= self.tweet_threshold
         else:
             raise NotImplementedError("This algorithm is not yet implemented.")
 

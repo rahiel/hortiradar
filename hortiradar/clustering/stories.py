@@ -33,7 +33,7 @@ class Stories:
     time_series:            List of number of tweets per hour in story
     """
 
-    def __init__(self,c):
+    def __init__(self,c,jt=None,ojt=None,mi=None):
         now = datetime.utcnow()
         self.id = dt_to_ts(now)
         self.created_at = round_time(now)
@@ -52,7 +52,9 @@ class Stories:
         self.first_tweet_time = min([tw.tweet.created_at for tw in self.tweets])
         self.time_series = self.get_timeseries()
 
-        self.max_idle = max_idle
+        self.max_idle = mi if mi else max_idle
+        self.threshold = jt if jt else threshold
+        self.original_threshold = ojt if ojt else original_threshold
 
     def __eq__(self,other):
         if type(other) == Stories:
@@ -65,11 +67,11 @@ class Stories:
         if algorithm == "jaccard":
             current = jac(self.filt_tokens,c.filt_tokens)
             original = jac(self.original_filt_tokens,c.filt_tokens)
-            return (current >= threshold and original >= original_threshold)
+            return (current >= self.threshold and original >= self.original_threshold)
         elif algorithm == "cosine_similarity":
             current = cos_sim(self.filt_tokens,c.filt_tokens)
             original = cos_sim(self.original_filt_tokens,c.filt_tokens)
-            return (current >= threshold and original >= original_threshold)
+            return (current >= self.threshold and original >= self.original_threshold)
         else:
             raise NotImplementedError("This algorithm is not yet implemented.")
     
