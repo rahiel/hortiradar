@@ -138,14 +138,15 @@ def filter_tweet(j):
 
     j["entities"] = filter_entities(j["entities"])
     if j.get("extended_entities"):
-        j["extended_entities"] = filter_entities("extended_entities")
+        j["extended_entities"] = filter_entities(j["extended_entities"])
 
     del j["user"]["time_zone"]
     del j["user"]["contributors_enabled"]
     del j["user"]["profile_background_color"]
     del j["user"]["profile_background_image_url_https"]
     del j["user"]["profile_background_tile"]
-    del j["user"]["profile_banner_url"]
+    if j["user"].get("profile_banner_url"):
+        del j["user"]["profile_banner_url"]
     del j["user"]["profile_image_url_https"]
     del j["user"]["profile_link_color"]
     del j["user"]["profile_sidebar_border_color"]
