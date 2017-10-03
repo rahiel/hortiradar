@@ -42,7 +42,7 @@ class StreamListener(tweepy.StreamListener):
         """
         status_id, user_id = str(status_id), str(user_id)
         log.notice("on_delete: status_id = {}, user_id = {}".format(status_id, user_id))
-        self.tweets.delete_one({"tweet.id_str": status_id, "tweet.user.id_str": user_id})
+        self.tweets.delete_one({"tweet.id_str": status_id})
 
     def on_error(self, status_code):
         """This does the Twitter-recommended exponential backoff when it
