@@ -102,7 +102,8 @@ def clean_tweet(j):
 
 def filter_tweet(j):
     """Filter the tweet JSON from data we won't use."""
-    del j["display_text_range"]
+    if j.get("display_text_range"):
+        del j["display_text_range"]
     del j["timestamp_ms"]
 
     def filter_entities(entities):
