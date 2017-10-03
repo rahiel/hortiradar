@@ -233,11 +233,11 @@ class Stories:
             if "user_mentions" in tweet.entities:
                 for obj in tweet.entities["user_mentions"]:
                     if obj["id_str"] not in nodes:
-                        nodes[obj["id_str"]] = obj.screen_name
+                        nodes[obj["id_str"]] = obj["screen_name"]
                     if user_id_str not in nodes:
                         nodes[user_id_str] = tweet.user.screen_name
 
-                    edges.append({"source": user_id_str, "target": obj.id_str, "value": "mention"})
+                    edges.append({"source": user_id_str, "target": obj["id_str"], "value": "mention"})
             
             if hasattr(tweet,"in_reply_to_user_id_str"):
                 if tweet.in_reply_to_user_id_str:
