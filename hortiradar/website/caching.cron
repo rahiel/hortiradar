@@ -4,4 +4,4 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 HORTI=/home/rahiel/hortiradar
 
 # m h dom mon dow user  command
-0 * * * * rahiel cd $HORTI/hortiradar/website && chronic $HORTI/venv/bin/python ./refresh_cache.py --verbose 2>&1 | telegram-send -gc --stdin --pre
+0 * * * * rahiel cd $HORTI/hortiradar/website && chronic $HORTI/venv/bin/python ./refresh_cache.py --verbose 2>&1 | telegram-send -g --stdin --pre
