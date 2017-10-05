@@ -8,7 +8,7 @@ import ujson as json
 
 from hortiradar.clustering import ExtendedTweet, Cluster, Stories, tweet_time_format
 from hortiradar.clustering.util import round_time
-from hortiradar.database import get_db, is_spam
+from hortiradar.database import get_db
 
 
 db = get_db()
@@ -18,6 +18,10 @@ tweetsdb = db.tweets
 
 redis = StrictRedis()
 
+
+def is_spam(t):
+    spam_level = 0.6
+    return t.get("spam") is not None and t["spam"] > spam_level
 
 def get_tweets(start,end,group):
     jsontweets = tweetsdb.find({
