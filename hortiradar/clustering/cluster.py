@@ -184,7 +184,11 @@ class Cluster:
         return [token.lemma.encode('utf-8') for token in self.filt_tokens]
 
     def get_cluster_details(self):
-        return {"starting_time": timegm(self.created_at.timetuple())*1000, "display": "circle", "tokens": self.get_tokens()}
+        best_tw = self.get_best_tweet()
+        for tw in self.tweets:
+            if tw.tweet.id_str == best_tw:
+                summary = tw.tweet.text
+        return {"starting_time": timegm(self.created_at.timetuple())*1000, "display": "circle", "summarytweet": summary}
 
     def get_jsondict(self):
         jDict = {}

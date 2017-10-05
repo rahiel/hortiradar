@@ -125,7 +125,7 @@ function build_timeline(colorScale) {
         let colors = tlchart.colors();
         infobox
         .attr("style","border-color: "+colors(i))
-        .text("Cluster-time: " + d3.timeFormat("%y-%m-%d %I %p")(new Date(cluster.starting_time)) + "\nTokens:" + cluster.tokens)
+        .text("Cluster-time: " + d3.timeFormat("%y-%m-%d %I %p")(new Date(cluster.starting_time)) + "\nSummary:" + cluster.summarytweet)
         .style("left", (d3.event.pageX ) + "px")
         .style("top", (d3.event.pageY) + "px");
     })

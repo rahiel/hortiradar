@@ -7,8 +7,9 @@ from sklearn.cluster import AffinityPropagation
 import ujson as json
 
 from hortiradar.clustering import ExtendedTweet, Cluster, Stories, tweet_time_format
-from hortiradar.database import get_db
 from hortiradar.clustering.util import round_time
+from hortiradar.database import get_db
+from hortiradar.database.api import is_spam
 
 
 db = get_db()
@@ -34,8 +35,9 @@ def get_tweets(start,end,group):
     tweets = []
     texts = []
     for jtweet in jsontweets:
-        tweets.append(ExtendedTweet(jtweet))
-        texts.append([t["lemma"] for t in jtweet["tokens"]])
+        if not is_spam(jtweet):
+            tweets.append(ExtendedTweet(jtweet))
+            texts.append([t["lemma"] for t in jtweet["tokens"]])
 
     dictionaries = gensim.corpora.Dictionary(texts)
     corpus = [dictionaries.doc2bow(text) for text in texts]
@@ -153,7 +155,6 @@ def load_stories(group, start, end):
         closed_out = [s for s in closed]
     else:
         closed_out = []
-
 
     return active_out, closed_out
 

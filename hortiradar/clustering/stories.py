@@ -6,7 +6,9 @@ import numpy as np
 import ujson as json
 
 from hortiradar.clustering import Config, tweet_time_format
-from .util import jac, cos_sim, round_time, dt_to_ts
+from hortiradar.clustering.util import jac, cos_sim, round_time, dt_to_ts
+from hortiradar.database import obscene_words
+from hortiradar.database.processing import get_nsfw_prob, mark_as_spam
 
 max_idle = Config.getint('storify:parameters','max_idle')
 threshold = Config.getfloat('storify:parameters','cluster_threshold')
@@ -122,10 +124,27 @@ class Stories:
 
         return ts
 
+    def get_filtered_tweets(self):
+        filt_tweets = []
+        spam_list = []
+        for tw in self.tweets:
+            tweet = tw["tweet"]
+            lemmas = [t["lemma"] for t in tw["tokens"]]
+            texts = [t["text"].lower() for t in tw["tokens"]]  # unlemmatized words
+            words = list(set(lemmas + texts))                  # to check for obscene words
+            if any(obscene_words.get(t) for t in words):
+                spam_list.append(tweet["id_str"])
+                continue
+            else:
+                filt_tweets.append(tw)
+
+        mark_as_spam.apply_async((spam_list,), queue="web")
+        return filt_tweets
+
     def get_best_tweet(self):
-        ext_tweets = [tweet for tweet in self.tweets]
-        new_similarities = [jac(self.filt_tokens,set(tweet.filt_tokens)) for tweet in self.tweets]
-        orig_similarities = [jac(self.original_filt_tokens,set(tweet.filt_tokens)) for tweet in self.tweets]
+        ext_tweets = self.get_filtered_tweets()
+        new_similarities = [jac(self.filt_tokens,set(tweet.filt_tokens)) for tweet in ext_tweets]
+        orig_similarities = [jac(self.original_filt_tokens,set(tweet.filt_tokens)) for tweet in ext_tweets]
         similarities = np.multiply(new_similarities,orig_similarities).tolist()
         max_idx = similarities.index(max(similarities))
         return ext_tweets[max_idx].tweet.id_str
@@ -163,16 +182,26 @@ class Stories:
 
     def get_images(self):
         imagesList = []
+        image_tweet_id = {}
         for ext_tweet in self.tweets:
             try:
                 for obj in ext_tweet.tweet.entities["media"]:
-                    imagesList.append(obj["media_url_https"])
+                    url = obj["media_url_https"]
+                    imagesList.append(url)
+                    image_tweet_id[url] = ext_tweet.tweet.id_str
             except KeyError:
                 pass
 
         images = []
+        nsfw_list = []
         for (url, count) in Counter(imagesList).most_common():
-            images.append({"link": url, "occ": count})
+            nsfw_prob, status = get_nsfw_prob(url)
+            if status == 200 and nsfw_prob > 0.8:
+                nsfw_list.append(image_tweet_id[url])
+            elif status == 200:
+                images.append({"link": url, "occ": count})
+
+        mark_as_spam.apply_async((nsfw_list,), queue="web")
 
         return images
 
@@ -278,7 +307,7 @@ class Stories:
         except AttributeError:
             jDict["endStory"] = datetime.strftime(round_time(datetime.utcnow())+timedelta(hours=1),tweet_time_format)
 
-        jDict["tweets"] = [tw.tweet.id_str for tw in self.tweets]
+        jDict["tweets"] = [tw.tweet.id_str for tw in self.get_filtered_tweets()]
         jDict["summary_tweet"] = self.get_best_tweet()
 
         jDict["timeSeries"] = self.get_timeseries()

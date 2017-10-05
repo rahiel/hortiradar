@@ -356,6 +356,7 @@ def filter_story(story,display_tweets):
     del story["URLs"]
 
     story["tagCloud"] = story["tagCloud"][:200]
+    story['photos'] = story["photos"][:16]
 
     story["num_tweets"] = len(story["tweets"])
     story["tweets"] = story["tweets"][:display_tweets]
