@@ -139,25 +139,6 @@ def run_storify(stories,group):
 
     return stories
 
-def load_stories(group, start, end):
-    """Load active stories from redis and closed stories from DB. 
-    Since active stories are story objects, they are processed to JSON from here for rendering in the website"""
-    closed = storiesdb.find({"groups": group, "datetime": {"$gte": start, "$lt": end}})
-    active = redis.get("s:{gr}".format(gr=group))
-
-    if active:
-        act = pickle.loads(active)
-        active_out = [s.get_jsondict() for s in act]
-    else:
-        active_out = []
-
-    if closed:
-        closed_out = [s for s in closed]
-    else:
-        closed_out = []
-
-    return active_out, closed_out
-
 
 if __name__ == "__main__":
     stories = {}

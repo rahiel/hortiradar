@@ -14,9 +14,11 @@ from flask import redirect
 from redis import StrictRedis
 
 from hortiradar import Tweety, TOKEN, time_format
-from hortiradar.database import stop_words, obscene_words, blacklist
-from hortiradar.clustering.storify import load_stories
+from hortiradar.database import stop_words, obscene_words, blacklist, get_db
 
+
+db = get_db()
+storiesdb = db.stories
 
 broker_url = "amqp://guest@localhost:5672/hortiradar"
 app = Celery("tasks", broker=broker_url)
@@ -291,6 +293,25 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         "graph": graph
     }
     return data
+
+def load_stories(group, start, end):
+    """Load active stories from redis and closed stories from DB. 
+    Since active stories are story objects, they are processed to JSON from here for rendering in the website"""
+    closed = storiesdb.find({"groups": group, "datetime": {"$gte": start, "$lt": end}})
+    active = redis.get("s:{gr}".format(gr=group))
+
+    if active:
+        act = pickle.loads(active)
+        active_out = [s.get_jsondict() for s in act]
+    else:
+        active_out = []
+
+    if closed:
+        closed_out = [s for s in closed]
+    else:
+        closed_out = []
+
+    return active_out, closed_out
 
 def process_stories(group, start, end, force_refresh=False, cache_time=CACHE_TIME):
     active,closed = load_stories(group, start, end)
