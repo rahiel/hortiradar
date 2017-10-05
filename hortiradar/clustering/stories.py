@@ -6,9 +6,8 @@ import numpy as np
 import ujson as json
 
 from hortiradar.clustering import Config, tweet_time_format
-from hortiradar.clustering.util import jac, cos_sim, round_time, dt_to_ts
-from hortiradar.database import obscene_words
-from hortiradar.database.processing import get_nsfw_prob, mark_as_spam
+from .util import jac, cos_sim, round_time, dt_to_ts
+from hortiradar.database import obscene_words, get_nsfw_prob, mark_as_spam
 
 max_idle = Config.getint('storify:parameters','max_idle')
 threshold = Config.getfloat('storify:parameters','cluster_threshold')
