@@ -8,8 +8,7 @@ import ujson as json
 
 from hortiradar.clustering import ExtendedTweet, Cluster, Stories, tweet_time_format
 from hortiradar.clustering.util import round_time
-from hortiradar.database import get_db
-from hortiradar.database.api import is_spam
+from hortiradar.database import get_db, is_spam
 
 
 db = get_db()
