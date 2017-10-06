@@ -105,14 +105,13 @@
     <div class="row">
       <div class="col-md-12">
         <h2 class="text-center">Foto's</h2>
-        {% for (p1, p2) in photos %}
+        {% for (i, p) in photos %}
           <div id="photoContainer">
-            <img class="twitImage" src="{{ p1["link"] }}"><span class="imgText">{{ p1["occ"] }}</span>
+            <img class="twitImage" src="{{ p["link"] }}"><span class="imgText">{{ p["occ"] }}</span>
           </div>
-          <div id="photoContainer">
-            <img class="twitImage" src="{{ p2["link"] }}"><span class="imgText">{{ p2["occ"] }}</span>
-          </div>
-          <br>
+          {% if (i % 2) != 0 %}
+            <br>
+          {% endif %}
         {% endfor %}
       </div>
     </div>

@@ -319,9 +319,7 @@ def view_keyword(keyword):
 
     keyword_data["tagCloud"] = keyword_data["tagCloud"][:200]
 
-    photos = keyword_data["photos"]  # number of photo's is limited in processing.py
-    if len(photos) > 2:         # TODO: other conditions
-        photos = [(photos[i], photos[i+1]) for i in range(0, len(photos)-1, 2)]
+    photos = enumerate(keyword_data["photos"])  # number of photo's is limited in processing.py
     del keyword_data["photos"]
 
     display_tweets = 11
