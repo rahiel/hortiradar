@@ -10,4 +10,4 @@ tweets.create_index([("groups", 1), ("datetime", 1)])        # api:/keywords, ap
 tweets.create_index([("keywords", 1), ("datetime", 1)])      # api:/keywords/{keyword}/*
 tweets.create_index("tweet.id_str")                          # api:/tweet/{id_str}
 
-storiesdb.create_index([("groups", 1), ("datetime", 1)])
+stories.create_index([("groups", 1), ("datetime", 1)])       # storify.py:load_stories
