@@ -5,7 +5,7 @@ from time import time
 import falcon
 import ujson as json
 
-from .keywords import get_db, get_keywords
+from keywords import get_db, get_keywords
 from hortiradar import admins, users, time_format
 from hortiradar.database import stop_words
 
