@@ -21,10 +21,18 @@ keywords_sync_time = time()
 def get_dates(req, resp, resource, params):
     """Parse the `start` and `end` datetime parameters."""
     try:
+        today = datetime.today()
+        today = datetime(today.year, today.month, today.day)
         start = req.get_param("start")
-        start = datetime.strptime(start, time_format) if start else datetime(2001, 1, 1)
+        if start:
+            start = datetime.strptime(start, time_format)
+        else:
+            start = today - timedelta(days=1)
         end = req.get_param("end")
-        end = datetime.strptime(end, time_format) if end else datetime(3001, 1, 1)
+        if end:
+            end = datetime.strptime(end, time_format)
+        else:
+            end = today
         params["start"] = start
         params["end"] = end
     except ValueError:
