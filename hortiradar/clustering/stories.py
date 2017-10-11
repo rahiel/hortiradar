@@ -129,9 +129,7 @@ class Stories:
         spam_list = []
         for tw in self.tweets:
             tweet = tw.tweet
-            lemmas = [t.lemma for t in tw.tokens]
-            texts = [t.text.lower() for t in tw.tokens]  # unlemmatized words
-            words = list(set(lemmas + texts))                  # to check for obscene words
+            words = [t.lemma for t in tw.tokens]
             if any(obscene_words.get(t) for t in words):
                 spam_list.append(tweet.id_str)
                 continue
