@@ -32,7 +32,7 @@ def get_tweets(start,end,group):
         "tweet.user.id_str": True, "tweet.user.screen_name": True, "tweet.retweeted_status.user.id_str": True,
         "tweet.retweeted_status.user.screen_name": True, "tweet.retweeted_status.id_str": True,
         "tweet.in_reply_to_user_id_str": True, "tweet.in_reply_to_screen_name": True,
-        "spam": True, "_id": False
+        "tweet.text": True, "spam": True, "_id": False
     })
 
     tweets = []
