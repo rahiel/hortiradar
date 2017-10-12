@@ -1,13 +1,21 @@
 {% extends "base.html" %}
 {% block content %}
+
+{% from "_helpers.html" import render_button %}
+
 <link rel="stylesheet" href="{{ url_for("horti.static", filename="css/keyword.css") }}">
 
 <h1>{{ keyword }}</h1>
 
-{% from "_helpers.html" import render_button %}
+<div id="toc">
+  <ul class="nav nav-pills">
+    <li role="presentation"><a href="#twitter">Twitter</a></li>
+    <li role="presentation"><a href="#google">Google</a></li>
+  </ul>
+</div>
 
 <div class="row">
-  <h2>Twitter</h2>
+  <h2 id="twitter">Twitter</h2>
   <div class="col-md-8">
     <p>Hieronder de analyse van {{ num_tweets }} tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}.</p>
   </div>

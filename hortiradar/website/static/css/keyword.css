@@ -50,6 +50,18 @@
     color: red;
 }
 
+#toc {
+    position: fixed;
+    bottom: 0;
+    left: 45%;
+    background-color: #FFF;
+    border-style: solid;
+    border-bottom-style: none;
+    border-color: #71a3f2;
+    border-width: 1px;
+    z-index: 1000;
+}
+
 /* interaction graph */
 path.link {
     stroke-opacity: 0.7;
