@@ -331,6 +331,9 @@ def view_keyword(keyword):
     graph = keyword_data["graph"]
     del keyword_data["graph"]
 
+    gtrends_period = {"day": "now 1-d", "week": "now 7-d", "month": "today 1-m"}.get(period, "now 1-d")
+    period_name = {"day": "dag", "week": "week", "month": "maand"}.get(period, "dag")
+
     template_data = {
         "keyword": keyword,
         "keyword_data": json.dumps(keyword_data),
@@ -341,7 +344,9 @@ def view_keyword(keyword):
         "display_tweets": display_tweets,
         "start": display_datetime(start),
         "end": display_datetime(end),
-        "period": period
+        "period": period,
+        "period_name": period_name,
+        "gtrends_period": gtrends_period
     }
     return render_template("keyword.html", title=make_title(keyword), **template_data)
 

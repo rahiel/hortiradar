@@ -7,6 +7,7 @@
 {% from "_helpers.html" import render_button %}
 
 <div class="row">
+  <h2>Twitter</h2>
   <div class="col-md-8">
     <p>Hieronder de analyse van {{ num_tweets }} tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}.</p>
   </div>
@@ -127,6 +128,37 @@
     {% for t in range(display_tweets) %}
       <div id="tweet{{t}}"></div>
     {% endfor %}
+  </div>
+</div>
+
+<br>
+
+<div class="row">
+  <h2 id="google">Google</h2>
+  <div class="col-md-8">
+    <p>Hieronder een analyse van zoekopdrachten op Google over het trefwoord in de afgelopen {{ period_name }}.</p>
+  </div>
+  <div class="col-md-4 text-right">
+    {{ render_button("horti.view_keyword", {"keyword": keyword}, period, "day", "Dag") }}
+    {{ render_button("horti.view_keyword", {"keyword": keyword}, period, "week", "Week") }}
+    {{ render_button("horti.view_keyword", {"keyword": keyword}, period, "month", "Maand") }}
+  </div>
+</div>
+
+<div class="row">
+  <br>
+  <script type="text/javascript" src="https://ssl.gstatic.com/trends_nrtr/1173_RC01/embed_loader.js"></script>
+  <script type="text/javascript"> trends.embed.renderExploreWidget("TIMESERIES", {"comparisonItem":[{"keyword": "{{ keyword }}","geo":"NL","time":"{{ gtrends_period }}"}],"category":0,"property":""}, {"exploreQuery":"date={{ gtrends_period }}&geo=NL&q={{ keyword }}","guestPath":"https://trends.google.com:443/trends/embed/"}); </script>
+</div>
+
+<div class="row">
+  <br>
+  <div class="col-md-6">
+    <script type="text/javascript"> trends.embed.renderExploreWidget("RELATED_TOPICS", {"comparisonItem":[{"keyword": "{{ keyword }}","geo":"NL","time":"{{ gtrends_period }}"}],"category":0,"property":""}, {"exploreQuery":"date={{ gtrends_period }}&geo=NL&q={{ keyword }}","guestPath":"https://trends.google.com:443/trends/embed/"}); </script>
+  </div>
+
+  <div class="col-md-6">
+    <script type="text/javascript"> trends.embed.renderExploreWidget("RELATED_QUERIES", {"comparisonItem":[{"keyword": "{{ keyword }}","geo":"NL","time":"{{ gtrends_period }}"}],"category":0,"property":""}, {"exploreQuery":"date={{ gtrends_period }}&geo=NL&q={{ keyword }}","guestPath":"https://trends.google.com:443/trends/embed/"}); </script>
   </div>
 </div>
 
