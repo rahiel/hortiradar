@@ -12,6 +12,7 @@ const searchParams = new URLSearchParams(window.location.search);
 window.onload = function () {
     render_information(keyword_data);
     render_graph(graph);
+    $("body").scrollspy({ target: "#toc" });
 }
 
 export function render_information(data) {
