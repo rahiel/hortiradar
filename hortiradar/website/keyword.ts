@@ -87,3 +87,9 @@ export function render_information(data) {
     }
 
 }
+
+// navigate to fragment identifier
+let hash = searchParams.get("hash");
+if (hash != null) {
+    window.location.hash = hash;
+}

@@ -62,6 +62,14 @@
     z-index: 1000;
 }
 
+.offset:before {
+    display: block;
+ 	  content: "";
+    height: 150px;
+    margin-top: -150px;
+    visibility: hidden;
+}
+
 /* interaction graph */
 path.link {
     stroke-opacity: 0.7;

@@ -15,14 +15,14 @@
 </div>
 
 <div class="row">
-  <h2 id="twitter">Twitter</h2>
+  <h2 id="twitter" class="offset">Twitter</h2>
   <div class="col-md-8">
     <p>Hieronder de analyse van {{ num_tweets }} tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}.</p>
   </div>
   <div class="col-md-4 text-right">
-    {{ render_button("horti.view_keyword", {"keyword": keyword}, period, "day", "Dag") }}
-    {{ render_button("horti.view_keyword", {"keyword": keyword}, period, "week", "Week") }}
-    {{ render_button("horti.view_keyword", {"keyword": keyword}, period, "month", "Maand") }}
+    {{ render_button("horti.view_keyword", {"keyword": keyword, "hash": "twitter"}, period, "day", "Dag") }}
+    {{ render_button("horti.view_keyword", {"keyword": keyword, "hash": "twitter"}, period, "week", "Week") }}
+    {{ render_button("horti.view_keyword", {"keyword": keyword, "hash": "twitter"}, period, "month", "Maand") }}
   </div>
 </div>
 
@@ -142,14 +142,14 @@
 <br>
 
 <div class="row">
-  <h2 id="google">Google</h2>
+  <h2 id="google" class="offset">Google</h2>
   <div class="col-md-8">
     <p>Hieronder een analyse van zoekopdrachten op Google over het trefwoord in de afgelopen {{ period_name }}.</p>
   </div>
   <div class="col-md-4 text-right">
-    {{ render_button("horti.view_keyword", {"keyword": keyword}, period, "day", "Dag") }}
-    {{ render_button("horti.view_keyword", {"keyword": keyword}, period, "week", "Week") }}
-    {{ render_button("horti.view_keyword", {"keyword": keyword}, period, "month", "Maand") }}
+    {{ render_button("horti.view_keyword", {"keyword": keyword, "hash": "google"}, period, "day", "Dag") }}
+    {{ render_button("horti.view_keyword", {"keyword": keyword, "hash": "google"}, period, "week", "Week") }}
+    {{ render_button("horti.view_keyword", {"keyword": keyword, "hash": "google"}, period, "month", "Maand") }}
   </div>
 </div>
 
