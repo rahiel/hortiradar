@@ -141,11 +141,14 @@ class Stories:
 
     def get_best_tweet(self):
         ext_tweets = self.get_filtered_tweets()
-        new_similarities = [jac(self.filt_tokens,set(tweet.filt_tokens)) for tweet in ext_tweets]
-        orig_similarities = [jac(self.original_filt_tokens,set(tweet.filt_tokens)) for tweet in ext_tweets]
-        similarities = np.multiply(new_similarities,orig_similarities).tolist()
-        max_idx = similarities.index(max(similarities))
-        return ext_tweets[max_idx].tweet.id_str
+        if ext_tweets:
+            new_similarities = [jac(self.filt_tokens,set(tweet.filt_tokens)) for tweet in ext_tweets]
+            orig_similarities = [jac(self.original_filt_tokens,set(tweet.filt_tokens)) for tweet in ext_tweets]
+            similarities = np.multiply(new_similarities,orig_similarities).tolist()
+            max_idx = similarities.index(max(similarities))
+            return ext_tweets[max_idx].tweet.id_str
+        else:
+            return None
 
     def get_wordcloud(self):
         wordcloud = []
