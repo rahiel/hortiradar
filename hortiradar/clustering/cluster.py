@@ -52,6 +52,29 @@ class Cluster:
         max_idx = similarities.index(max(similarities))
         return ext_tweets[max_idx].tweet.id_str
 
+    def get_timeseries(self):
+        tsDict = Counter()
+        for tw in self.tweets:
+            tweet = tw.tweet
+            # dt = datetime.strptime(tweet.created_at, tweet_time_format)
+            dt = tweet.created_at
+            tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
+
+        ts = []
+        if self.tweets:
+            tsStart = sorted(tsDict)[0]
+            tsEnd = sorted(tsDict)[-1]
+            temp = datetime(tsStart[0], tsStart[1], tsStart[2], tsStart[3], 0, 0)
+            while temp <= datetime(tsEnd[0], tsEnd[1], tsEnd[2], tsEnd[3], 0, 0):
+                if (temp.year, temp.month, temp.day, temp.hour) in tsDict:
+                    ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": tsDict[(temp.year, temp.month, temp.day, temp.hour)]})
+                else:
+                    ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": 0})
+
+                temp += timedelta(hours=1)
+
+        return ts
+
     def get_wordcloud(self):
         wordcloud = []
         for token in self.token_counts:
