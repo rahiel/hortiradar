@@ -69,7 +69,7 @@ body {
 
 .offset:before {
     display: block;
- 	  content: "";
+    content: "";
     height: 150px;
     margin-top: -150px;
     visibility: hidden;

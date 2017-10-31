@@ -16,7 +16,7 @@ from flask_wtf import FlaskForm
 from redis import StrictRedis
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.wrappers import Response
-from wtforms import StringField, SelectField
+from wtforms import SelectField, StringField
 from wtforms.validators import AnyOf, DataRequired, NoneOf
 
 from hortiradar import TOKEN, Tweety, time_format
@@ -213,7 +213,7 @@ def view_group(group):
         "start": display_datetime(start),
         "end": display_datetime(end)
     }
-    return render_template("group.html", title=make_title(template_data["group"]), **template_data)
+    return render_template("group.html", title=make_title(template_data["disp_group"]), **template_data)
 
 @bp.route("/groups/<group>/keywords")
 def view_keywords_in_group(group):
