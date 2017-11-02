@@ -6,7 +6,6 @@ from string import ascii_letters
 from time import sleep
 
 import CommonMark
-import requests
 import ujson as json
 from babel.dates import format_datetime, get_timezone
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -21,7 +20,7 @@ from wtforms import SelectField, StringField
 from wtforms.validators import AnyOf, DataRequired, NoneOf
 
 from hortiradar import TOKEN, Tweety, time_format
-from hortiradar.database import get_db, lemmatize
+from hortiradar.database import lemmatize
 from hortiradar.website import app, db
 from models import Role, User
 from processing import cache, floor_time, process_details, process_top, process_stories
@@ -447,61 +446,6 @@ def loading(loading_id):
 def page_not_found(error):
     return render_template("page_not_found.html"), 404
 
-@bp.route("/instagram/account", methods=("GET", "POST"))
-@roles_required("admin")
-def instagram_account():
-    form = InstagramAccountForm()
-    conf = get_db().config
-    access_token = ""
-    client_id = ""
-    if request.method == "GET":
-        config = conf.find_one({"name": "instagram"})
-        if config:
-            form.client_id.data = client_id = config.get("client_id", "")
-            form.client_secret.data = client_secret = config.get("client_secret", "")
-            access_token = config.get("access_token", "")
-        else:
-            conf.insert_one({"name": "instagram"})
-
-    if form.validate_on_submit():
-        client_id = form.client_id.data
-        client_secret = form.client_secret.data
-        conf.update_one({"name": "instagram"}, {"$set": {
-            "client_id": client_id,
-            "client_secret": client_secret,
-        }})
-        flash("Updated account credentials.", "success")
-        return redirect(url_for("horti.instagram_account"))
-
-    redirect_uri = "https://acba.labs.vu.nl/hortiradar/" + "instagram/account"
-    authorization_url = ("https://api.instagram.com/oauth/authorize/"
-                         "?client_id={}&redirect_uri={}"
-                         "&response_type=code&scope=public_content").format(client_id, redirect_uri)
-
-    code = request.args.get("code")
-    if code:
-        data = {
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "grant_type": "authorization_code",
-            "redirect_uri": redirect_uri,
-            "code": code
-        }
-        r = requests.post("https://api.instagram.com/oauth/access_token", data=data).json()
-        if r.get("access_token"):
-            conf.update_one({"name": "instagram"}, {"$set": {"access_token": r["access_token"], "user": r["user"]}})
-            flash("Received new access token!", "success")
-        else:
-            flash("Something went wrong...")
-        return redirect(url_for("horti.instagram_account"))
-
-    template_data = {
-        "form": form,
-        "access_token": access_token,
-        "authorization_url": authorization_url
-    }
-    return render_template("instagram_account.html", title=make_title("Instagram Authorization"), **template_data)
-
 class RoleForm(FlaskForm):
     username = StringField("username", validators=[DataRequired()])
     role = StringField("role", validators=[DataRequired(), NoneOf(["admin"])])
@@ -510,10 +454,6 @@ class RoleForm(FlaskForm):
 class GroupForm(FlaskForm):
     name = StringField("group name", validators=[DataRequired()])
     action = SelectField("action", choices=[("add", "add"), ("remove", "remove")], validators=[DataRequired()])
-
-class InstagramAccountForm(FlaskForm):
-    client_id = StringField("Client ID", validators=[DataRequired()])
-    client_secret = StringField("Client Secret", validators=[DataRequired()])
 
 @bp.route("/admin", methods=("GET", "POST"))
 @roles_required("admin")
