@@ -41,11 +41,14 @@ def find_keywords_and_groups(id_str, text, retweet_id_str):
             return
 
     frog = get_frog()
-    tokens = frog.process(text)  # a list of dictionaries with frog's analysis per token
+    # tokens contains a list of dictionaries with frog's analysis per token
+    # each dict has the keys "index", "lemma", "pos", "posprob" and "text"
+    # where "text" is the original text
+    tokens = frog.process(text)
     kw = []
     groups = []
     for (i, t) in enumerate(tokens):
-        lemma = t["lemma"].lower()
+        lemma = t["lemma"]
         k = keywords.get(lemma, None)
         if k is not None:
             if t["posprob"] > posprob_minimum:
