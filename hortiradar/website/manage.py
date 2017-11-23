@@ -10,6 +10,7 @@ from models import Role, User
 parser = argparse.ArgumentParser()
 parser.add_argument("--init-db", help="Initialize user db", action="store_true")
 parser.add_argument("--make-admin", type=str, help="Give user admin rights")
+parser.add_argument("--delete", type=str, help="Delete user")
 args = parser.parse_args()
 
 
@@ -35,4 +36,9 @@ if args.make_admin:
         user.roles.append(admin_role)
         db.session.add(user)
 
+    db.session.commit()
+
+if args.delete:
+    user = User.query.filter(User.username == args.delete).one()
+    db.session.delete(user)
     db.session.commit()

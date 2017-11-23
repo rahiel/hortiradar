@@ -19,3 +19,13 @@ sudo telegram-send --global-config --configure-group
 [supervisor]: http://supervisord.org/
 [supervisor-alert]: https://github.com/rahiel/supervisor-alert
 [telegram-send]: https://github.com/rahiel/telegram-send
+
+# pip
+
+Some problems with pip can be solved by upgrading pip and setuptools within the
+virtualenv:
+
+``` shell
+python -m pip install --upgrade pip
+pip install --upgrade setuptools
+```
