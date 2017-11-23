@@ -15,6 +15,7 @@ MAIL_PORT = 25
 
 # Flask-User settings
 USER_APP_NAME = "Hortiradar"
+USER_ENABLE_LOGIN_WITHOUT_CONFIRM_EMAIL = True
 # Our app is served within the /hortiradar/ subdirectory
 USER_CHANGE_PASSWORD_URL      = "/hortiradar/user/change-password"
 USER_CHANGE_USERNAME_URL      = "/hortiradar/user/change-username"

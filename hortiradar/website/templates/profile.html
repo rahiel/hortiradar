@@ -34,6 +34,14 @@
       </p>
     {% endif %}
 
+    {% if not has_confirmed_email %}
+      <h2>E-mail Bevestigen</h2>
+      <p>
+        U heeft uw e-mailadres nog niet bevestigd. Klik <a href="{{ url_for("user.resend_confirm_email") }}">hier</a> om
+        opnieuw het bevestigings e-mail te versturen.
+      </p>
+    {% endif %}
+
   </div>
 </div>
 {% endblock %}

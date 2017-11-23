@@ -527,9 +527,11 @@ def profile():
     labels = [display_group(g) for g in groups]
     has_group = len(groups) > 0
     is_admin = "admin" in roles
+    has_confirmed_email = current_user.has_confirmed_email()
     template_data = {
         "groups": zip(groups, labels),
         "has_group": has_group,
+        "has_confirmed_email": has_confirmed_email,
         "is_admin": is_admin
     }
     return render_template("profile.html", title=make_title("Profiel"), **template_data)
