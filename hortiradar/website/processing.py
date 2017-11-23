@@ -1,7 +1,6 @@
 from collections import Counter
 from datetime import datetime, timedelta
 from hashlib import md5
-import operator
 from types import FunctionType
 from typing import Sequence
 import random
@@ -12,6 +11,7 @@ import ujson as json
 from celery import Celery
 from flask import redirect
 from redis import StrictRedis
+from pattern.nl import sentiment
 
 from hortiradar import Tweety, TOKEN, time_format
 from hortiradar.database import stop_words, obscene_words, blacklist, get_db
@@ -227,6 +227,9 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         if token.lower() not in stop_words and "http" not in token and len(token) > 1:
             word_cloud.append({"text": token, "weight": count})
 
+    # sentiment analysis on wordcloud
+    polarity, subjectivity = sentiment(" ".join(word_cloud_dict.elements()))
+
     ts = []
     try:
         tsStart = sorted(tsDict)[0]
@@ -290,7 +293,8 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         "tagCloud": word_cloud,
         "locations": mapLocations,
         "centerloc": avLoc,
-        "graph": graph
+        "graph": graph,
+        "polarity": polarity
     }
     return data
 

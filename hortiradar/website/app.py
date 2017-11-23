@@ -331,6 +331,20 @@ def view_keyword(keyword):
     graph = keyword_data["graph"]
     del keyword_data["graph"]
 
+    polarity = keyword_data["polarity"]
+    del keyword_data["polarity"]
+
+    if polarity > 0.5:
+        polarity_face = "😃"    # U+1F603: grinning face with big eyes
+    elif polarity > 0.1:
+        polarity_face = "🙂"    # U+1F642: slightly smiling face
+    elif polarity > -0.1:
+        polarity_face = "😐"    # U+1F610: neutral face
+    elif polarity > -0.5:
+        polarity_face = "🙁"    # U+1F641: slightly frowning face
+    else:
+        polarity_face = "🤮"    # U+1F92E: face vomiting
+
     gtrends_period = {"day": "now 1-d", "week": "now 7-d", "month": "today 1-m"}.get(period, "now 1-d")
     period_name = {"day": "dag", "week": "week", "month": "maand"}.get(period, "dag")
 
@@ -346,6 +360,8 @@ def view_keyword(keyword):
         "end": display_datetime(end),
         "period": period,
         "period_name": period_name,
+        "polarity": polarity,
+        "polarity_face": polarity_face,
         "gtrends_period": gtrends_period
     }
     return render_template("keyword.html", title=make_title(keyword), **template_data)

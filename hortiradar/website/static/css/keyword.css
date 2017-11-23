@@ -93,3 +93,7 @@ text {
     font: 10px sans-serif;
     pointer-events: none;
 }
+
+#polarity-face {
+    font-size: 79pt;
+}

@@ -82,6 +82,15 @@ while). [Follow the instruction][lamachine] for the local installation.
 [lama]: http://applejack.science.ru.nl/languagemachines/
 [lamachine]: https://proycon.github.io/LaMachine/
 
+For sentiment analysis install pattern from the `development` branch, in the
+future that can probably be replaced with a simple `pip install pattern`:
+
+``` shell
+sudo apt install libmysqlclient-dev     # on Ubuntu 16.04
+sudo apt install libmariadb-dev-compat  # for newer Ubuntus
+pip install https://github.com/clips/pattern/archive/development.zip
+```
+
 Install supervisor configurations and cron jobs:
 ``` shell
 sudo cp streamer-supervisor.conf /etc/supervisor/conf.d/hortiradar-streamer.conf
