@@ -140,6 +140,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     tweets = cache(tweety.get_keyword, prod, force_refresh=force_refresh, cache_time=CACHE_TIME, **params)
 
     tweetList = []
+    unique_tweets = {}
     imagesList = []
     URLList = []
     word_cloud_dict = Counter()
@@ -163,6 +164,10 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
         tweetList.append(tweet["id_str"])
         word_cloud_dict.update(lemmas)
+
+        text = " ".join(texts)
+        if text not in unique_tweets:
+            unique_tweets[text] = tweet["id_str"]
 
         dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
         tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
@@ -284,8 +289,11 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         target = edge["target"]
         graph["edges"].append({"source": nodes[source], "target": nodes[target], "value": edge["value"]})
 
+    unique_ids = list(unique_tweets.values())
+    tweets = random.sample(unique_ids, min(20, len(unique_ids)))
+
     data = {
-        "tweets": random.sample(tweetList[::-1], min(20, len(tweetList))),
+        "tweets": tweets,
         "num_tweets": len(tweetList),
         "timeSeries": ts,
         "URLs": urls,
