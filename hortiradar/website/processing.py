@@ -306,7 +306,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
     data = {
         "tweets": tweets,
-        "retweets": retweets,
+        "retweets": retweet_ids,
         "num_tweets": len(tweetList),
         "timeSeries": ts,
         "URLs": urls,
