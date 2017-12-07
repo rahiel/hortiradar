@@ -80,10 +80,14 @@ export function renderInformation(data) {
 }
 
 function renderTweets(tweets) {
+    // clear all tweets
+    for (let i = 0; i < display_tweets; i++) {
+        document.getElementById(`tweet${i}`).innerHTML = "";
+    }
+
     let stopcriterion = Math.min(display_tweets, tweets.length) // if there are less than display_tweets in the dataset
     for (let i = 0; i < stopcriterion; i++) {
         let tweet = document.getElementById(`tweet${i}`);
-        document.getElementById(`tweet${i}`).innerHTML = "";  // clear
         twttr.widgets.createTweet(tweets[i], tweet, {
             conversation: "none",
             cards: "hidden",

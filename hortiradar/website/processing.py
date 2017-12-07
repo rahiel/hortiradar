@@ -302,7 +302,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     tweets = random.sample(unique_ids, min(20, len(unique_ids)))
 
     # retweet ids sorted from most to least tweeted
-    retweet_ids, _ = zip(*sorted(retweets.items(), key=lambda x: x[1], reverse=True))
+    retweet_ids, _ = zip(*sorted(filter(lambda x: x[1] > 0, retweets.items()), key=lambda x: x[1], reverse=True))
 
     data = {
         "tweets": tweets,
