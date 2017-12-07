@@ -141,6 +141,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
     tweetList = []
     unique_tweets = {}
+    retweets = {}
     imagesList = []
     URLList = []
     word_cloud_dict = Counter()
@@ -168,6 +169,14 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         text = " ".join(texts)
         if text not in unique_tweets:
             unique_tweets[text] = tweet["id_str"]
+
+        # track retweets and their retweet counts
+        if "retweeted_status" in tweet:
+            rt = tweet["retweeted_status"]
+            id_str = rt["id_str"]
+            retweet_count = rt["retweet_count"]
+            if id_str not in retweets or retweet_count > retweets[id_str]:
+                retweets[id_str] = retweet_count
 
         dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
         tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
@@ -292,8 +301,12 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     unique_ids = list(unique_tweets.values())
     tweets = random.sample(unique_ids, min(20, len(unique_ids)))
 
+    # retweet ids sorted from most to least tweeted
+    retweet_ids, _ = zip(*sorted(retweets.items(), key=lambda x: x[1], reverse=True))
+
     data = {
         "tweets": tweets,
+        "retweets": retweets,
         "num_tweets": len(tweetList),
         "timeSeries": ts,
         "URLs": urls,

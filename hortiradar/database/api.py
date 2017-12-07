@@ -130,6 +130,7 @@ class KeywordResource:
             "tweet.user.id_str": True, "tweet.user.screen_name": True, "tweet.retweeted_status.user.id_str": True,
             "tweet.retweeted_status.user.screen_name": True, "tweet.retweeted_status.id_str": True,
             "tweet.in_reply_to_user_id_str": True, "tweet.in_reply_to_screen_name": True,
+            "tweet.retweeted_status.retweet_count": True,
             "spam": True, "_id": False
         })
         if not want_spam(req):

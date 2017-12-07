@@ -1,5 +1,5 @@
 import * as $ from "jquery";
-import { render_graph } from "./interaction_graph";
+import { renderGraph } from "./interaction_graph";
 const URLSearchParams = require("url-search-params");
 
 declare const APP_ROOT: string;
@@ -10,12 +10,13 @@ const searchParams = new URLSearchParams(window.location.search);
 
 
 window.onload = function () {
-    render_information(keyword_data);
-    render_graph(graph);
+    renderInformation(keyword_data);
+    renderGraph(graph);
+    renderSampleTweets();
     $("body").scrollspy({ target: "#toc" });
 }
 
-export function render_information(data) {
+export function renderInformation(data) {
     let timeSeries = [];
     for (let p of data.timeSeries) {
         timeSeries.push({
@@ -43,17 +44,6 @@ export function render_information(data) {
         }]
     });
     chart.render();
-
-    let stopcriterion = Math.min(display_tweets,data.tweets.length) // if there are less than display_tweets in the dataset
-    for (let i = 0; i < stopcriterion; i++) {
-        let tweet = document.getElementById(`tweet${i}`);
-        twttr.widgets.createTweet(data.tweets[i], tweet, {
-            conversation: "none",
-            cards: "hidden",
-            theme: "light",
-            lang: "nl",
-        });
-    }
 
     let words = [];
     $.each(data.tagCloud, function (index) {
@@ -88,6 +78,54 @@ export function render_information(data) {
     }
 
 }
+
+function renderTweets(tweets) {
+    let stopcriterion = Math.min(display_tweets, tweets.length) // if there are less than display_tweets in the dataset
+    for (let i = 0; i < stopcriterion; i++) {
+        let tweet = document.getElementById(`tweet${i}`);
+        document.getElementById(`tweet${i}`).innerHTML = "";  // clear
+        twttr.widgets.createTweet(tweets[i], tweet, {
+            conversation: "none",
+            cards: "hidden",
+            theme: "light",
+            lang: "nl",
+        });
+    }
+}
+
+function renderSampleTweets() {
+    renderTweets(keyword_data.tweets);
+    highlightTweetButton(tweetButton.sample);
+}
+
+function renderRetweets() {
+    renderTweets(keyword_data.retweets);
+    highlightTweetButton(tweetButton.retweets);
+}
+
+function highlightTweetButton(button: tweetButton) {
+    // highlight the active button
+    let tweetButtons = [tweetButton.sample, tweetButton.retweets, tweetButton.discussed];
+    for (let b of tweetButtons) {
+        if (b === button) {
+            document.getElementById(b).classList.add("btn-primary");
+            document.getElementById(b).classList.remove("btn-default");
+        } else {
+            document.getElementById(b).classList.add("btn-default");
+            document.getElementById(b).classList.remove("btn-primary");
+        }
+    }
+}
+
+// the different kind of tweets we show at the tweets section on the keyword page
+const enum tweetButton {
+    sample = "sample",
+    retweets = "retweets",
+    discussed = "discussed",
+}
+
+document.getElementById(tweetButton.sample).onclick = renderSampleTweets;
+document.getElementById(tweetButton.retweets).onclick = renderRetweets;
 
 // navigate to fragment identifier
 let hash = searchParams.get("hash");

@@ -1,7 +1,7 @@
 import * as $ from "jquery";
 import * as d3 from "d3";
-import { render_graph } from "./interaction_graph";
-import { render_information } from "./keyword";
+import { renderGraph } from "./interaction_graph";
+import { renderInformation } from "./keyword";
 import { timelines } from "d3-timelines";
 
 declare const storify_data: any;
@@ -173,8 +173,8 @@ function change_data(loc,colorScale) {
         align: "center"
     });
 
-    render_graph(data.graph)
+    renderGraph(data.graph)
     update_information(data)
-    render_information(data)
+    renderInformation(data)
 
 }

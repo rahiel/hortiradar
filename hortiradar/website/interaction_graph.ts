@@ -5,7 +5,7 @@ import * as d3 from "d3";
 declare const graph: any;
 
 
-export function render_graph(graph) {
+export function renderGraph(graph) {
 
     d3.selectAll("svg#interactionGraph > *").remove();
     let svg = d3.select("svg#interactionGraph");
