@@ -1,5 +1,7 @@
 import * as $ from "jquery";
 import { renderGraph } from "./interaction_graph";
+
+import * as _ from "lodash";
 const URLSearchParams = require("url-search-params");
 
 declare const APP_ROOT: string;
@@ -98,7 +100,8 @@ function renderTweets(tweets) {
 }
 
 function renderSampleTweets() {
-    renderTweets(keyword_data.tweets);
+    let tweets = _.sampleSize(keyword_data.tweets, display_tweets);
+    renderTweets(tweets);
     highlightTweetButton(tweetButton.sample);
 }
 
