@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from hashlib import md5
 from types import FunctionType
 from typing import Sequence
+import pickle
 import random
 import urllib.parse
 
@@ -141,6 +142,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
     tweetList = []
     unique_tweets = {}
+    interaction_tweets = []
     retweets = {}
     imagesList = []
     URLList = []
@@ -193,6 +195,9 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
             edges.append({"source": rt_user_id_str, "target": user_id_str, "value": "retweet"})
 
         if "user_mentions" in tweet["entities"]:
+            if tweet["entities"]["user_mentions"]:
+                interaction_tweets.append(tweet["id_str"])
+
             for obj in tweet["entities"]["user_mentions"]:
                 if obj["id_str"] not in nodes:
                     nodes[obj["id_str"]] = obj["screen_name"]
@@ -202,6 +207,8 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
                 edges.append({"source": user_id_str, "target": obj["id_str"], "value": "mention"})
 
         if tweet["in_reply_to_user_id_str"]:
+            interaction_tweets.append(tweet["id_str"])
+
             if tweet["in_reply_to_user_id_str"] not in nodes:
                 nodes[tweet["in_reply_to_user_id_str"]] = tweet["in_reply_to_screen_name"]
             if user_id_str not in nodes:
@@ -309,6 +316,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     data = {
         "tweets": unique_ids,
         "retweets": retweet_ids,
+        "interaction_tweets": interaction_tweets,
         "num_tweets": len(tweetList),
         "timeSeries": ts,
         "URLs": urls,
@@ -322,7 +330,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     return data
 
 def load_stories(group, start, end):
-    """Load active stories from redis and closed stories from DB. 
+    """Load active stories from redis and closed stories from DB.
     Since active stories are story objects, they are processed to JSON from here for rendering in the website"""
     closed = storiesdb.find({"groups": group, "datetime": {"$gte": start, "$lt": end}})
     active = redis.get("s:{gr}".format(gr=group))
@@ -341,7 +349,7 @@ def load_stories(group, start, end):
     return active_out, closed_out
 
 def process_stories(group, start, end, force_refresh=False, cache_time=CACHE_TIME):
-    active,closed = load_stories(group, start, end)
+    active, closed = load_stories(group, start, end)
 
     sorted_active = sorted(active, key=lambda x: len(x["tweets"]), reverse=True)
     sorted_closed = sorted(closed, key=lambda x: len(x["tweets"]), reverse=True)

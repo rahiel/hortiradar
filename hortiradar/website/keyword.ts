@@ -81,7 +81,7 @@ export function renderInformation(data) {
 
 }
 
-function renderTweets(tweets) {
+function renderTweets(tweets, conversation = false) {
     // clear all tweets
     for (let i = 0; i < display_tweets; i++) {
         document.getElementById(`tweet${i}`).innerHTML = "";
@@ -90,13 +90,16 @@ function renderTweets(tweets) {
     let stopcriterion = Math.min(display_tweets, tweets.length) // if there are less than display_tweets in the dataset
     for (let i = 0; i < stopcriterion; i++) {
         let tweet = document.getElementById(`tweet${i}`);
-        twttr.widgets.createTweet(tweets[i], tweet, {
-            conversation: "none",
+        let options = {
             cards: "hidden",
             theme: "light",
             lang: "nl",
             dnt: true,
-        });
+        };
+        if (conversation === false) {
+            options["conversation"] = "none";
+        }
+        twttr.widgets.createTweet(tweets[i], tweet, options);
     }
 }
 
@@ -111,9 +114,15 @@ function renderRetweets() {
     highlightTweetButton(tweetButton.retweets);
 }
 
+function renderInteractionTweets() {
+    let tweets = _.sampleSize(keyword_data.interaction_tweets, display_tweets);
+    renderTweets(tweets, true);
+    highlightTweetButton(tweetButton.interactions);
+}
+
 function highlightTweetButton(button: tweetButton) {
     // highlight the active button
-    let tweetButtons = [tweetButton.sample, tweetButton.retweets, tweetButton.discussed];
+    let tweetButtons = [tweetButton.sample, tweetButton.retweets, tweetButton.interactions];
     for (let b of tweetButtons) {
         if (b === button) {
             document.getElementById(b).classList.add("btn-primary");
@@ -129,11 +138,12 @@ function highlightTweetButton(button: tweetButton) {
 const enum tweetButton {
     sample = "sample",
     retweets = "retweets",
-    discussed = "discussed",
+    interactions = "interactions",
 }
 
 document.getElementById(tweetButton.sample).onclick = renderSampleTweets;
 document.getElementById(tweetButton.retweets).onclick = renderRetweets;
+document.getElementById(tweetButton.interactions).onclick = renderInteractionTweets;
 
 // navigate to fragment identifier
 let hash = searchParams.get("hash");

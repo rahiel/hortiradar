@@ -323,8 +323,10 @@ def view_keyword(keyword):
     del keyword_data["photos"]
 
     display_tweets = 11
-    keyword_data["tweets"] = keyword_data["tweets"][:200]
+    max_tweets = 200
+    keyword_data["tweets"] = keyword_data["tweets"][:max_tweets]
     keyword_data["retweets"] = keyword_data["retweets"][:display_tweets]
+    keyword_data["interaction_tweets"] = keyword_data["interaction_tweets"][:max_tweets]
 
     num_tweets = keyword_data["num_tweets"]
     del keyword_data["num_tweets"]
