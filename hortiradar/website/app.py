@@ -367,7 +367,31 @@ def view_keyword(keyword):
     }
     return render_template("keyword.html", title=make_title(keyword), **template_data)
 
-def filter_story(story,display_tweets):
+@bp.route("/keywords/<keyword>/tweets")
+def view_tweets_about_keyword(keyword):
+    period, start, end, cache_time = get_period(request, "week")
+    params = {"start": start.strftime(time_format), "end": end.strftime(time_format)}
+    keyword_data = cache(process_details, keyword, params, cache_time=cache_time, path=get_req_path(request))
+    if isinstance(keyword_data, Response):
+        return keyword_data
+
+    num_tweets = keyword_data["num_tweets"]
+    tweets = keyword_data["tweets"]
+    retweets = keyword_data["retweets"]
+
+    template_data = {
+        "keyword": keyword,
+        "num_tweets": num_tweets,
+        "num_unique_tweets": len(tweets),
+        "tweets": tweets,
+        "retweets": retweets,
+        "period": period,
+        "start": display_datetime(start),
+        "end": display_datetime(end)
+    }
+    return render_template("tweets.html", title=make_title(keyword), **template_data)
+
+def filter_story(story, display_tweets):
     story['urls'] = story["URLs"][:16]
     for url in story['urls']:
         url["display_url"] = shorten(url["link"], 45)
@@ -391,7 +415,7 @@ def storify_keyword(group):
 
     if isinstance(story_data, Response):
         return story_data
-    
+
     active_stories, closed_stories = story_data
 
     storify_data = []
@@ -407,7 +431,7 @@ def storify_keyword(group):
     for story in active_stories:
         if not (len(storify_data) < display_active_stories):
             break
-        story = filter_story(story,display_tweets)
+        story = filter_story(story, display_tweets)
         timeline_info = {"label": len(storify_data), "times": story["cluster_details"]}
         del story["cluster_details"]
 
@@ -417,7 +441,7 @@ def storify_keyword(group):
     for story in closed_stories:
         if not (len(storify_data) < display_active_stories + display_closed_stories):
             break
-        story = filter_story(story,display_tweets)
+        story = filter_story(story, display_tweets)
         timeline_info = {"label": len(storify_data), "times": story["cluster_details"]}
         del story["cluster_details"]
 

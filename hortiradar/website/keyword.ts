@@ -95,6 +95,7 @@ function renderTweets(tweets) {
             cards: "hidden",
             theme: "light",
             lang: "nl",
+            dnt: true,
         });
     }
 }

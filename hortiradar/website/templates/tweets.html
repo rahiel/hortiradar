@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% from "_helpers.html" import render_button %}
+
+<h1>{{ keyword }}</h1>
+
+<div class="row">
+  <h2>Tweets</h2>
+  <div class="col-md-8">
+    <p>
+      Hieronder de {{ num_unique_tweets }} tweets met unieke texten die het
+      trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}. Scroll
+      naar beneden om meer tweets te zien. Het laden kan even duren omdat niet
+      alle Tweets tegelijkerijd bij Twitter opgevraagd kunnen worden.
+    </p>
+  </div>
+  <div class="col-md-4 text-right">
+    {{ render_button("horti.view_tweets_about_keyword", {"keyword": keyword}, period, "day", "Dag") }}
+    {{ render_button("horti.view_tweets_about_keyword", {"keyword": keyword}, period, "week", "Week") }}
+    {{ render_button("horti.view_tweets_about_keyword", {"keyword": keyword}, period, "month", "Maand") }}
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-md-12">
+    <div id="container"></div>
+  </div>
+</div>
+
+<div class="row">
+  <br><br>
+  <div class="col-md-12">
+    <h2 class="text-center" id="bottom">Laden...</h2>
+  </div>
+</div>
+
+<script type="text/javascript">
+ var tweets = {{ tweets|safe }};
+ var retweets = {{ retweets|safe }};
+</script>
+
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script src="{{ url_for("horti.static", filename="tweets.js") }}"></script>
+{% endblock %}

@@ -2,6 +2,7 @@ module.exports = {
     entry: {
         home: "./home.ts",
         keyword: "./keyword.ts",
+        tweets: "./tweets.ts",
         interaction_graph: "./interaction_graph.ts",
         storify: "./storify.ts",
         edit_group: "./edit_group.ts",

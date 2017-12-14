@@ -145,6 +145,7 @@
       <button type="button" class="btn btn-default" id="sample">willekeurig</button>
       <button type="button" class="btn btn-default" id="retweets">retweets</button>
       <button type="button" class="btn btn-default" id="discussed">discussed</button>
+      <a href="{{ url_for("horti.view_tweets_about_keyword", keyword=keyword) }}">Zie Alle Tweets <i class="fa fa-external-link" aria-hidden="true"></i></a>
     </div>
     <div id="tweets">
       {% for t in range(display_tweets) %}

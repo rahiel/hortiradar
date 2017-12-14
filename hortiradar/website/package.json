@@ -11,10 +11,10 @@
   "devDependencies": {
     "@types/canvasjs": "^1.5.30",
     "@types/d3": "^4.12.0",
-    "@types/googlemaps": "^3.30.0",
+    "@types/googlemaps": "^3.30.2",
     "@types/jquery": "^2.0.45",
-    "@types/lodash": "^4.14.88",
-    "@types/node": "^8.0.56",
+    "@types/lodash": "^4.14.89",
+    "@types/node": "^8.5.1",
     "@types/twitter": "0.0.28",
     "awesome-typescript-loader": "^3.4.1",
     "font-awesome": "^4.7.0",
@@ -28,6 +28,7 @@
     "es6-promise": "^4.1.1",
     "lodash-es": "^4.17.4",
     "url-search-params": "^0.10.0",
+    "waypoints": "^4.0.1",
     "whatwg-fetch": "^2.0.3"
   }
 }

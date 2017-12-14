@@ -301,7 +301,10 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     unique_ids = list(unique_tweets.values())
 
     # retweet ids sorted from most to least tweeted
-    retweet_ids, _ = zip(*sorted(filter(lambda x: x[1] > 0, retweets.items()), key=lambda x: x[1], reverse=True))
+    if retweets:
+        retweet_ids, _ = zip(*sorted(filter(lambda x: x[1] > 0, retweets.items()), key=lambda x: x[1], reverse=True))
+    else:
+        retweet_ids = []
 
     data = {
         "tweets": unique_ids,
