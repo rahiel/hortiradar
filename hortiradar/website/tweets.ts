@@ -36,4 +36,4 @@ let waypoint = new Waypoint({
     handler: function() {
         render();
     }
-})
+});

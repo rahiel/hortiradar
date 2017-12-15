@@ -140,7 +140,48 @@
     </div>
   </div>
   <div class="col-md-6">
-    <h2 class="text-center">Tweets</h2>
+    <h2 class="text-center">
+      Tweets
+      <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#tweetsModal"></span>
+    </h2>
+
+    <div class="modal fade" id="tweetsModal" tabindex="-1" role="dialog" aria-labelledby="tweetsModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="tweetsModalLabel">Tweets</h4>
+          </div>
+          <div class="modal-body">
+            <p>
+              Klik op <b>willekeurig</b> om een willekeurige selectie van tweets
+              te zien. U krijgt een nieuwe selectie van tweets als u
+              herhaardelijk op deze knop klikt.
+            </p>
+            <p>
+              Klik op <b>retweets</b> om een lijst van retweets te zien. De
+              retweets zijn gesorteerd van meest naar minst aantal retweets.
+            </p>
+            <p>
+              Klik op <b>interacties</b> om tweets te zien die interacties
+              aangeven tussen gebruikers. Dit zijn de tweets die mentions
+              bevatten of antwoorden ("replies") zijn op andere tweets. De tweet
+              waar op wordt geantwoord, wordt bovenaan de tweet getoond met een
+              donkerder achtergrond. Als u vaker klikt op "interacties", krijgt
+              u een ander willekeurige selectie van interactie tweets te zien.
+            </p>
+            <p>
+              Klik op <b>Zie Alle Tweets</b> om naar een aparte pagina te
+              navigeren waar alle tweets te zien zijn.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="text-center">
       <button type="button" class="btn btn-default" id="sample">willekeurig</button>
       <button type="button" class="btn btn-default" id="retweets">retweets</button>
