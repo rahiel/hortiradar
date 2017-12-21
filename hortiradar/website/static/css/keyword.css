@@ -19,8 +19,8 @@ body {
 
 #graphContainer {
   min-width: 200px;
-  width:100%;
-  overflow:hidden;
+  width: 100%;
+  overflow: hidden;
 }
 
 .graphDiv {
@@ -29,24 +29,25 @@ body {
 }
 
 .twitImage {
-  height: 200px;
-  width: 250px;
+  height: 210px;
+  width: 265px;
+  padding: 5px;
 }
 
 #photoContainer {
-    position:relative;
+    position: relative;
     float: left;
 }
 
 .imgText {
-    z-index:100;
-    position:absolute;
+    z-index: 100;
+    position: absolute;
     background: rgb(0, 0, 0); /* fallback color */
     background: rgba(0, 0, 0, 0.7);
     color: white;
-    font-weight:bold;
-    left:5px;
-    top:5px;
+    font-weight: bold;
+    left: 10px;
+    top: 10px;
     padding: 10px;
 }
 
