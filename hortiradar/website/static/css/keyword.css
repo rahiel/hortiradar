@@ -86,6 +86,12 @@ body {
 }
 
 /* interaction graph */
+#graphContainer {
+    border-width: 1px;
+    border-color: black;
+    border-style: solid;
+}
+
 path.link {
     stroke-opacity: 0.7;
     stroke-width: 1.5px;
