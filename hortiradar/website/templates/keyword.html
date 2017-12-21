@@ -121,7 +121,10 @@
   <div class="col-md-6">
     <div class="row">
       <div class="col-md-12">
-        <h2 class="text-center">Foto's</h2>
+        <h2 class="text-center">
+          Foto's
+          <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#picturesModal"></span>
+        </h2>
         {% for (i, p) in photos %}
           <div class="photoContainer">
             <img class="twitImage" src="{{ p["link"] }}"><span class="imgText">{{ p["occ"] }}</span>
@@ -131,6 +134,27 @@
           {% endif %}
         {% endfor %}
       </div>
+
+      <div class="modal fade" id="picturesModal" tabindex="-1" role="dialog" aria-labelledby="picturesModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="picturesModalLabel">Foto's</h4>
+          </div>
+          <div class="modal-body">
+            <p>
+              Linksboven de foto's ziet u hoe vaak een foto is getweet. Klik op
+              een foto om deze te vergroten.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
 
       <div class="modal fade" id="imgModal" tabindex="-1" role="dialog" aria-labelledby="imgModalLabel">
         <div class="modal-dialog modal-wide" role="document">
