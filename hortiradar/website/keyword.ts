@@ -16,6 +16,7 @@ window.onload = function () {
     renderGraph(graph);
     renderSampleTweets();
     $("body").scrollspy({ target: "#toc" });
+    showPictures();
 }
 
 export function renderInformation(data) {
@@ -149,4 +150,23 @@ document.getElementById(tweetButton.interactions).onclick = renderInteractionTwe
 let hash = searchParams.get("hash");
 if (hash != null) {
     window.location.hash = hash;
+}
+
+function showPictures() {
+    // clicking on pictures shows them in a modal
+
+    function click(event: MouseEvent) {
+        let url = this.querySelector("img").src;  // this is a photoContainer div
+        let img = document.createElement("img");
+        img.src = url;
+        img.classList.add("img-in-modal");
+        document.getElementById("img-modal-body").innerHTML = "";
+        document.getElementById("img-modal-body").appendChild(img);
+        $("#imgModal").modal("show");
+    }
+
+    let images = document.getElementsByClassName("photoContainer");
+    for (let image of images) {
+        image.onclick = click;
+    }
 }
