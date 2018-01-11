@@ -17,6 +17,7 @@ window.onload = function () {
     renderSampleTweets();
     $("body").scrollspy({ target: "#toc" });
     showPictures();
+    showLink();
 }
 
 export function renderInformation(data) {
@@ -156,11 +157,10 @@ function showPictures() {
     // clicking on pictures shows them in a modal
 
     function click(event: MouseEvent) {
-        let url = this.querySelector("img").src;  // this is a photoContainer div
+        let url = this.querySelector("img").src;  // `this` is a photoContainer div
         let img = document.createElement("img");
         img.src = url;
         img.classList.add("img-in-modal");
-        document.getElementById("img-modal-body").innerHTML = "";
         document.getElementById("img-modal-body").appendChild(img);
         $("#imgModal").modal("show");
     }
@@ -169,4 +169,34 @@ function showPictures() {
     for (let image of images) {
         image.onclick = click;
     }
+
+    $("#imgModal").on("hidden.bs.modal", function (e) {
+        document.getElementById("img-modal-body").innerHTML = "";
+    });
+}
+
+function showLink() {
+
+    function click(event: MouseEvent) {
+        let url = this.parentNode.querySelector(".full-link").href;
+        let iframe = document.createElement("iframe");
+        iframe.src = url;
+        iframe.sandbox = "";
+        iframe.classList.add("iframe-in-modal");
+        document.getElementById("iframe-container").appendChild(iframe);
+        document.getElementById("iframe-url").textContent = url;
+        document.getElementById("iframe-url").href = url;
+        document.getElementById("iframe-url").target = "_blank";
+        $("#iframeModal").modal("show");
+    }
+
+    let links = document.getElementsByClassName("link");
+    for (let link of links) {
+        link.onclick = click;
+    }
+
+    $("#iframeModal").on("hidden.bs.modal", function (e) {
+        document.getElementById("iframe-container").innerHTML = "";
+    });
+
 }

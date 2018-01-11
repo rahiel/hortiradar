@@ -48,7 +48,10 @@
 
 <div class="row">
   <div class="col-md-12">
-    <h2 class="text-center">Links</h2>
+    <h2 class="text-center">
+      Links
+      <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#linksModal"></span>
+    </h2>
     <table class="table table-condensed">
       <thead>
         <tr>
@@ -56,14 +59,59 @@
           <th>URL</th>
         </tr>
       </thead>
-      {% for url in urls %}
-        <tr>
-          <td>{{ url["occ"] }}</td>
-          <td><a href="{{ url["link"] }}">{{ url["display_url"] }}</a></td>
-        </tr>
-      {% endfor %}
+      <tbody>
+        {% for url in urls %}
+          <tr>
+            <td>{{ url["occ"] }}</td>
+            <td>
+              <a class="full-link" href="{{ url["link"] }}" target="_blank"><i class="fa fa-external-link" aria-hidden="true"></i></a>
+              <a class="link">{{ url["display_url"] }}</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
   </div>
+
+  <div class="modal fade" id="linksModal" tabindex="-1" role="dialog" aria-labelledby="linksModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="linksModalLabel">Links</h4>
+        </div>
+        <div class="modal-body">
+          <p>Klik op een link om deze op de huidige pagina te zien.</p>
+          <p>
+            Klik op <a><i class="fa fa-external-link" aria-hidden="true"></i></a> om
+            de link in een nieuw tabblad te openen.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="iframeModal" tabindex="-1" role="dialog" aria-labelledby="iframeModalLabel">
+    <div class="modal-dialog modal-wide" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="iframeModalLabel">Hortiradar Explorer</h4>
+        </div>
+        <div id="iframe-modal-body" class="modal-body text-center">
+          Adres: <a id="iframe-url"></a> (Klik op het adres als deze niet goed laadt.)
+          <div id="iframe-container"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="row">
