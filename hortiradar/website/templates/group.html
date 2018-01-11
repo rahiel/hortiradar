@@ -34,16 +34,17 @@
           <th>Percentage</th>
         </tr>
       </thead>
-      {% for (i, keyword) in nums_keywords %}
-        <tr>
-          <td>{{ i }}</td>
-          <td><a href="{{ url_for("horti.view_keyword", keyword=keyword["keyword"]) }}">{{ keyword["keyword"] }}</a></td>
-          <td>{{ keyword["count"] }}</td>
-          <td>{{ keyword["percentage"] }}</td>
-        </tr>
-      {% endfor %}
+      <tbody>
+        {% for (i, keyword) in nums_keywords %}
+          <tr>
+            <td>{{ i }}</td>
+            <td><a href="{{ url_for("horti.view_keyword", keyword=keyword["keyword"]) }}">{{ keyword["keyword"] }}</a></td>
+            <td>{{ keyword["count"] }}</td>
+            <td>{{ keyword["percentage"] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
-
   </div>
 </div>
 {% endblock %}

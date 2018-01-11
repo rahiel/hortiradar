@@ -21,14 +21,15 @@
           <th>Woordsoort</th>
         </tr>
       </thead>
-      {% for keyword in keywords %}
-        <tr>
-          <td>{{ keyword["lemma"] }}</td>
-          <td>{{ keyword["pos"] }}</td>
-        </tr>
-      {% endfor %}
+      <tbody>
+        {% for keyword in keywords %}
+          <tr>
+            <td>{{ keyword["lemma"] }}</td>
+            <td>{{ keyword["pos"] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
-
   </div>
 </div>
 {% endblock %}

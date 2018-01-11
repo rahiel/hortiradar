@@ -87,13 +87,15 @@
           <th>Verwijder?</th>
         </tr>
       </thead>
-      {% for keyword in keywords %}
-        <tr class="keyword">
-          <td class="lemma">{{ keyword["lemma"] }}</td>
-          <td class="pos">{{ keyword["pos"] }}</td>
-          <td><input class="delete" type="checkbox"></td>
-        </tr>
-      {% endfor %}
+      <tbody>
+        {% for keyword in keywords %}
+          <tr class="keyword">
+            <td class="lemma">{{ keyword["lemma"] }}</td>
+            <td class="pos">{{ keyword["pos"] }}</td>
+            <td><input class="delete" type="checkbox"></td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
 
     <button type="button" id="deleteButton" class="btn btn-danger">
