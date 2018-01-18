@@ -52,25 +52,29 @@
       Links
       <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#linksModal"></span>
     </h2>
-    <table class="table table-condensed">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>URL</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for url in urls %}
+    {% if urls %}
+      <table class="table table-condensed">
+        <thead>
           <tr>
-            <td>{{ url["occ"] }}</td>
-            <td>
-              <a class="full-link" href="{{ url["link"] }}" target="_blank"><i class="fa fa-external-link" aria-hidden="true"></i></a>
-              <a class="link">{{ url["display_url"] }}</a>
-            </td>
+            <th>#</th>
+            <th>URL</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for url in urls %}
+            <tr>
+              <td>{{ url["occ"] }}</td>
+              <td>
+                <a class="full-link" href="{{ url["link"] }}" target="_blank"><i class="fa fa-external-link" aria-hidden="true"></i></a>
+                <a class="link">{{ url["display_url"] }}</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>Er zijn geen links gevonden.</p>
+    {% endif %}
   </div>
 
   <div class="modal fade" id="linksModal" tabindex="-1" role="dialog" aria-labelledby="linksModalLabel">

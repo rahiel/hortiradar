@@ -313,8 +313,6 @@ def view_keyword(keyword):
     urls = keyword_data["URLs"][:16]
     for url in urls:
         url["display_url"] = shorten(url["link"], 45)
-    if not urls:
-        urls.append({"occ": 0, "link": "#", "display_url": "Geen URLs gevonden"})
     del keyword_data["URLs"]
 
     keyword_data["tagCloud"] = keyword_data["tagCloud"][:200]
