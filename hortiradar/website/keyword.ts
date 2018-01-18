@@ -178,14 +178,55 @@ function showPictures() {
 function showLink() {
 
     function click(event: MouseEvent) {
-        let url = this.parentNode.querySelector(".full-link").href;
-        let iframe = document.createElement("iframe");
-        iframe.src = url;
-        iframe.sandbox = "";
-        iframe.classList.add("iframe-in-modal");
-        document.getElementById("iframe-container").appendChild(iframe);
-        document.getElementById("iframe-url").textContent = url;
-        document.getElementById("iframe-url").href = url;
+        let url = new URL(this.parentNode.querySelector(".full-link").href);
+        let href = url.href;
+        if (url.protocol === "http:") {
+            url.protocol = "https:";
+        }
+
+        let html;
+        let video_id;
+        if (url.hostname === "www.youtube.com") {
+            video_id = new URLSearchParams(url.search).get("v");
+        } else if (url.hostname === "youtu.be") {
+            video_id = url.pathname.substring(1);
+        }
+        if (video_id) {
+            html = `<iframe class="iframe-in-modal" src="https://www.youtube.com/embed/${video_id}?rel=0" frameborder="0" sandbox="allow-same-origin allow-scripts" allow="encrypted-media" allowfullscreen></iframe>`;
+        }
+
+        let status_id;
+        if (url.hostname === "twitter.com") {
+            let re = /twitter\.com\/.*\/status\/(\d+)/;
+            let match = url.href.match(re);
+            if (match) {
+                status_id = match[1];
+                let options = {
+                    align: "center",
+                    lang: "nl",
+                    dnt: true,
+                };
+                twttr.widgets.createTweet(status_id, document.getElementById("iframe-container"), options);
+            }
+        }
+
+        let iframe;
+        if (html) {
+            let elem = document.createElement("div");
+            elem.innerHTML = html;
+            iframe = elem.firstChild;
+        } else if (!status_id) {
+            iframe = document.createElement("iframe");
+            iframe.src = url.href;
+            iframe.sandbox = "";
+            iframe.classList.add("iframe-in-modal");
+        }
+
+        if (iframe) {
+            document.getElementById("iframe-container").appendChild(iframe);
+        }
+        document.getElementById("iframe-url").textContent = href;
+        document.getElementById("iframe-url").href = href;
         document.getElementById("iframe-url").target = "_blank";
         $("#iframeModal").modal("show");
     }
