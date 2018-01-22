@@ -92,8 +92,8 @@ def get_nsfw_prob(image_url: str):
     v = redis.get(key)
     if v is not None:
         redis.expire(key, cache_time)
-        if v == b"415":
-            return 0, 415
+        if v in (b"404", b"415"):
+            return 0, int(v)
         else:
             return float(v), 200
 
@@ -101,8 +101,11 @@ def get_nsfw_prob(image_url: str):
     if r.status_code == 200:
         redis.set(key, r.content, ex=cache_time)
         return float(r.content), r.status_code
-    elif r.status_code == 415:   # Invalid image
-        redis.set(key, b"415", ex=cache_time)
+    elif r.status_code in (404, 415):
+        # 415: invalid image
+        redis.set(key, str(r.status_code).encode("utf-8"), ex=cache_time)
+        return 0, r.status_code
+    else:
         return 0, r.status_code
 
 def floor_time(dt, *, hour=False, day=False):
