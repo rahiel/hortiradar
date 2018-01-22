@@ -215,6 +215,31 @@ def view_group(group):
     }
     return render_template("group.html", title=make_title(template_data["disp_group"]), **template_data)
 
+@bp.route("/groups/<group>/top")
+def top(group):
+    max_amount = request.args.get("k", 10, type=int)
+    period, start, end, cache_time = get_period(request, "day")
+    params = {"start": start.strftime(time_format), "end": end.strftime(time_format), "group": group}
+    data = cache(process_top, group, max_amount, params, cache_time=cache_time, path=get_req_path(request))
+
+    if isinstance(data, Response):
+        return data
+
+    if len(data) < max_amount:
+        max_amount = len(data)
+
+    template_data = {
+        "data": data,
+        "group": group,
+        "disp_group": display_group(group),
+        "max_amount": str(max_amount),
+        "period": period,
+        "start": display_datetime(start),
+        "end": display_datetime(end),
+        "title": make_title("Top {} {}".format(max_amount, display_group(group)))
+    }
+    return render_template("top.html", **template_data)
+
 @bp.route("/groups/<group>/keywords")
 def view_keywords_in_group(group):
     """Show a list of all the keywords in the group."""

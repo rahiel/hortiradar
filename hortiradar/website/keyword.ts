@@ -18,7 +18,7 @@ window.onload = function () {
     $("body").scrollspy({ target: "#toc" });
     showPictures();
     showLink();
-}
+};
 
 export function renderInformation(data) {
     let timeSeries = [];

@@ -2,10 +2,8 @@ declare const APP_ROOT: string;
 declare const bloemen: any;
 declare const groente_en_fruit: any;
 
-let contents = [];
 
-
-function render_chart(data: any, chartContainer: string, title: string) {
+export function renderChart(data: any, chartContainer: string, title: string) {
     let chart = new CanvasJS.Chart(chartContainer, {
         theme: "theme2",
         title: {
@@ -28,9 +26,13 @@ function render_chart(data: any, chartContainer: string, title: string) {
     chart.render();
 }
 
-render_chart(groente_en_fruit, "chartContainer_fruit", "Top 10 Groente en Fruit")
-render_chart(bloemen, "chartContainer_flower", "Top 10 Bloemen en Planten")
-
+window.onload = function () {
+    if (typeof groente_en_fruit === "undefined" || typeof bloemen === "undefined") {
+    	  return;
+    }
+    renderChart(groente_en_fruit, "chartContainer_fruit", "Top 10 Groente en Fruit");
+    renderChart(bloemen, "chartContainer_flower", "Top 10 Bloemen en Planten");
+};
 
 function onClick(e) {
     window.open(APP_ROOT + "keywords/" + e.dataPoint.label);
