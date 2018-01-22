@@ -34,20 +34,14 @@
 </div>
 
 <div class="row">
-  <div class="col-md-10">
+  <div class="col-md-12">
     <h2 class="text-center">Wordcloud</h2>
     <div id="wordcloudDiv"></div>
-  </div>
-
-  <div class="col-md-2">
-    <h2 class="text-center">Sentiment</h2>
-    <div id="polarity-face">{{ polarity_face }}</div>
-    <p>Sentiment: {{ polarity }} (tussen -1 en 1)</p>
   </div>
 </div>
 
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-md-6">
     <h2 class="text-center">
       Links
       <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#linksModal"></span>
@@ -114,6 +108,12 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="col-md-6 text-center">
+    <h2>Sentiment</h2>
+    <div id="polarity-face">{{ polarity_face }}</div>
+    <p>Sentiment: {{ polarity }} (tussen -1 en 1)</p>
   </div>
 
 </div>

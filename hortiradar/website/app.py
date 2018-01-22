@@ -337,7 +337,7 @@ def view_keyword(keyword):
 
     urls = keyword_data["URLs"][:16]
     for url in urls:
-        url["display_url"] = shorten(url["link"], 45)
+        url["display_url"] = shorten(url["link"], 80)
     del keyword_data["URLs"]
 
     keyword_data["tagCloud"] = keyword_data["tagCloud"][:200]
