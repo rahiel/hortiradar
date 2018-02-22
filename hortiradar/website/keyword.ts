@@ -22,18 +22,26 @@ window.onload = function () {
 
 export function renderInformation(data) {
     let timeSeries = [];
-    for (let p of data.timeSeries) {
-        timeSeries.push({
+    const peaks = data.peaks;
+    for (let i = 0; i < data.timeSeries.length; i++) {
+        let p = data.timeSeries[i];
+        let point = {
             x: new Date(Date.UTC(p.year, p.month-1, p.day, p.hour)),
             y: p.count
-        });
+        };
+        if (peaks.includes(i)) {
+            point["markerColor"] = "red";
+            point["markerSize"] = 6;
+            point["toolTipContent"] = "{x}: {y}";
+        }
+        timeSeries.push(point);
     }
 
     let chart = new CanvasJS.Chart("splineContainer", {
         title: {text: ""},
         animationEnabled: true,
         axisX: {
-            valueFormatString: "D-M-YYYY HH:00",
+            valueFormatString: "HH:00 D-M-YYYY",
             interval: 6,
             intervalType: "hour",
             labelAngle: 50

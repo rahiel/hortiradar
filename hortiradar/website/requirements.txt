@@ -9,6 +9,8 @@ flask-wtf
 gevent
 gunicorn
 hiredis
+numpy
+peakutils
 redis
 requests
 ujson

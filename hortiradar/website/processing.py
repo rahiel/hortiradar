@@ -7,6 +7,8 @@ import pickle
 import random
 import urllib.parse
 
+import numpy as np
+import peakutils
 import requests
 import ujson as json
 from celery import Celery
@@ -269,6 +271,16 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     except IndexError:          # when there are 0 tweets
         pass
 
+    # peak detection on time series
+    y = np.array([t["count"] for t in ts])
+    x = np.array(range(len(y)))
+    peaks = peakutils.indexes(y, thres=0.6, min_dist=1).tolist()  # x indexes of the peaks
+
+    # peak explanation: the most used words in tweets in this peak
+    for peak in peaks:
+        # TODO
+        ts[peak]
+
     lng = 0
     lat = 0
     if mapLocations:
@@ -322,6 +334,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         "interaction_tweets": interaction_tweets,
         "num_tweets": len(tweetList),
         "timeSeries": ts,
+        "peaks": peaks,
         "URLs": urls,
         "photos": images,
         "tagCloud": word_cloud,
