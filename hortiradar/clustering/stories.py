@@ -35,19 +35,19 @@ class Stories:
     time_series:            List of number of tweets per hour in story
     """
 
-    def __init__(self,c,jt=None,ojt=None,mi=None):
+    def __init__(self, c, jt=None, ojt=None, mi=None):
         now = datetime.utcnow()
         self.id = dt_to_ts(now)
         self.created_at = round_time(now)
         self.origin = c.created_at
         self.last_edited = 0
-        
+
         self.tokens = c.tokens
         self.filt_tokens = c.filt_tokens
 
         self.original_tokens = c.tokens
         self.original_filt_tokens = c.filt_tokens
-        
+
         self.tweets = Counter(c.tweets)
         self.clusters = [c]
         self.token_counts = c.token_counts
@@ -58,13 +58,13 @@ class Stories:
         self.threshold = jt if jt else threshold
         self.original_threshold = ojt if ojt else original_threshold
 
-    def __eq__(self,other):
+    def __eq__(self, other):
         if type(other) == Stories:
             return self.id == other.id
         else:
             return False
 
-    def is_similar(self,c,algorithm="jaccard"): ## was CalcMatch
+    def is_similar(self, c, algorithm="jaccard"): ## was CalcMatch
         """Calculate if the cluster matches to the story"""
         if algorithm == "jaccard":
             current = jac(self.filt_tokens,c.filt_tokens)
@@ -76,8 +76,8 @@ class Stories:
             return (current >= self.threshold and original >= self.original_threshold)
         else:
             raise NotImplementedError("This algorithm is not yet implemented.")
-    
-    def add_cluster(self,c): ## was addTime
+
+    def add_cluster(self, c): ## was addTime
         """Add a new cluster to the story"""
         self.tokens = c.tokens
         self.filt_tokens = c.filt_tokens
@@ -85,7 +85,7 @@ class Stories:
         self.clusters.append(c)
         for tweet in c.tweets:
             self.tweets[tweet] += 1
-        
+
         self.first_tweet_time = min([tw.tweet.created_at for tw in self.tweets])
         self.time_series = self.get_timeseries()
 
@@ -270,7 +270,7 @@ class Stories:
                         nodes[user_id_str] = tweet.user.screen_name
 
                     edges.append({"source": user_id_str, "target": obj["id_str"], "value": "mention"})
-            
+
             if hasattr(tweet,"in_reply_to_user_id_str"):
                 if tweet.in_reply_to_user_id_str:
                     if tweet.in_reply_to_user_id_str not in nodes:
@@ -301,7 +301,7 @@ class Stories:
     def get_jsondict(self):
         """Builds the dict for output to JSON"""
         jDict = {}
-        
+
         jDict["startStory"] = datetime.strftime(self.created_at,tweet_time_format)
         try:
             jDict["endStory"] = datetime.strftime(self.closed_at+timedelta(hours=1),tweet_time_format)
@@ -312,12 +312,12 @@ class Stories:
         jDict["summary_tweet"] = self.get_best_tweet()
 
         jDict["timeSeries"] = self.get_timeseries()
-        
+
         jDict["photos"] = self.get_images()
         jDict["URLs"] = self.get_URLs()
         jDict["tagCloud"] = self.get_wordcloud()
         jDict["hashtags"] = self.get_hashtags()
-        
+
         loc_result = self.get_locations()
         jDict["locations"] = loc_result["locs"]
         jDict["centerloc"] = loc_result["avLoc"]
@@ -325,5 +325,5 @@ class Stories:
         jDict["graph"] = self.get_interaction_graph()
 
         jDict["cluster_details"] = self.get_cluster_details()
-        
+
         return jDict

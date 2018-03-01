@@ -83,7 +83,7 @@ def cache_request(func, args, kwargs, cache_time, key, loading_id):
     redis.set(key, v, ex=cache_time)
     redis.set(loading_id, b"done", ex=cache_time)
 
-@app.task
+@app.task(name="tasks.mark_as_spam")
 def mark_as_spam(ids: Sequence[str]):
     for id_str in ids:
         tweety.patch_tweet(id_str, data=json.dumps({"spam": 0.8}))
