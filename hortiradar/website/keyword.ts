@@ -11,14 +11,35 @@ declare const display_tweets: number;
 const searchParams = new URLSearchParams(window.location.search);
 
 
-window.onload = function () {
+if (typeof keyword_data !== "undefined") {
+    window.onload = function () { main(); };
+}
+
+// the different kind of tweets we show at the tweets section on the keyword page
+const enum tweetButton {
+    sample = "sample",
+    retweets = "retweets",
+    interactions = "interactions",
+};
+
+function main() {
     renderInformation(keyword_data);
     renderGraph(graph);
     renderSampleTweets();
     $("body").scrollspy({ target: "#toc" });
     showPictures();
     showLink();
-};
+
+    document.getElementById(tweetButton.sample).onclick = renderSampleTweets;
+    document.getElementById(tweetButton.retweets).onclick = renderRetweets;
+    document.getElementById(tweetButton.interactions).onclick = renderInteractionTweets;
+
+    // navigate to fragment identifier
+    let hash = searchParams.get("hash");
+    if (hash != null) {
+        window.location.hash = hash;
+    }
+}
 
 export function renderInformation(data) {
     let timeSeries = [];
@@ -142,23 +163,6 @@ function highlightTweetButton(button: tweetButton) {
             document.getElementById(b).classList.remove("btn-primary");
         }
     }
-}
-
-// the different kind of tweets we show at the tweets section on the keyword page
-const enum tweetButton {
-    sample = "sample",
-    retweets = "retweets",
-    interactions = "interactions",
-}
-
-document.getElementById(tweetButton.sample).onclick = renderSampleTweets;
-document.getElementById(tweetButton.retweets).onclick = renderRetweets;
-document.getElementById(tweetButton.interactions).onclick = renderInteractionTweets;
-
-// navigate to fragment identifier
-let hash = searchParams.get("hash");
-if (hash != null) {
-    window.location.hash = hash;
 }
 
 function showPictures() {
