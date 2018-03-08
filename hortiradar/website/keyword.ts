@@ -42,18 +42,20 @@ function main() {
 }
 
 export function renderInformation(data) {
-    let timeSeries = [];
     const peaks = data.peaks;
+    const [peaks_i, peaks_summary] = _.unzip(peaks);
+    let timeSeries = [];
     for (let i = 0; i < data.timeSeries.length; i++) {
         let p = data.timeSeries[i];
         let point = {
             x: new Date(Date.UTC(p.year, p.month-1, p.day, p.hour)),
             y: p.count
         };
-        if (peaks && peaks.includes(i)) {
+        if (peaks_i && peaks_i.includes(i)) {
             point["markerColor"] = "red";
             point["markerSize"] = 6;
-            point["toolTipContent"] = "{x}: {y}";
+            let peak_num = peaks_i.indexOf(i);
+            point["toolTipContent"] = "{x}: {y}<br>Trefwoorden: " + peaks_summary[peak_num];
         }
         timeSeries.push(point);
     }

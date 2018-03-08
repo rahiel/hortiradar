@@ -159,7 +159,8 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     nodes = {}
     edges = []
 
-    for tw in tweets:
+    for i in range(len(tweets)):
+        tw = tweets[i]
         tweet = tw["tweet"]
         lemmas = [t["lemma"] for t in tw["tokens"]]
         texts = [t["text"].lower() for t in tw["tokens"]]  # unlemmatized words
@@ -187,6 +188,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
         dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
         tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
+        tweets[i]["tweet"]["datetime"] = datetime(dt.year, dt.month, dt.day, dt.hour)  # round to hour for peak detection
 
         user_id_str = tweet["user"]["id_str"]
         if "retweeted_status" in tweet:
@@ -248,9 +250,13 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
     mark_as_spam.apply_async((spam_list,), queue="web")
 
+    def is_stop_word(token):
+        t = token.lower()
+        return (len(t) <= 1) or ("http:" in t) or (t in stop_words)
+
     word_cloud = []
     for (token, count) in word_cloud_dict.most_common():
-        if token.lower() not in stop_words and "http" not in token and len(token) > 1:
+        if not is_stop_word(token):
             word_cloud.append({"text": token, "weight": count})
 
     # sentiment analysis on wordcloud
@@ -273,13 +279,33 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
     # peak detection on time series
     y = np.array([t["count"] for t in ts])
-    x = np.array(range(len(y)))
-    peaks = peakutils.indexes(y, thres=0.6, min_dist=1).tolist()  # x indexes of the peaks
+    peaks = peakutils.indexes(y, thres=0.6, min_dist=1).tolist()  # returns a list with the indexes of the peaks in ts
 
-    # peak explanation: the most used words in tweets in this peak
-    for peak in peaks:
-        # TODO
-        ts[peak]
+    # peak explanation: the most used words in tweets in the peak
+    # the peak indices are sorted in ascending order
+    if peaks:
+        peak_index = 0
+        new_peak = True
+        peak_data = {}
+        for tw in tweets:
+            tweet = tw["tweet"]
+            if new_peak:
+                p = ts[peaks[peak_index]]
+                dt = datetime(p["year"], p["month"], p["day"], p["hour"])
+                peak_data[peak_index] = Counter()
+                new_peak = False
+            if tweet["datetime"] < dt:
+                continue
+            elif tweet["datetime"] == dt:
+                lemmas = [token["lemma"] for token in tw["tokens"]]
+                peak_data[peak_index].update(lemmas)
+            else:
+                new_peak = True
+                peak_index += 1
+                if peak_index == len(peaks):
+                    break
+
+        peaks = [(p, ", ".join(filter(lambda x: not is_stop_word(x), map(lambda x: x[0], peak_data[i].most_common(11))))) for (i, p) in enumerate(peaks)]
 
     lng = 0
     lat = 0
