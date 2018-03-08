@@ -50,7 +50,7 @@ export function renderInformation(data) {
             x: new Date(Date.UTC(p.year, p.month-1, p.day, p.hour)),
             y: p.count
         };
-        if (peaks.includes(i)) {
+        if (peaks && peaks.includes(i)) {
             point["markerColor"] = "red";
             point["markerSize"] = 6;
             point["toolTipContent"] = "{x}: {y}";
