@@ -233,7 +233,6 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
         try:
             for obj in tweet["entities"]["urls"]:
-                # using "expand" here synchronously will slow everything down tremendously
                 url = obj["expanded_url"]
                 if url is not None:
                     URLList.append(url)
@@ -409,15 +408,3 @@ for f in dir(tweety):
     if isinstance(attr, FunctionType):
         funs[f] = attr
 cache_request.funs = funs
-
-def expand(url):
-    """Expands URLs from URL shorteners."""
-    import requests
-    try:
-        r = requests.head(url)
-        while r.is_redirect and r.headers.get("location") is not None:
-            url = r.headers["location"]
-            r = requests.head(url)
-        return r.url
-    except:
-        return url
