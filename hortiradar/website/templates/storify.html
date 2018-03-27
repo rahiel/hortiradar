@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% set active_page = "horti.view_stories(%s)" % group %}
 {% block content %}
 <link rel="stylesheet" href="{{ url_for("horti.static", filename="css/storify.css") }}">
 
@@ -11,9 +12,9 @@
     <p>Hieronder de onderwerpen die besproken met betrekking tot de group "{{ group }}" van {{ start }} tot {{ end }}. Klik op een cluster om de informatie-pagina van het desbetreffende cluster te openen.</p>
   </div>
   <div class="col-md-4 text-right">
-    {{ render_button("horti.storify_keyword", {"group": group}, period, "day", "Dag") }}
-    {{ render_button("horti.storify_keyword", {"group": group}, period, "week", "Week") }}
-    {{ render_button("horti.storify_keyword", {"group": group}, period, "month", "Maand") }}
+    {{ render_button("horti.view_stories", {"group": group}, period, "day", "Dag") }}
+    {{ render_button("horti.view_stories", {"group": group}, period, "week", "Week") }}
+    {{ render_button("horti.view_stories", {"group": group}, period, "month", "Maand") }}
   </div>
 </div>
 

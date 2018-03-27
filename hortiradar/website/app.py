@@ -417,15 +417,15 @@ def view_tweets_about_keyword(keyword):
     return render_template("tweets.html", title=make_title(keyword), **template_data)
 
 def filter_story(story, display_tweets):
-    story['urls'] = story["URLs"][:16]
-    for url in story['urls']:
+    story["urls"] = story["URLs"][:16]
+    for url in story["urls"]:
         url["display_url"] = shorten(url["link"], 45)
-    if not story['urls']:
-        story['urls'].append({"occ": 0, "link": "#", "display_url": "Geen URLs gevonden"})
+    if not story["urls"]:
+        story["urls"].append({"occ": 0, "link": "#", "display_url": "Geen URLs gevonden"})
     del story["URLs"]
 
     story["tagCloud"] = story["tagCloud"][:200]
-    story['photos'] = story["photos"][:16]
+    story["photos"] = story["photos"][:16]
 
     story["num_tweets"] = len(story["tweets"])
     story["tweets"] = story["tweets"][:display_tweets]
@@ -434,7 +434,7 @@ def filter_story(story, display_tweets):
     return story
 
 @bp.route("/clustering/<group>")
-def storify_keyword(group):
+def view_stories(group):
     period, start, end, cache_time = get_period(request, "week")
     story_data = cache(process_stories, group, start, end, cache_time=cache_time, path=get_req_path(request))
 
