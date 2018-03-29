@@ -305,7 +305,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
                 if peak_index == len(peaks):
                     break
 
-        peaks = [(p, ", ".join(islice(filter(lambda x: not is_stop_word(x), map(lambda x: x[0], peak_data[i].most_common())), 0, 7))) for (i, p) in enumerate(peaks)]
+        peaks = [(p, ", ".join(islice(filter(lambda x: not is_stop_word(x), map(lambda x: x[0], peak_data[i].most_common())), 7))) for (i, p) in enumerate(peaks)]
 
     lng = 0
     lat = 0
