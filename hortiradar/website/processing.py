@@ -1,11 +1,12 @@
-from collections import Counter
-from datetime import datetime, timedelta
-from hashlib import md5
-from types import FunctionType
-from typing import Sequence
 import pickle
 import random
 import urllib.parse
+from collections import Counter
+from datetime import datetime, timedelta
+from hashlib import md5
+from itertools import islice
+from types import FunctionType
+from typing import Sequence
 
 import numpy as np
 import peakutils
@@ -251,7 +252,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 
     def is_stop_word(token):
         t = token.lower()
-        return (len(t) <= 1) or ("http:" in t) or (t in stop_words)
+        return (len(t) <= 1) or (t.startswith("https://") or t.startswith("http://")) or (t in stop_words)
 
     word_cloud = []
     for (token, count) in word_cloud_dict.most_common():
@@ -304,7 +305,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
                 if peak_index == len(peaks):
                     break
 
-        peaks = [(p, ", ".join(filter(lambda x: not is_stop_word(x), map(lambda x: x[0], peak_data[i].most_common(11))))) for (i, p) in enumerate(peaks)]
+        peaks = [(p, ", ".join(islice(filter(lambda x: not is_stop_word(x), map(lambda x: x[0], peak_data[i].most_common())), 0, 7))) for (i, p) in enumerate(peaks)]
 
     lng = 0
     lat = 0
