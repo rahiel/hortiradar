@@ -111,9 +111,29 @@
   </div>
 
   <div class="col-md-6 text-center">
-    <h2>Sentiment</h2>
+    <h2>
+      Sentiment
+      <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#semtimentModal"></span>
+    </h2>
     <div id="polarity-face">{{ polarity_face }}</div>
     <p>Sentiment: {{ polarity }} (tussen -1 en 1)</p>
+  </div>
+
+  <div class="modal fade" id="sentimentModal" tabindex="-1" role="dialog" aria-labelledby="sentimentModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="sentimentModalLabel">Sentiment</h4>
+        </div>
+        <div class="modal-body">
+          <p>Hieronder de gemiddelde sentiment score van de {{ num_tweets }} tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+        </div>
+      </div>
+    </div>
   </div>
 
 </div>
