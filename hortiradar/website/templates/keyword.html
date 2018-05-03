@@ -27,17 +27,77 @@
 </div>
 
 <div class="row">
+
   <div class="col-md-12">
-    <h2 class="text-center">Tijdreeks</h2>
+    <h2 class="text-center">
+      Tijdreeks
+      <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#tijdreeksModal"></span>
+    </h2>
     <div id="splineContainer"></div>
   </div>
+  
+  <div class="modal fade" id="tijdreeksModal" tabindex="-1" role="dialog" aria-labelledby="tijdreeksModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="tijdreeksModalLabel">Tijdreeks</h4>
+        </div>
+        <div class="modal-body">
+          <p>
+            Dit onderdeel toont het aantal tweets dat per uur geplaatst wordt die het 
+            trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}. Het 
+            precieze aantal tweets per uur kan afgelezen worden in een tooltip door de 
+            muis over de grafiek te bewegen.
+          </p>
+          <p>
+            Binnen deze tijdsreeks wordt een piek-detectie uitgevoerd. Alle gevonden 
+            pieken worden aangegeven middels een rode stip. Plaats de muis op een van 
+            deze stippen om in een tooltip de termen te lezen die in deze piek het 
+            meest voorkomen.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="row">
+  
   <div class="col-md-12">
-    <h2 class="text-center">Wordcloud</h2>
+    <h2 class="text-center">
+      Wordcloud
+      <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#wordcloudModal"></span>
+    </h2>
     <div id="wordcloudDiv"></div>
   </div>
+
+  <div class="modal fade" id="wordcloudModal" tabindex="-1" role="dialog" aria-labelledby="wordcloudModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="wordcloudModalLabel">Wordcloud</h4>
+        </div>
+        <div class="modal-body">
+          <p>
+            Dit onderdeel toont alle termen die gebruikt worden in de {{ num_tweets }} 
+            tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot 
+            {{ end }}. Hoe vaker de term gebruikt wordt, hoe groter de term wordt 
+            afgebeeld in de wordcloud.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="row">
@@ -79,6 +139,10 @@
           <h4 class="modal-title" id="linksModalLabel">Links</h4>
         </div>
         <div class="modal-body">
+          <p>
+            Dit onderdeel toont alle links die gebruikt worden in de {{ num_tweets }} 
+            tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}.
+          </p>
           <p>Klik op een link om deze op de huidige pagina te zien.</p>
           <p>
             Klik op <a><i class="fa fa-external-link" aria-hidden="true"></i></a> om
@@ -127,7 +191,12 @@
           <h4 class="modal-title" id="sentimentModalLabel">Sentiment</h4>
         </div>
         <div class="modal-body">
-          <p>Dit onderdeel toont de gemiddelde sentiment score van de {{ num_tweets }} tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}.</p>
+          <p>
+            Dit onderdeel toont de gemiddelde sentiment score van de {{ num_tweets }} 
+            tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot 
+            {{ end }}. De score van elke tweet wordt bepaald op basis van de termen 
+            die de tweet bevat.
+          </p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
@@ -154,9 +223,10 @@
           </div>
           <div class="modal-body">
             <p>
-              In het interactie netwerk zie je de interacties tussen gebruikers
-              die tweeten over "{{ keyword }}". De zwarte punten zijn de
-              gebruikers. Plaats de muis op een punt om in een tooltip de naam
+              In het interactie netwerk zie je de interacties tussen gebruikers 
+              van de {{ num_tweets }} tweets die het trefwoord "{{ keyword }}" 
+              bevatten van {{ start }} tot {{ end }}. De zwarte punten zijn de 
+              gebruikers. Plaats de muis op een punt om in een tooltip de naam 
               van de gebruiker te lezen.
             </p>
             <p>
@@ -218,8 +288,10 @@
           </div>
           <div class="modal-body">
             <p>
-              Linksboven de foto's ziet u hoe vaak een foto is getweet. Klik op
-              een foto om deze te vergroten.
+              Dit onderdeel toont alle foto's die gebruikt worden in de {{ num_tweets }} 
+              tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot 
+              {{ end }}. Linksboven de foto's ziet u hoe vaak een foto is getweet. Klik 
+              op een foto om deze te vergroten.
             </p>
           </div>
           <div class="modal-footer">
@@ -247,10 +319,34 @@
 
     </div>
     <div class="row">
+    
       <div class="col-md-12">
-        <h2 class="text-center">Plaatsen</h2>
+        <h2 class="text-center">
+          Plaatsen
+          <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#locationModal"></span>
+        </h2>
         <div id="mapDiv"></div>
       </div>
+    
+      <div class="modal fade" id="locationModal" tabindex="-1" role="dialog" aria-labelledby="locationModalLabel">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="locationModalLabel">Foto's</h4>
+            </div>
+            <div class="modal-body">
+              <p>
+                Dit onderdeel toont alle locaties die gebruikt worden in de {{ num_tweets }} 
+                tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}.
+              </p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+            </div>
+          </div>
+        </div>
+
     </div>
   </div>
   <div class="col-md-6">
@@ -267,6 +363,10 @@
             <h4 class="modal-title" id="tweetsModalLabel">Tweets</h4>
           </div>
           <div class="modal-body">
+            <p>
+              Dit onderdeel toont een selectie van de {{ num_tweets }} tweets 
+              die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}. 
+            </p>
             <p>
               Klik op <b>willekeurig</b> om een willekeurige selectie van tweets
               te zien. U krijgt een nieuwe selectie van tweets als u
@@ -315,7 +415,7 @@
 <div class="row">
   <h2 id="google" class="offset">Google</h2>
   <div class="col-md-8">
-    <p>Hieronder een analyse van zoekopdrachten op Google over het trefwoord in de afgelopen {{ period_name }}.</p>
+    <p>Hieronder een analyse van zoekopdrachten op Google over het trefwoord "{{ keyword }}" in de afgelopen {{ period_name }}.</p>
   </div>
   <div class="col-md-4 text-right">
     {{ render_button("horti.view_keyword", {"keyword": keyword, "hash": "google"}, period, "day", "Dag") }}
