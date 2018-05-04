@@ -18,13 +18,20 @@
     <h2>Groepen</h2>
     {% if has_group %}
       <p>
-        U kunt de volgende groepen aanpassen. Klik op "edit" om de trefwoorden
-        in uw groepen aan te passen.
+        U kunt de volgende groepen aanpassen. Klik op een groep onder het kopje "Bekijken" om de trefwoorden in die groep te bekijken. Voor het aanpassen van de trefwoorden, klikt u op de groepsnaam onder het kopje "Aanpassen".
       </p>
 
+      <h3>Bekijken</h3>
       <ul>
         {% for (group, label) in groups %}
-          <li><a href="{{ url_for("horti.view_group", group=group) }}">{{ label }}</a> <a href="{{ url_for("horti.edit_group", group=group) }}">(edit)</a></li>
+          <li><a href="{{ url_for("horti.view_group", group=group) }}">{{ label }}</a></li>
+        {% endfor %}
+      </ul>
+
+      <h3>Aanpassen</h3>
+      <ul>
+        {% for (group, label) in groups %}
+          <li><a href="{{ url_for("horti.edit_group", group=group) }}">{{ label }}</a></li>
         {% endfor %}
       </ul>
     {% else %}

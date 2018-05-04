@@ -595,7 +595,7 @@ def profile():
     is_admin = "admin" in roles
     has_confirmed_email = current_user.has_confirmed_email()
     template_data = {
-        "groups": zip(groups, labels),
+        "groups": [(val,labels[i]) for i,val in enumerate(groups)], # zip(groups, labels), # Removed to fit double loop in template
         "has_group": has_group,
         "has_confirmed_email": has_confirmed_email,
         "is_admin": is_admin
