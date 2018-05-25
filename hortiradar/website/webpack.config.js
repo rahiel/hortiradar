@@ -7,7 +7,9 @@ module.exports = {
         interaction_graph: "./interaction_graph.ts",
         storify: "./storify.ts",
         edit_group: "./edit_group.ts",
-        loading: "./loading.ts"
+        loading: "./loading.ts",
+        timeline: "./timeline.js",
+        utils: "./utils.js"
     },
     output: {
         filename: "[name].js",

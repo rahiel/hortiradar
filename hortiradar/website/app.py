@@ -20,6 +20,7 @@ from wtforms import SelectField, StringField
 from wtforms.validators import AnyOf, DataRequired, NoneOf
 
 from hortiradar import TOKEN, Tweety, time_format
+from hortiradar.clustering import tweet_time_format
 from hortiradar.database import lemmatize
 from hortiradar.website import app, db
 from models import Role, User
@@ -433,6 +434,16 @@ def filter_story(story, display_tweets):
     del story["summary_tweet"]
     return story
 
+def filter_story_temp(story):
+    adjusted_details = []
+    for entry in story["cluster_details"]:
+        details = {}
+        details["starting_time"] = datetime.strftime(datetime.fromtimestamp(entry["starting_time"]/1000),"%a, %d %b %Y %H:%M:%S +0000")
+        details["message"] = entry["summarytweet"]
+        adjusted_details.append(details)
+
+    return adjusted_details
+
 @bp.route("/clustering/<group>")
 def view_stories(group):
     period, start, end, cache_time = get_period(request, "week")
@@ -486,6 +497,45 @@ def view_stories(group):
         "period": period
     }
     return render_template("storify.html", title=make_title(group), **template_data)
+
+@bp.route("/timeline/<group>")
+def view_timeline(group):
+    period, start, end, cache_time = get_period(request, "week")
+    story_data = cache(process_stories, group, start, end, cache_time=cache_time, path=get_req_path(request))
+
+    if isinstance(story_data, Response):
+        return story_data
+
+    active_stories, closed_stories = story_data
+
+    storify_data = []
+    timeline_data = []
+
+    timeline_start = timegm(start.timetuple()) * 1000
+    timeline_end = timegm(end.timetuple()) * 1000
+
+    display_tweets = 11
+    display_stories = 10
+    
+    for story in active_stories:
+        if not (len(storify_data) < display_stories):
+            break
+        # story = filter_story(story, display_tweets)
+        adjusted_details = filter_story_temp(story)
+
+        timeline_info = {"label": len(storify_data), "times": adjusted_details}
+
+        storify_data.append(story)
+        timeline_data.append(timeline_info)
+
+    template_data = {
+        "group": group,
+        "timeline_data": json.dumps(timeline_data),
+        "start": display_datetime(start),
+        "end": display_datetime(end),
+        "period": period
+    }
+    return render_template("timeline.html", title=make_title(group), **template_data)
 
 @bp.route("/about")
 def about():

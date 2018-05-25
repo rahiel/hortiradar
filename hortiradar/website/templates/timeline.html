@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% set active_page = "horti.view_timeline(%s)" % group %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for("horti.static", filename="css/timeline.css") }}">
+
+<h1>Timeline test</h1>
+
+{% from "_helpers.html" import render_button %}
+
+<!-- <div class="row">
+  <div class="col-md-8">
+    <p>Hieronder de onderwerpen die besproken met betrekking tot de group "{{ group }}" van {{ start }} tot {{ end }}. Klik op een cluster om de informatie-pagina van het desbetreffende cluster te openen.</p>
+  </div>
+  <div class="col-md-4 text-right">
+    {{ render_button("horti.view_stories", {"group": group}, period, "day", "Dag") }}
+    {{ render_button("horti.view_stories", {"group": group}, period, "week", "Week") }}
+    {{ render_button("horti.view_stories", {"group": group}, period, "month", "Maand") }}
+  </div>
+</div> -->
+
+<div class="row">
+  <div class="col-md-12">
+    <div id="eventdrops-demo"></div>
+      <p class="infos">
+        <span class="light">
+          Showing clusters found between</span> <span id="zoomStart"></span> <span class="light">and</span> <span id="zoomEnd"></span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- <div class="row">
+  <div class="col-md-3">
+    <div id="stories">
+    </div>
+  </div>
+
+  <div class="col-md-9">
+    <div class="row">
+      <div id="timelineBgnd"></div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-5">
+        <h1>Story details</h1>
+        <p>Hieronder de analyse van de story met <span id="numTweets"></span> tweets, waarvan hiernaast de samenvattingstweet is weergegeven. De balk boven de tweet geeft aan in welke kleur de clusters, die horen bij deze story, aangegeven zijn in de tijdslijn hierboven.</p>
+      </div>
+
+      <div class="col-md-7">
+        <div style="border: 1px ridge #CCCCCC; border-radius: 8px;">
+          <div id="storyColor"></div>
+          <div id="storySummary"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <h2 class="text-center">Tijdreeks</h2>
+        <div id="splineContainer"></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-8">
+        <h2 class="text-center">Wordcloud</h2>
+        <div id="wordcloudDiv"></div>
+      </div>
+
+      <div class="col-md-4">
+        <h2 class="text-center">Links</h2>
+        <table class="table table-condensed" id="urls">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>URL</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <h2 class="text-center">
+          Interactie Netwerk
+          <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#graphModal"></span>
+        </h2>
+
+        <div class="modal fade" id="graphModal" tabindex="-1" role="dialog" aria-labelledby="graphModalLabel">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="graphModalLabel">Interactie Netwerk</h4>
+              </div>
+              <div class="modal-body">
+                <p>
+                  In het interactie netwerk zie je de interacties tussen gebruikers
+                  die tweeten over "{{ keyword }}". De zwarte punten zijn de
+                  gebruikers. Plaats de muis op een punt om in een tooltip de naam
+                  van de gebruiker te lezen.
+                </p>
+                <p>
+                  De lijntjes tussen de punten laten zien om wat voor interactie het
+                  gaat. <span style="color: red;">Rode lijnen</span> zijn retweets,
+                  <span style="color: green;">groene lijnen</span> zijn mentions en
+                  <span style="color: blue;">blauwe lijnen</span> zijn replies.
+
+                  De pijltjes tonen de richting van informatieoverdracht. Als A een
+                  tweet van B retweet, gaat er informatie van B naar A en wijst de
+                  pijl in het netwerk dus ook van B naar A. Als A een reply tweet
+                  naar B, wijst A naar B. Als A in een tweet verwijst naar B met een
+                  mention, dan wijst A naar B.
+                </p>
+                <p>
+                  Je kan het netwerk bewegen door op een lege plek te klikken en te
+                  slepen. Je kan ook in- en uitzoomen door op een lege plek te
+                  klikken en te scrollen. Individuele gebruikers kan je vastklikken
+                  en slepen.
+                </p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <svg id="interactionGraph" width="920" height="575"></svg>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="row">
+          <div class="col-md-12">
+            <h2 class="text-center">Foto's</h2>
+            <div id="mediaDiv"></div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <h2 class="text-center">Plaatsen</h2>
+            <div id="mapDiv"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <h2 class="text-center">Tweets</h2>
+        <div id="tweetlist"></div>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<script type="text/javascript">
+ // var storify_data = {{ storify_data|safe }};
+ var timeline_data = {{ timeline_data|safe }};
+ // var timeline_start_ts = {{ timeline_start_ts }};
+ // var timeline_end_ts = {{ timeline_end_ts }};
+ // var display_tweets = {{ display_tweets }};
+ // var num_stories = {{ num_stories }};
+</script>
+
+<!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqcloud/1.0.4/jqcloud-1.0.4.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqcloud/1.0.4/jqcloud.css">
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA0adISATP5Nhic-ghCRijy6KOirg-k60"></script> -->
+<script src="{{ url_for("horti.static", filename="timeline.js") }}"></script>
+{% endblock %}
