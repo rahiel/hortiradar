@@ -425,6 +425,7 @@ funs = {
     "process_details": process_details,
     "process_top": process_top,
     "process_stories": process_stories,
+    "process_tokens": process_tokens,
 }
 for f in dir(tweety):
     attr = eval("tweety.{}".format(f))
