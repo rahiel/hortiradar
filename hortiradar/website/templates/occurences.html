@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% from "_helpers.html" import render_button %}
+
+<h1>{{ keyword }}</h1>
+
+<div class="row">
+  <h2>Tweets</h2>
+  <div class="col-md-8">
+    <p>
+      Hieronder het overzicht van de termen in de tweets die het trefwoord "{{ keyword }}" bevatten van {{ start }} tot {{ end }}.
+    </p>
+  </div>
+  <div class="col-md-4 text-right">
+    {{ render_button("horti.view_token_co_occurences", {"keyword": keyword}, period, "day", "Dag") }}
+    {{ render_button("horti.view_token_co_occurences", {"keyword": keyword}, period, "week", "Week") }}
+    {{ render_button("horti.view_token_co_occurences", {"keyword": keyword}, period, "month", "Maand") }}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Token</th>
+          <th>Frequentie</th>
+          <th>Verdere acties</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for (i, token) in occurences %}
+          <tr>
+            <td>{{ i }}</td>
+            <td>{{ keyword["text"] }}</a></td>
+            <td>{{ keyword["weight"] }}</td>
+            <td>TBD</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
