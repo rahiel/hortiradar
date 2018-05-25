@@ -18,8 +18,8 @@ from redis import StrictRedis
 from pattern.nl import sentiment
 
 from hortiradar import Tweety, TOKEN, time_format
+from hortiradar.clustering import Token
 from hortiradar.database import stop_words, obscene_words, blacklist, get_db
-
 
 db = get_db()
 storiesdb = db.stories
@@ -142,6 +142,28 @@ def process_top(group, max_amount, params, force_refresh=False, cache_time=CACHE
             break
 
     return topkArray
+
+def process_tokens(prod, params, force_refresh=False, cache_time=CACHE_TIME):
+    tweets = cache(tweety.get_keyword, prod, force_refresh=force_refresh, cache_time=CACHE_TIME, **params)
+
+    token_dict = Counter()
+
+    for i in range(len(tweets)):
+        tw = tweets[i]
+        tokens = [Token(t) for t in tw["tokens"]]
+
+        token_dict.update(tokens)
+
+    occurrences = []
+    for (token, count) in token_dict.most_common():
+        if not token.filter_token():
+            occurrences.append({"text": token.lemma, "pos": token.pos, "weight": count})
+
+    data = {
+        "occurrences": occurrences
+    }
+    return data
+
 
 def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     tweets = cache(tweety.get_keyword, prod, force_refresh=force_refresh, cache_time=CACHE_TIME, **params)

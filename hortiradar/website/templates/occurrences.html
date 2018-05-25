@@ -13,9 +13,9 @@
     </p>
   </div>
   <div class="col-md-4 text-right">
-    {{ render_button("horti.view_token_co_occurences", {"keyword": keyword}, period, "day", "Dag") }}
-    {{ render_button("horti.view_token_co_occurences", {"keyword": keyword}, period, "week", "Week") }}
-    {{ render_button("horti.view_token_co_occurences", {"keyword": keyword}, period, "month", "Maand") }}
+    {{ render_button("horti.view_token_co_occurrences", {"keyword": keyword}, period, "day", "Dag") }}
+    {{ render_button("horti.view_token_co_occurrences", {"keyword": keyword}, period, "week", "Week") }}
+    {{ render_button("horti.view_token_co_occurrences", {"keyword": keyword}, period, "month", "Maand") }}
   </div>
 </div>
 
@@ -26,6 +26,7 @@
         <tr>
           <th>#</th>
           <th>Token</th>
+          <th>Part-of-Speech tag</th>
           <th>Frequentie</th>
           <th>Verdere acties</th>
         </tr>
@@ -35,6 +36,7 @@
           <tr>
             <td>{{ i }}</td>
             <td>{{ token["text"] }}</a></td>
+            <td>{{ token["pos"] }}</a></td>
             <td>{{ token["weight"] }}</td>
             <td>TBD</td>
           </tr>

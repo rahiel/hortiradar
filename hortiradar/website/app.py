@@ -24,7 +24,7 @@ from hortiradar.clustering import tweet_time_format
 from hortiradar.database import lemmatize
 from hortiradar.website import app, db
 from models import Role, User
-from processing import cache, floor_time, process_details, process_top, process_stories
+from processing import cache, floor_time, process_details, process_tokens, process_top, process_stories
 
 
 bp = Blueprint("horti", __name__, template_folder="templates", static_folder="static")
@@ -393,23 +393,23 @@ def view_keyword(keyword):
     }
     return render_template("keyword.html", title=make_title(keyword), **template_data)
 
-@bp.route("/keywords/<keyword>/occurences")
-def view_token_co_occurences(keyword):
+@bp.route("/keywords/<keyword>/occurrences")
+def view_token_co_occurrences(keyword):
     period, start, end, cache_time = get_period(request, "week")
     params = {"start": start.strftime(time_format), "end": end.strftime(time_format)}
-    keyword_data = cache(process_details, keyword, params, cache_time=cache_time, path=get_req_path(request))
+    keyword_data = cache(process_tokens, keyword, params, cache_time=cache_time, path=get_req_path(request))
     if isinstance(keyword_data, Response):
         return keyword_data
 
-    nums = range(1, len(keyword_data["tagCloud"]) + 1)
+    nums = range(1, len(keyword_data["occurrences"]) + 1)
     template_data = {
         "keyword": keyword,
         "period": period,
         "start": display_datetime(start),
         "end": display_datetime(end),
-        "occurences": zip(nums,keyword_data["tagCloud"])
+        "occurrences": zip(nums,keyword_data["occurrences"])
     }
-    return render_template("occurences.html", title=make_title(keyword), **template_data)
+    return render_template("occurrences.html", title=make_title(keyword), **template_data)
 
 
 @bp.route("/keywords/<keyword>/tweets")
