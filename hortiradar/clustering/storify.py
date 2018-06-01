@@ -6,7 +6,7 @@ from redis import StrictRedis
 from sklearn.cluster import AffinityPropagation
 import ujson as json
 
-from hortiradar.clustering import ExtendedTweet, Cluster, Stories, tweet_time_format
+from hortiradar.clustering import Config, ExtendedTweet, Cluster, Stories, tweet_time_format
 from hortiradar.clustering.util import round_time
 from hortiradar.database import get_db
 
@@ -18,9 +18,9 @@ tweetsdb = db.tweets
 
 redis = StrictRedis()
 
+spam_level = Config.getfloat('database:parameters',"spam_level")
 
 def is_spam(t):
-    spam_level = 0.6
     return t.get("spam") is not None and t["spam"] > spam_level
 
 def get_tweets(start,end,group):

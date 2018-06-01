@@ -8,6 +8,7 @@ import ujson as json
 from keywords import get_db, get_keywords
 from hortiradar import admins, users, time_format
 from hortiradar.database import stop_words
+from hortiradar.clustering import Config
 
 
 db = get_db()
@@ -17,6 +18,7 @@ groups = db.groups
 KEYWORDS = get_keywords(local=True)
 keywords_sync_time = time()
 
+spam_level = Config.getfloat('database:parameters',"spam_level")
 
 def get_dates(req, resp, resource, params):
     """Parse the `start` and `end` datetime parameters."""
@@ -43,7 +45,6 @@ def want_spam(req):
     return req.get_param("spam") == '1'
 
 def is_spam(t):
-    spam_level = 0.6
     return t.get("spam") is not None and t["spam"] > spam_level
 
 
