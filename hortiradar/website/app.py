@@ -401,13 +401,19 @@ def view_token_co_occurrences(keyword):
     if isinstance(keyword_data, Response):
         return keyword_data
 
-    nums = range(1, len(keyword_data["occurrences"]) + 1)
+    occurrences = []
+    for k in keyword_data["occurrences"]:
+        if k["text"] != keyword:
+            k["pos"] = parse_pos(k["pos"].split("(")[0])
+            occurrences.append(k)
+
+    nums = range(1, len(occurrences) + 1)
     template_data = {
         "keyword": keyword,
         "period": period,
         "start": display_datetime(start),
         "end": display_datetime(end),
-        "occurrences": zip(nums,keyword_data["occurrences"])
+        "occurrences": zip(nums,occurrences)
     }
     return render_template("occurrences.html", title=make_title(keyword), **template_data)
 
