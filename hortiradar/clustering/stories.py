@@ -6,7 +6,7 @@ import numpy as np
 import ujson as json
 
 from hortiradar.clustering import Config, tweet_time_format
-from .util import jac, cos_sim, round_time, dt_to_ts
+from .util import cos_sim, round_time, dt_to_ts, get_tweet_list, get_token_array
 from hortiradar.database import obscene_words
 from hortiradar.website import get_nsfw_prob, mark_as_spam
 
@@ -48,11 +48,10 @@ class Stories:
         self.original_tokens = c.tokens
         self.original_filt_tokens = c.filt_tokens
 
-        self.tweets = Counter(c.tweets)
+        self.tweets = c.tweets
+        self.retweets = c.retweets
         self.clusters = [c]
-        self.token_counts = c.token_counts
         self.first_tweet_time = min([tw.tweet.created_at for tw in self.tweets])
-        self.time_series = self.get_timeseries()
 
         self.max_idle = mi if mi else max_idle
         self.threshold = jt if jt else threshold
@@ -64,30 +63,40 @@ class Stories:
         else:
             return False
 
-    def is_similar(self, c, algorithm="jaccard"): ## was CalcMatch
+    def is_similar(self, c):
         """Calculate if the cluster matches to the story"""
-        if algorithm == "jaccard":
-            current = jac(self.filt_tokens,c.filt_tokens)
-            original = jac(self.original_filt_tokens,c.filt_tokens)
-            return (current >= self.threshold and original >= self.original_threshold)
-        elif algorithm == "cosine_similarity":
-            current = cos_sim(self.filt_tokens,c.filt_tokens)
-            original = cos_sim(self.original_filt_tokens,c.filt_tokens)
-            return (current >= self.threshold and original >= self.original_threshold)
-        else:
-            raise NotImplementedError("This algorithm is not yet implemented.")
+        all_current = self.filt_tokens & c.filt_tokens
+        story_array = get_token_array(self.filt_tokens,all_current)
+        cluster_array = get_token_array(c.tokens,all_current)
+        current = cos_sim(story_array,cluster_array)
 
-    def add_cluster(self, c): ## was addTime
-        """Add a new cluster to the story"""
-        self.tokens = c.tokens
-        self.filt_tokens = c.filt_tokens
-        self.token_counts.update(c.token_counts)
+        all_original = self.original_filt_tokens & c.filt_tokens
+        story_array = get_token_array(self.original_filt_tokens,all_current)
+        cluster_array = get_token_array(c.tokens,all_current)
+        original = cos_sim(story_array,cluster_array)
+
+        return current >= self.threshold and original >= self.original_threshold, current
+        
+    def add_cluster(self, c):
+        self.tokens.update(c.tokens)
+        self.filt_tokens.update(c.filt_tokens)
         self.clusters.append(c)
-        for tweet in c.tweets:
-            self.tweets[tweet] += 1
-
+        self.tweets.update(c.tweets)
+        for rid in c.retweets:
+            if rid in self.retweets:
+                self.retweets[rid] += c.retweets[rid]
+            else:
+                self.retweets[rid] = c.retweets[rid]
         self.first_tweet_time = min([tw.tweet.created_at for tw in self.tweets])
-        self.time_series = self.get_timeseries()
+
+    def add_tweet(self,ext_tweet):
+        if hasattr(ext_tweet.tweet,"retweeted_status"):
+            rtid = ext_tweet.tweet.retweeted_status.id_str
+            if rtid not in self.retweets:
+                self.retweets[rtid] = []
+            self.retweets[rtid].append(ext_tweet)
+        else:
+            self.tweets.update([ext_tweet])
 
     def add_delay(self):
         """Update idle time counter"""
@@ -103,9 +112,8 @@ class Stories:
 
     def get_timeseries(self):
         tsDict = Counter()
-        for tw in self.tweets:
+        for tw in get_tweet_list():
             tweet = tw.tweet
-            # dt = datetime.strptime(tweet.created_at, tweet_time_format)
             dt = tweet.created_at
             tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
 
@@ -127,7 +135,7 @@ class Stories:
     def get_filtered_tweets(self):
         filt_tweets = []
         spam_list = []
-        for tw in self.tweets:
+        for tw in get_tweet_list():
             tweet = tw.tweet
             words = [t.lemma for t in tw.tokens]
             if any(obscene_words.get(t) for t in words):
@@ -140,13 +148,19 @@ class Stories:
         return filt_tweets
 
     def get_best_tweet(self):
-        ext_tweets = self.get_filtered_tweets()
-        if ext_tweets:
-            new_similarities = [jac(self.filt_tokens,set(tweet.filt_tokens)) for tweet in ext_tweets]
-            orig_similarities = [jac(self.original_filt_tokens,set(tweet.filt_tokens)) for tweet in ext_tweets]
-            similarities = np.multiply(new_similarities,orig_similarities).tolist()
-            max_idx = similarities.index(max(similarities))
-            return ext_tweets[max_idx].tweet.id_str
+        story_array = get_token_array(self.tokens,self.filt_tokens)
+        ext_tweets = [tw for tw in self.tweets]
+        similarities = []
+        for tw in ext_tweets:
+            tweet_tokens = Counter(tw.tokens)
+            tweet_array = get_token_array(tweet_tokens,self.filt_tokens)
+            sim_value = cos_sim(story_array,tweet_array)
+            if tw.tweet.id_str in self.retweets:
+                sim_value *= np.sqrt( len( self.retweets[tw.tweet.id_str] ) )
+            similarities.append(sim_value)
+        
+        if similarities:
+            return ext_tweets[np.argmax(similarities)]
         else:
             return None
 
@@ -160,7 +174,7 @@ class Stories:
 
     def get_locations(self):
         mapLocations = []
-        for ext_tweet in self.tweets:
+        for ext_tweet in get_tweet_list():
             try:
                 if ext_tweet.tweet.coordinates is not None:
                     if ext_tweet.tweet.coordinates.type == "Point":
@@ -184,7 +198,7 @@ class Stories:
     def get_images(self):
         imagesList = []
         image_tweet_id = {}
-        for ext_tweet in self.tweets:
+        for ext_tweet in get_tweet_list():
             try:
                 for obj in ext_tweet.tweet.entities["media"]:
                     url = obj["media_url_https"]
@@ -208,7 +222,7 @@ class Stories:
 
     def get_URLs(self):
         URLList = []
-        for ext_tweet in self.tweets:
+        for ext_tweet in get_tweet_list():
             try:
                 for obj in ext_tweet.tweet.entities["urls"]:
                     url = obj["expanded_url"]
@@ -225,7 +239,7 @@ class Stories:
 
     def get_hashtags(self):
         htlist = []
-        for ext_tweet in self.tweets:
+        for ext_tweet in get_tweet_list():
             try:
                 for obj in ext_tweet.tweet.entities["hashtags"]:
                     htlist.append(obj["text"])
@@ -248,7 +262,7 @@ class Stories:
     def get_interaction_graph(self):
         nodes = {}
         edges = []
-        for ext_tweet in self.tweets:
+        for ext_tweet in get_tweet_list():
             tweet = ext_tweet.tweet
             user_id_str = tweet.user.id_str
             if hasattr(tweet,"retweeted_status"):

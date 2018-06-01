@@ -3,7 +3,7 @@ import pickle
 
 import gensim
 from redis import StrictRedis
-from sklearn.cluster import AffinityPropagation
+from scipy.sparse import csgraph
 import ujson as json
 
 from hortiradar.clustering import Config, ExtendedTweet, Cluster, Stories, tweet_time_format
@@ -19,6 +19,7 @@ tweetsdb = db.tweets
 redis = StrictRedis()
 
 spam_level = Config.getfloat('database:parameters',"spam_level")
+tweet_threshold = Config.getfloat('storify:parameters','tweet_threshold')
 
 def is_spam(t):
     return t.get("spam") is not None and t["spam"] > spam_level
@@ -36,44 +37,49 @@ def get_tweets(start,end,group):
     })
 
     tweets = []
-    texts = []
     for jtweet in jsontweets:
         if not is_spam(jtweet):
             tweets.append(ExtendedTweet(jtweet))
-            texts.append([t["lemma"] for t in jtweet["tokens"]])
 
+    return tweets
+
+def perform_clustering(tweets,stories,group):
+    retweets = []
+    non_retweets = []
+    for tw in tweets:
+        if hasattr(tw.tweet,"retweeted_status"):
+            rt_id_str = tw.tweet.retweeted_status.id_str
+            for story in stories:
+                story_tweet_ids = [tw.tweet.id_str for tw in story.tweets]
+                if rt_id_str in story_tweet_ids:
+                    story.add_tweet(tw)
+                    break
+        else:
+            non_retweets.append(tw)
+
+    if non_retweets:
+        clusters = perform_clustering_tweets(non_retweets,group)
+    else:
+        clusters = []
+
+    return clusters, stories
+
+def perform_clustering_tweets(tweets,group):
+    texts = [get_filt_tokens(tw) for tw in tweets]
     dictionaries = gensim.corpora.Dictionary(texts)
     corpus = [dictionaries.doc2bow(text) for text in texts]
+    sims = gensim.similarities.Similarity('clustering_{g}'.format(g=group),corpus,num_features=len(dictionaries))
 
-    return tweets, corpus
+    mat = []
+    for j,tw in enumerate(tweets):
+        mat.append([1 if x > tweet_threshold else 0 for x in sims[dictionaries.doc2bow(get_filt_tokens(tw))]])
 
-def cluster_tweets(tweets,corpus):
-    if len(tweets) > 1:
-        mat = gensim.matutils.corpus2csc(corpus)
-        X = mat.transpose()
-        
-        # TODO: figure out why AP throws IndexError
-        try:
-            af = AffinityPropagation(preference=-25).fit(X)    
-        except IndexError:
-            try:
-                af = AffinityPropagation(preference=-15).fit(X) 
-            except IndexError:
-                af = AffinityPropagation().fit(X) 
+    n_clusters, cluster_labels = csgraph.connected_components(mat,directed=False)
+    clusters = [Cluster() for _ in range(n_clusters)]
 
-        cluster_labels = af.labels_
+    for num,label in enumerate(cluster_labels):
+        clusters[label].add_tweet(tweets[num])
 
-        n_clusters = len(af.cluster_centers_indices_)
-
-        clusters = [Cluster() for _ in range(n_clusters)]
-
-        for num,label in enumerate(af.labels_):
-            clusters[label].add_tweet(tweets[num])
-
-    else:
-        clusters = [Cluster()]
-        clusters[0].add_tweet(tweets[0])
-        
     return clusters
 
 def storify_clusters(stories,clusters):
@@ -81,24 +87,25 @@ def storify_clusters(stories,clusters):
         for c in clusters:
             stories.append(Stories(c))
     else:
-        matched_boolean = [0]*len(stories)
+        matched_boolean = [False]*len(stories)
 
         for c in clusters:
-            matched = False
-            for i,story in enumerate(stories):
-                if story.is_similar(c):
-                    matched = True
-                    story.add_cluster(c)
-                    match_position = i
+            sim,vals = zip(*[s.is_similar(c) for s in stories])
+            match = False
+            for m in np.flipud(np.argsort(vals)):
+                if sim[m] == True:
+                    match = True
+                    break
 
-            if matched:
-                matched_boolean[match_position] = 1
+            if match and not matched_boolean[m]:
+                stories[m].add_cluster(c)
+                matched_boolean[m] = True
             else:
-                stories.append(Stories(c))
-                matched_boolean.append(1)
+                stories.append(Story(c))
+                matched_boolean.append(True)
 
         for j,story in enumerate(stories):
-            if matched_boolean[j] == 0:
+            if matched_boolean[j] == False:
                 story.add_delay()
                 if story.close_story():
                     story.end_story()
@@ -129,10 +136,10 @@ def output_stories(stories,group):
 def run_storify(stories,group):
     end = round_time(datetime.utcnow())
     start = end - timedelta(hours=1)
-    tweets, corpus = get_tweets(start,end,group)
+    tweets = get_tweets(start,end,group)
     
-    if tweets:        
-        clusters = cluster_tweets(tweets,corpus)
+    if tweets:
+        clusters, stories = perform_clustering(tweets,stories,group)
 
         stories = storify_clusters(stories,clusters)
         stories,finished_stories = find_finished_stories(stories)

@@ -3,27 +3,23 @@ from collections import Counter
 from datetime import datetime
 import random
 
+import numpy as np
 import ujson as json
 
 from hortiradar.clustering import Config, tweet_time_format
-from .util import jac, cos_sim, round_time, dt_to_ts
-
-tweet_threshold = Config.getfloat('storify:parameters','tweet_threshold')
+from .util import cos_sim, round_time, dt_to_ts, get_tweet_list, get_token_array
 
 
 class Cluster:
 
-    def __init__(self,tt=None):
+    def __init__(self):
         now = datetime.utcnow()
         self.id = dt_to_ts(now)
         self.created_at = round_time(now)
-        self.tokens = set()
+        self.tokens = Counter()
         self.filt_tokens = set()
-        self.tweets = []   
-        self.token_counts = Counter()
-        self.tweet_counts = Counter()
-
-        self.tweet_threshold = tt if tt else tweet_threshold
+        self.tweets = Counter()
+        self.retweeets = {}
 
     def __eq__(self,other):
         if type(other) == Cluster:
@@ -31,32 +27,38 @@ class Cluster:
         else:
             return False
 
-    def is_similar(self,ext_tweet,algorithm="jaccard"):
-        if algorithm == "jaccard":
-            return jac(self.filt_tokens,set(ext_tweet.filt_tokens)) >= self.tweet_threshold
-        elif algorithm == "cosine_similarity":
-            return cos_sim(self.filt_tokens,set(ext_tweet.filt_tokens)) >= self.tweet_threshold
-        else:
-            raise NotImplementedError("This algorithm is not yet implemented.")
-
     def add_tweet(self,ext_tweet):
         self.tokens.update(ext_tweet.tokens)
         self.filt_tokens.update(ext_tweet.filt_tokens)
-        self.tweets.append(ext_tweet)
-        self.token_counts.update(ext_tweet.tokens)
-        self.tweet_counts[ext_tweet.tweet.id_str] += 1
+        if hasattr(ext_tweet.tweet,"retweeted_status"):
+            rtid = ext_tweet.tweet.retweeted_status.id_str
+            if rtid not in self.retweets:
+                self.retweets[rtid] = []
+            self.retweets[rtid].append(ext_tweet)
+        else:
+            self.tweets.update([ext_tweet])
 
     def get_best_tweet(self):
+        cluster_array = get_token_array(self.tokens,self.filt_tokens)
         ext_tweets = [tweet for tweet in self.tweets]
-        similarities = [jac(self.filt_tokens,set(tweet.filt_tokens)) for tweet in self.tweets]
-        max_idx = similarities.index(max(similarities))
-        return ext_tweets[max_idx].tweet.id_str
+        similarities = []
+        for tw in ext_tweets:
+            tweet_tokens = Counter(tw.tokens)
+            tweet_array = get_token_array(tweet_tokens,self.filt_tokens)
+            sim_value = cos_sim(cluster_array,tweet_array)
+            if tw.tweet.id_str in self.retweets:
+                sim_value *= np.sqrt( len( self.retweets[tw.tweet.id_str] ) )
+            similarities.append(sim_value)
+
+        if similarities:
+            return ext_tweets[np.argmax(similarities)]
+        else:
+            return None
 
     def get_timeseries(self):
         tsDict = Counter()
-        for tw in self.tweets:
+        for tw in get_tweet_list():
             tweet = tw.tweet
-            # dt = datetime.strptime(tweet.created_at, tweet_time_format)
             dt = tweet.created_at
             tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
 
@@ -85,7 +87,7 @@ class Cluster:
 
     def get_locations(self):
         mapLocations = []
-        for ext_tweet in self.tweets:
+        for ext_tweet in get_tweet_list():
             try:
                 if ext_tweet.tweet.coordinates is not None:
                     if ext_tweet.tweet.coordinates.type == "Point":
@@ -108,7 +110,7 @@ class Cluster:
 
     def get_images(self):
         imagesList = []
-        for ext_tweet in self.tweets:
+        for ext_tweet in get_tweet_list():
             try:
                 for obj in ext_tweet.tweet.entities["media"]:
                     imagesList.append(obj["media_url_https"])
@@ -123,7 +125,7 @@ class Cluster:
 
     def get_URLs(self):
         URLList = []
-        for ext_tweet in self.tweets:
+        for ext_tweet in get_tweet_list():
             try:
                 for obj in ext_tweet.tweet.entities["urls"]:
                     url = obj["expanded_url"]
@@ -140,7 +142,7 @@ class Cluster:
 
     def get_hashtags(self):
         htlist = []
-        for ext_tweet in self.tweets:
+        for ext_tweet in get_tweet_list():
             try:
                 for obj in ext_tweet.tweet.entities["hashtags"]:
                     htlist.append(obj["text"])
@@ -156,7 +158,7 @@ class Cluster:
     def get_interaction_graph(self):
         nodes = {}
         edges = []
-        for ext_tweet in self.tweets:
+        for ext_tweet in get_tweet_list():
             tweet = ext_tweet.tweet
             user_id_str = tweet.user.id_str
             try:
@@ -208,17 +210,14 @@ class Cluster:
 
     def get_cluster_details(self):
         best_tw = self.get_best_tweet()
-        for tw in self.tweets:
-            if tw.tweet.id_str == best_tw:
-                summary = tw.tweet.text
-        return {"starting_time": timegm(self.created_at.timetuple())*1000, "display": "circle", "summarytweet": summary}
+        return {"starting_time": timegm(self.created_at.timetuple())*1000, "display": "circle", "summarytweet": best_tw.tweet.text}
 
     def get_jsondict(self):
         jDict = {}
 
         jDict["cluster_time"] = datetime.strftime(self.created_at,tweet_time_format)
 
-        jDict["tweets"] = [tw.tweet.id_str for tw in self.tweets]
+        jDict["tweets"] = [tw.tweet.id_str for tw in get_tweet_list()]
         jDict["summary_tweet"] = self.get_best_tweet()
 
         jDict["tokens"] = self.get_tokens()
