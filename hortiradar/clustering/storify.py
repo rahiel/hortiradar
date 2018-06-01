@@ -24,6 +24,9 @@ tweet_threshold = Config.getfloat('storify:parameters','tweet_threshold')
 def is_spam(t):
     return t.get("spam") is not None and t["spam"] > spam_level
 
+def get_filt_tokens(tweet):
+    return [t.lemma for t in tweet.tokens if not t.filter_token()]
+
 def get_tweets(start,end,group):
     jsontweets = tweetsdb.find({
         "groups": group,

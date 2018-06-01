@@ -4,8 +4,6 @@ from math import sqrt
 
 from sklearn.metrics.pairwise import cosine_similarity
 
-from hortiradar.clustering import Cluster, Stories
-
 def round_time(dt,interval="hour"):
     if interval == "hour":
         dt = dt.replace(minute=0,second=0,microsecond=0)
@@ -24,9 +22,6 @@ def get_token_array(tokens,filt_tokens):
 
 def get_tweet_list(obj):
     """returns a list of all tweets in the Stories or Cluster object"""
-    if type(obj) not in [Stories, Cluster]:
-        raise TypeError("Object type does not contain tweets.")
-
     tweets = [tw for tw in obj.tweets.elements()]
     for rid in obj.retweets:
         tweets += obj.retweets[rid]
