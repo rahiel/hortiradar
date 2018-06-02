@@ -71,7 +71,7 @@ def perform_clustering_tweets(tweets,group):
     texts = [get_filt_tokens(tw) for tw in tweets]
     dictionaries = gensim.corpora.Dictionary(texts)
     corpus = [dictionaries.doc2bow(text) for text in texts]
-    sims = gensim.similarities.Similarity('clustering_{g}'.format(g=group),corpus,num_features=len(dictionaries))
+    sims = gensim.similarities.Similarity('/tmp/clustering_{g}'.format(g=group),corpus,num_features=len(dictionaries))
 
     mat = []
     for j,tw in enumerate(tweets):
