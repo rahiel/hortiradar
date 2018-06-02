@@ -66,12 +66,12 @@ class Stories:
     def is_similar(self, c):
         """Calculate if the cluster matches to the story"""
         all_current = self.filt_tokens & c.filt_tokens
-        story_array = get_token_array(self.filt_tokens,all_current)
+        story_array = get_token_array(self.tokens,all_current)
         cluster_array = get_token_array(c.tokens,all_current)
         current = cos_sim(story_array,cluster_array)
 
         all_original = self.original_filt_tokens & c.filt_tokens
-        story_array = get_token_array(self.original_filt_tokens,all_current)
+        story_array = get_token_array(self.original_tokens,all_current)
         cluster_array = get_token_array(c.tokens,all_current)
         original = cos_sim(story_array,cluster_array)
 

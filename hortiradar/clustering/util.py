@@ -2,6 +2,7 @@ from collections import Counter
 from datetime import datetime
 from math import sqrt
 
+import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 def round_time(dt,interval="hour"):
