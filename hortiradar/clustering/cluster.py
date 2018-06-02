@@ -19,7 +19,7 @@ class Cluster:
         self.tokens = Counter()
         self.filt_tokens = set()
         self.tweets = Counter()
-        self.retweeets = {}
+        self.retweets = {}
 
     def __eq__(self,other):
         if type(other) == Cluster:
