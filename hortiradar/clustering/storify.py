@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import pickle
 
 import gensim
+import numpy as np
 from redis import StrictRedis
 from scipy.sparse import csgraph
 import ujson as json

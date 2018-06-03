@@ -45,4 +45,7 @@ def cos_sim(a,b):
     if type(b) == list:
         b = np.asarray(b).reshape(1,-1)
 
-    return cosine_similarity(a,b)[0][0]
+    if a and b:
+        return cosine_similarity(a,b)[0][0]
+    else:
+        return 0.0
