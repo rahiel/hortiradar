@@ -540,22 +540,27 @@ def view_timeline(group):
     timeline_end = timegm(end.timetuple()) * 1000
 
     display_tweets = 11
-    display_stories = 10
-    
-    for story in active_stories:
-        if not (len(storify_data) < display_stories):
-            break
-        # story = filter_story(story, display_tweets)
-        adjusted_details = filter_story_temp(story)
+    display_active_stories = 10
+    display_closed_stories = 5
 
-        timeline_info = {"label": len(storify_data), "times": adjusted_details}
+    for story in active_stories:
+        if not (len(storify_data) < display_active_stories):
+            break
+        story = filter_story(story, display_tweets)
+        timeline_info = {"label": len(storify_data), "times": story["cluster_details"]}
+        del story["cluster_details"]
 
         storify_data.append(story)
         timeline_data.append(timeline_info)
 
     template_data = {
         "group": group,
+        "storify_data": json.dumps(storify_data),
         "timeline_data": json.dumps(timeline_data),
+        "timeline_start_ts": timeline_start,
+        "timeline_end_ts": timeline_end,
+        "display_tweets": display_tweets,
+        "num_stories": min(display_active_stories + display_closed_stories, len(storify_data)),
         "start": display_datetime(start),
         "end": display_datetime(end),
         "period": period

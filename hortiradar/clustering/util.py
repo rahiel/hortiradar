@@ -41,11 +41,14 @@ def jac(a,b):
 
 def cos_sim(a,b):
     if type(a) == list:
-        a = np.asarray(a).reshape(1,-1)
+        if a:
+            a = np.asarray(a).reshape(1,-1)
+        else:
+            return 0.0
     if type(b) == list:
-        b = np.asarray(b).reshape(1,-1)
+        if b:
+            b = np.asarray(b).reshape(1,-1)
+        else:
+            return 0.0
 
-    if a and b:
-        return cosine_similarity(a,b)[0][0]
-    else:
-        return 0.0
+    return cosine_similarity(a,b)[0][0]

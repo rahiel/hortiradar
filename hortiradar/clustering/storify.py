@@ -105,7 +105,7 @@ def storify_clusters(stories,clusters):
                 stories[m].add_cluster(c)
                 matched_boolean[m] = True
             else:
-                stories.append(Story(c))
+                stories.append(Stories(c))
                 matched_boolean.append(True)
 
         for j,story in enumerate(stories):
