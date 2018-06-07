@@ -21,14 +21,6 @@ def dt_to_ts(dt):
 def get_token_array(tokens,filt_tokens):
     return [tokens[t] for t in filt_tokens]
 
-def get_tweet_list(obj):
-    """returns a list of all tweets in the Stories or Cluster object"""
-    tweets = [tw for tw in obj.tweets.elements()]
-    for rid in obj.retweets:
-        tweets += obj.retweets[rid]
-
-    return tweets
-
 def jac(a,b):
     """ return the Jaccard similarity of two sets"""
     if type(a) != set:

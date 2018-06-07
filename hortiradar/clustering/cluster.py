@@ -7,7 +7,7 @@ import numpy as np
 import ujson as json
 
 from hortiradar.clustering import Config, tweet_time_format
-from .util import cos_sim, round_time, dt_to_ts, get_tweet_list, get_token_array
+from .util import cos_sim, round_time, dt_to_ts, get_token_array
 
 
 class Cluster:
@@ -211,6 +211,14 @@ class Cluster:
     def get_cluster_details(self):
         best_tw = self.get_best_tweet()
         return {"starting_time": timegm(self.created_at.timetuple())*1000, "display": "circle", "summarytweet": best_tw.tweet.text}
+
+    def get_tweet_list(self):
+        """returns a list of all tweets in the Cluster object"""
+        tweets = [tw for tw in self.tweets.elements()]
+        for rid in self.retweets:
+            tweets += self.retweets[rid]
+
+        return tweets
 
     def get_jsondict(self):
         jDict = {}

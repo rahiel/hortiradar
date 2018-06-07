@@ -4,9 +4,10 @@ import random
 
 import numpy as np
 import ujson as json
+from pattern.nl import sentiment
 
 from hortiradar.clustering import Config, tweet_time_format
-from .util import cos_sim, round_time, dt_to_ts, get_tweet_list, get_token_array
+from .util import cos_sim, round_time, dt_to_ts, get_token_array
 from hortiradar.database import obscene_words
 from hortiradar.website import get_nsfw_prob, mark_as_spam
 
@@ -25,14 +26,12 @@ class Stories:
     J_original_threshold:   Jaccard index threshold for adding cluster w.r.t. first added tokens
 
     Attributes:
-    tokens:                 Set of tokens that were added last_edited
-    original_tokens:        Set of tokens that were added on creation
+    tokens:                 Counter of tokens that tokens are used in tweets
+    original_tokens:        Counter of tokens that were added on creation
     filt_tokens:            Set of filtered tokens that were added last_edited
-    original_filt_tokens:   List of filtered tokens that were added on creation
+    original_filt_tokens:   Set of filtered tokens that were added on creation
     last_edited:            Number of iterations ago that a cluster was added
-    token_counts:           Frequencies that tokens are used in tweets
     tweets:                 Set of tweets corresponding to the story
-    time_series:            List of number of tweets per hour in story
     """
 
     def __init__(self, c, jt=None, ojt=None, mi=None):
@@ -112,7 +111,7 @@ class Stories:
 
     def get_timeseries(self):
         tsDict = Counter()
-        for tw in get_tweet_list():
+        for tw in self.get_tweet_list():
             tweet = tw.tweet
             dt = tweet.created_at
             tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
@@ -135,7 +134,7 @@ class Stories:
     def get_filtered_tweets(self):
         filt_tweets = []
         spam_list = []
-        for tw in get_tweet_list():
+        for tw in self.get_tweet_list():
             tweet = tw.tweet
             words = [t.lemma for t in tw.tokens]
             if any(obscene_words.get(t) for t in words):
@@ -166,15 +165,15 @@ class Stories:
 
     def get_wordcloud(self):
         wordcloud = []
-        for token in self.token_counts:
+        for token in self.tokens:
             if token in self.filt_tokens:
-                wordcloud.append({"text": token.lemma.encode('utf-8'), "weight": self.token_counts[token]})
+                wordcloud.append({"text": token.lemma.encode('utf-8'), "weight": self.tokens[token]})
 
         return wordcloud
 
     def get_locations(self):
         mapLocations = []
-        for ext_tweet in get_tweet_list():
+        for ext_tweet in self.get_tweet_list():
             try:
                 if ext_tweet.tweet.coordinates is not None:
                     if ext_tweet.tweet.coordinates.type == "Point":
@@ -198,7 +197,7 @@ class Stories:
     def get_images(self):
         imagesList = []
         image_tweet_id = {}
-        for ext_tweet in get_tweet_list():
+        for ext_tweet in self.get_tweet_list():
             try:
                 for obj in ext_tweet.tweet.entities["media"]:
                     url = obj["media_url_https"]
@@ -222,7 +221,7 @@ class Stories:
 
     def get_URLs(self):
         URLList = []
-        for ext_tweet in get_tweet_list():
+        for ext_tweet in self.get_tweet_list():
             try:
                 for obj in ext_tweet.tweet.entities["urls"]:
                     url = obj["expanded_url"]
@@ -239,7 +238,7 @@ class Stories:
 
     def get_hashtags(self):
         htlist = []
-        for ext_tweet in get_tweet_list():
+        for ext_tweet in self.get_tweet_list():
             try:
                 for obj in ext_tweet.tweet.entities["hashtags"]:
                     htlist.append(obj["text"])
@@ -255,14 +254,18 @@ class Stories:
     def get_original_wordcloud(self):
         wordcloud = []
         for token in self.original_filt_tokens:
-            wordcloud.append({"text": token.lemma.encode('utf-8'), "weight": self.token_counts[token]})
+            wordcloud.append({"text": token.lemma.encode('utf-8'), "weight": self.tokens[token]})
 
         return wordcloud
+
+    def get_polarity(self):
+        polarity, subjectivity = sentiment(" ".join(self.tokens.elements()))
+        return polarity
 
     def get_interaction_graph(self):
         nodes = {}
         edges = []
-        for ext_tweet in get_tweet_list():
+        for ext_tweet in self.get_tweet_list():
             tweet = ext_tweet.tweet
             user_id_str = tweet.user.id_str
             if hasattr(tweet,"retweeted_status"):
@@ -312,6 +315,14 @@ class Stories:
 
         return cluster_info
 
+    def get_tweet_list(self):
+        """returns a list of all tweets in the Stories object"""
+        tweets = [tw for tw in self.tweets.elements()]
+        for rid in self.retweets:
+            tweets += self.retweets[rid]
+
+        return tweets
+
     def get_jsondict(self):
         """Builds the dict for output to JSON"""
         jDict = {}
@@ -322,22 +333,164 @@ class Stories:
         except AttributeError:
             jDict["endStory"] = datetime.strftime(round_time(datetime.utcnow())+timedelta(hours=1),tweet_time_format)
 
-        jDict["tweets"] = [tw.tweet.id_str for tw in self.get_filtered_tweets()]
-        jDict["summary_tweet"] = self.get_best_tweet()
-
-        jDict["timeSeries"] = self.get_timeseries()
-
-        jDict["photos"] = self.get_images()
-        jDict["URLs"] = self.get_URLs()
-        jDict["tagCloud"] = self.get_wordcloud()
-        jDict["hashtags"] = self.get_hashtags()
-
-        loc_result = self.get_locations()
-        jDict["locations"] = loc_result["locs"]
-        jDict["centerloc"] = loc_result["avLoc"]
-
-        jDict["graph"] = self.get_interaction_graph()
+        jDict["summarytweet"] = self.get_best_tweet().tweet.id_str
 
         jDict["cluster_details"] = self.get_cluster_details()
+
+        jDict["tagCloud"] = self.get_wordcloud()
+        jDict["polarity"] = self.get_polarity()
+
+        tweetList = []
+        interaction_tweets = []
+        retweets = {}
+        imagesList = []
+        image_tweet_id = {}
+        URLList = []
+        htlist = []
+        tsDict = Counter()
+        mapLocations = []
+        nodes = {}
+        edges = []
+
+        for tw in self.get_tweet_list():
+            tweet = tw.tweet
+
+            tweetList.append(tweet.id_str)
+            
+            dt = tweet.created_at
+            tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
+
+            user_id_str = tweet.user.id_str
+            if hasattr(tweet,"retweeted_status"):
+                if tweet.retweeted_status.user.id_str:
+                    rt = tweet.retweeted_status
+                    if rt.id_str not in retweets or rt.retweet_count > retweets[rt.id_str]:
+                        retweets[id_str] = rt.retweet_count
+
+                    if rt.user.id_str not in nodes:
+                        nodes[rt.user.id_str] = rt.user.screen_name
+                    if user_id_str not in nodes:
+                        nodes[user_id_str] = tweet.user.screen_name
+
+                    edges.append({"source": rt.user.id_str, "target": user_id_str, "value": "retweet"})
+
+            if "user_mentions" in tweet.entities:
+                interaction_tweets.append(tweet.id_str)
+
+                for obj in tweet.entities["user_mentions"]:
+                    if obj["id_str"] not in nodes:
+                        nodes[obj["id_str"]] = obj["screen_name"]
+                    if user_id_str not in nodes:
+                        nodes[user_id_str] = tweet.user.screen_name
+
+                    edges.append({"source": user_id_str, "target": obj["id_str"], "value": "mention"})
+
+            if hasattr(tweet,"in_reply_to_user_id_str"):
+                if tweet.in_reply_to_user_id_str:
+                    interaction_tweets.append(tweet.id_str)
+
+                    if tweet.in_reply_to_user_id_str not in nodes:
+                        nodes[tweet.in_reply_to_user_id_str] = tweet.in_reply_to_screen_name
+                    if user_id_str not in nodes:
+                        nodes[user_id_str] = tweet.user.screen_name
+
+                    edges.append({"source": user_id_str, "target": tweet["in_reply_to_user_id_str"], "value": "reply"})
+
+            try:
+                for obj in tweet.entities["media"]:
+                    image_url = obj["media_url_https"]
+                    imagesList.append(image_url)
+                    image_tweet_id[url] = ext_tweet.tweet.id_str
+            except KeyError:
+                pass
+
+            try:
+                for obj in tweet.entities["urls"]:
+                    url = obj["expanded_url"]
+                    if url is not None:
+                        URLList.append(url)
+            except KeyError:
+                pass
+
+            try:
+                for obj in tweet.entities["hashtags"]:
+                    htlist.append(obj["text"])
+            except AttributeError:
+                pass
+
+            try:
+                if tweet.coordinates is not None:
+                    if tweet.coordinates.type == "Point":
+                        coords = tweet.coordinates.coordinates  
+                        mapLocations.append({"lng": coords[0], "lat": coords[1]})
+            except KeyError:
+                pass
+
+        jDict["hashtags"] = []
+        for (ht, count) in Counter(htlist).most_common():
+            jDict["hashtags"].append({"ht": ht, "occ": count})
+
+
+        jDict["tweets"] = list(set(tweetList))
+        jDict["num_tweets"] = len(jDict["tweets"])
+        
+        jDict["timeSeries"] = []
+        tsStart = sorted(tsDict)[0]
+        tsEnd = sorted(tsDict)[-1]
+        temp = datetime(tsStart[0], tsStart[1], tsStart[2], tsStart[3], 0, 0)
+        while temp <= datetime(tsEnd[0], tsEnd[1], tsEnd[2], tsEnd[3], 0, 0):
+            if (temp.year, temp.month, temp.day, temp.hour) in tsDict:
+                jDict["timeSeries"].append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": tsDict[(temp.year, temp.month, temp.day, temp.hour)]})
+            else:
+                jDict["timeSeries"].append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": 0})
+
+            temp += timedelta(hours=1)
+
+        lng = 0
+        lat = 0
+        jDict["locations"] = mapLocations
+        if mapLocations:
+            for loc in mapLocations:
+                lng += loc["lng"]
+                lat += loc["lat"]
+                jDict["centerloc"] = {"lng": lng / len(mapLocations), "lat": lat / len(mapLocations)}
+        else:
+            jDict["centerloc"] = {"lng": 5, "lat": 52}
+
+        jDict["photos"] = []
+        nsfw_list = []
+        for (url, count) in Counter(imagesList).most_common():
+            nsfw_prob, status = get_nsfw_prob(url)
+            if status == 200 and nsfw_prob > 0.8:
+                nsfw_list.append(image_tweet_id[url])
+            elif status == 200:
+                jDict["photos"].append({"link": url, "occ": count})
+
+        mark_as_spam.apply_async((nsfw_list,), queue="web")
+
+        jDict["URLs"] = []
+        for (url, count) in Counter(URLList).most_common():
+            jDict["URLs"].append({"link": url, "occ": count})
+
+        # limit number of nodes/edges
+        edges = random.sample(edges, min(len(edges), 250))
+        connected_nodes = set([e["source"] for e in edges] + [e["target"] for e in edges])
+
+        jDict["graph"] = {"nodes": [], "edges": []}
+        for node in connected_nodes:
+            jDict["graph"]["nodes"].append({"id": nodes[node]})
+
+        for edge in edges:
+            source = edge["source"]
+            target = edge["target"]
+            jDict["graph"]["edges"].append({"source": nodes[source], "target": nodes[target], "value": edge["value"]})
+
+        # retweet ids sorted from most to least tweeted
+        if retweets:
+            jDict["retweets"], _ = zip(*sorted(filter(lambda x: x[1] > 0, retweets.items()), key=lambda x: x[1], reverse=True))
+        else:
+            jDict["retweets"] = []
+
+        jDict["interaction_tweets"] = interaction_tweets
 
         return jDict

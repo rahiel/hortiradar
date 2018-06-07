@@ -111,6 +111,20 @@ def get_period(request, default_period=""):
         cache_time = 60 * 60
     return period, start, end, cache_time
 
+def display_polarity(polarity):
+    if polarity > 0.5:
+        polarity_face = "😃"    # U+1F603: grinning face with big eyes
+    elif polarity > 0.1:
+        polarity_face = "🙂"    # U+1F642: slightly smiling face
+    elif polarity > -0.1:
+        polarity_face = "😐"    # U+1F610: neutral face
+    elif polarity > -0.5:
+        polarity_face = "🙁"    # U+1F641: slightly frowning face
+    else:
+        polarity_face = "🤮"    # U+1F92E: face vomiting
+
+    return polarity_face
+
 def display_number(number):
     """Format number using , as thousands separator."""
     return "{:,}".format(number)
@@ -361,16 +375,7 @@ def view_keyword(keyword):
     polarity = keyword_data["polarity"]
     del keyword_data["polarity"]
 
-    if polarity > 0.5:
-        polarity_face = "😃"    # U+1F603: grinning face with big eyes
-    elif polarity > 0.1:
-        polarity_face = "🙂"    # U+1F642: slightly smiling face
-    elif polarity > -0.1:
-        polarity_face = "😐"    # U+1F610: neutral face
-    elif polarity > -0.5:
-        polarity_face = "🙁"    # U+1F641: slightly frowning face
-    else:
-        polarity_face = "🤮"    # U+1F92E: face vomiting
+    polarity_face = display_polarity(polarity)
 
     gtrends_period = {"day": "now 1-d", "week": "now 7-d", "month": "today 1-m"}.get(period, "now 1-d")
     period_name = {"day": "dag", "week": "week", "month": "maand"}.get(period, "dag")
@@ -446,28 +451,14 @@ def filter_story(story, display_tweets):
     story["urls"] = story["URLs"][:16]
     for url in story["urls"]:
         url["display_url"] = shorten(url["link"], 45)
-    if not story["urls"]:
-        story["urls"].append({"occ": 0, "link": "#", "display_url": "Geen URLs gevonden"})
     del story["URLs"]
 
     story["tagCloud"] = story["tagCloud"][:200]
     story["photos"] = story["photos"][:16]
 
-    story["num_tweets"] = len(story["tweets"])
-    story["tweets"] = story["tweets"][:display_tweets]
-    story["summarytweet"] = story["summary_tweet"]
-    del story["summary_tweet"]
+    story["polarity_face"] = display_polarity(story["polarity"])
+    # story["tweets"] = story["tweets"][:display_tweets]
     return story
-
-def filter_story_temp(story):
-    adjusted_details = []
-    for entry in story["cluster_details"]:
-        details = {}
-        details["starting_time"] = datetime.strftime(datetime.fromtimestamp(entry["starting_time"]/1000),"%a, %d %b %Y %H:%M:%S +0000")
-        details["message"] = entry["summarytweet"]
-        adjusted_details.append(details)
-
-    return adjusted_details
 
 @bp.route("/clustering/<group>")
 def view_stories(group):
@@ -510,7 +501,7 @@ def view_stories(group):
         timeline_data.append(timeline_info)
 
     template_data = {
-        "group": group,
+        "group": display_group(group),
         "storify_data": json.dumps(storify_data),
         "timeline_data": json.dumps(timeline_data),
         "timeline_start_ts": timeline_start,

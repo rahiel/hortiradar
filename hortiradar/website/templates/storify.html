@@ -3,13 +3,15 @@
 {% block content %}
 <link rel="stylesheet" href="{{ url_for("horti.static", filename="css/storify.css") }}">
 
-<h1>Storify</h1>
+<h1>Verhalen</h1>
 
 {% from "_helpers.html" import render_button %}
 
 <div class="row">
   <div class="col-md-8">
-    <p>Hieronder de onderwerpen die besproken met betrekking tot de group "{{ group }}" van {{ start }} tot {{ end }}. Klik op een cluster om de informatie-pagina van het desbetreffende cluster te openen.</p>
+    <p>Hieronder de onderwerpen die besproken met betrekking tot de group "{{ group }}" van {{ start }} tot {{ end }}. 
+    Klik op de gekleurde balk naast een van de samenvattingstweets in de linkerkolom van het scherm om de details van 
+    het desbetreffende verhaal weer te geven in de rechterkolom.</p>
   </div>
   <div class="col-md-4 text-right">
     {{ render_button("horti.view_stories", {"group": group}, period, "day", "Dag") }}
@@ -26,13 +28,16 @@
 
   <div class="col-md-9">
     <div class="row">
-      <div id="timelineBgnd"></div>
+      <div id="timelineStorify"></div>
     </div>
 
     <div class="row">
       <div class="col-md-5">
-        <h1>Story details</h1>
-        <p>Hieronder de analyse van de story met <span id="numTweets"></span> tweets, waarvan hiernaast de samenvattingstweet is weergegeven. De balk boven de tweet geeft aan in welke kleur de clusters, die horen bij deze story, aangegeven zijn in de tijdslijn hierboven.</p>
+        <h2>Verhaal details</h2>
+          <p>Hieronder de analyse van dit verhaal, dat bestaat uit <span id="numTweets"></span> tweets en loopt van 
+          <span id="startStory"></span> tot <span id="endStory"></span>, waarvan hiernaast de samenvattingstweet is 
+          weergegeven. De balk boven de tweet geeft aan in welke kleur de clusters van dit verhaal aangegeven zijn 
+          in de tijdslijn hierboven.</p>
       </div>
 
       <div class="col-md-7">
@@ -45,68 +50,128 @@
 
     <div class="row">
       <div class="col-md-12">
-        <h2 class="text-center">Tijdreeks</h2>
+        <h3 class="text-center">
+          Tijdreeks
+          <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#tijdreeksModal"></span>
+        </h3>
         <div id="splineContainer"></div>
+      </div>
+
+      <div class="modal fade" id="tijdreeksModal" tabindex="-1" role="dialog" aria-labelledby="tijdreeksModalLabel">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="tijdreeksModalLabel">Tijdreeks</h4>
+            </div>
+            <div class="modal-body">
+              <p>
+                Dit onderdeel toont het aantal tweets dat per uur geplaatst wordt in het weergegeven 
+                verhaal. Het precieze aantal tweets per uur kan afgelezen worden in een tooltip door 
+                de muis over de grafiek te bewegen.
+              </p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="row">
       <div class="col-md-8">
-        <h2 class="text-center">Wordcloud</h2>
+        <h3 class="text-center">
+          Wordcloud
+          <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#wordcloudModal"></span>
+        </h3>
         <div id="wordcloudDiv"></div>
       </div>
 
+      <div class="modal fade" id="wordcloudModal" tabindex="-1" role="dialog" aria-labelledby="wordcloudModalLabel">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="wordcloudModalLabel">Wordcloud</h4>
+            </div>
+            <div class="modal-body">
+              <p>
+                Dit onderdeel toont alle termen die gebruikt worden in het weergegeven 
+                verhaal. Hoe vaker de term gebruikt wordt, hoe groter de term wordt 
+                afgebeeld in de wordcloud.
+              </p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="col-md-4">
-        <h2 class="text-center">Links</h2>
-        <table class="table table-condensed" id="urls">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>URL</th>
-            </tr>
-          </thead>
-        </table>
+        <h3 class="text-center">
+          Sentiment
+          <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#sentimentModal"></span>
+        </h3>
+        <div id="polarity-face"></div>
+        <p>Sentiment: <span id="polarity"></span> (tussen -1 en 1)</p>
+      </div>
+
+      <div class="modal fade" id="sentimentModal" tabindex="-1" role="dialog" aria-labelledby="sentimentModalLabel">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="sentimentModalLabel">Sentiment</h4>
+            </div>
+            <div class="modal-body">
+              <p>
+                Dit onderdeel toont de gemiddelde sentiment score van de <span id="numTweets3"></span>
+                tweets van het weergegeven verhaal. De score van elke tweet wordt bepaald op basis van de termen 
+                die de tweet bevat.
+              </p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="row">
-      <div class="col-md-12">
-        <h2 class="text-center">
-          Interactie Netwerk
-          <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#graphModal"></span>
-        </h2>
+      <div class="col-md-6">
+        <h3 class="text-center">
+          Links
+          <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#linksModal"></span>
+        </h3>
+        <div id="linkDiv">
+          <table class="table table-condensed" id="urls">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>URL</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
 
-        <div class="modal fade" id="graphModal" tabindex="-1" role="dialog" aria-labelledby="graphModalLabel">
+        <div class="modal fade" id="linksModal" tabindex="-1" role="dialog" aria-labelledby="linksModalLabel">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="graphModalLabel">Interactie Netwerk</h4>
+                <h4 class="modal-title" id="linksModalLabel">Links</h4>
               </div>
               <div class="modal-body">
                 <p>
-                  In het interactie netwerk zie je de interacties tussen gebruikers
-                  die tweeten over "{{ keyword }}". De zwarte punten zijn de
-                  gebruikers. Plaats de muis op een punt om in een tooltip de naam
-                  van de gebruiker te lezen.
+                  Dit onderdeel toont alle links die gebruikt worden in het weergegeven verhaal.
                 </p>
+                <p>Klik op een link om deze op de huidige pagina te zien.</p>
                 <p>
-                  De lijntjes tussen de punten laten zien om wat voor interactie het
-                  gaat. <span style="color: red;">Rode lijnen</span> zijn retweets,
-                  <span style="color: green;">groene lijnen</span> zijn mentions en
-                  <span style="color: blue;">blauwe lijnen</span> zijn replies.
-
-                  De pijltjes tonen de richting van informatieoverdracht. Als A een
-                  tweet van B retweet, gaat er informatie van B naar A en wijst de
-                  pijl in het netwerk dus ook van B naar A. Als A een reply tweet
-                  naar B, wijst A naar B. Als A in een tweet verwijst naar B met een
-                  mention, dan wijst A naar B.
-                </p>
-                <p>
-                  Je kan het netwerk bewegen door op een lege plek te klikken en te
-                  slepen. Je kan ook in- en uitzoomen door op een lege plek te
-                  klikken en te scrollen. Individuele gebruikers kan je vastklikken
-                  en slepen.
+                  Klik op <a><i class="fa fa-external-link" aria-hidden="true"></i></a> om
+                  de link in een nieuw tabblad te openen.
                 </p>
               </div>
               <div class="modal-footer">
@@ -115,8 +180,94 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <svg id="interactionGraph" width="920" height="575"></svg>
+      <div class="col-md-6">
+        <h3 class="text-center">
+          Hashtags
+          <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#htsModal"></span>
+        </h3>
+        <div id="htDiv">
+          <table class="table table-condensed" id="hashtags">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Hashtag</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+
+        <div class="modal fade" id="htsModal" tabindex="-1" role="dialog" aria-labelledby="htsModalLabel">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="htsModalLabel">Hashtags</h4>
+              </div>
+              <div class="modal-body">
+                <p>
+                  Dit onderdeel toont alle hashtags die gebruikt worden in het weergegeven verhaal.
+                </p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <h3 class="text-center">
+          Interactie Netwerk
+          <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#graphModal"></span>
+        </h3>
+        <div id="graphContainer" class="text-center">
+          <svg id="interactionGraph" width="920" height="575"></svg>
+        </div>
+      </div>
+
+      <div class="modal fade" id="graphModal" tabindex="-1" role="dialog" aria-labelledby="graphModalLabel">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="graphModalLabel">Interactie Netwerk</h4>
+            </div>
+            <div class="modal-body">
+              <p>
+                In het interactie netwerk zie je de interacties tussen gebruikers 
+                van de <span id="numTweets4"></span> tweets van het weergegeven 
+                verhaal. De zwarte punten zijn de gebruikers. Plaats de muis op 
+                een punt om in een tooltip de naam van de gebruiker te lezen.
+              </p>
+              <p>
+                De lijntjes tussen de punten laten zien om wat voor interactie het
+                gaat. <span style="color: red;">Rode lijnen</span> zijn retweets,
+                <span style="color: green;">groene lijnen</span> zijn mentions en
+                <span style="color: blue;">blauwe lijnen</span> zijn replies.
+
+                De pijltjes tonen de richting van informatieoverdracht. Als A een
+                tweet van B retweet, gaat er informatie van B naar A en wijst de
+                pijl in het netwerk dus ook van B naar A. Als A een reply tweet
+                naar B, wijst A naar B. Als A in een tweet verwijst naar B met een
+                mention, dan wijst A naar B.
+              </p>
+              <p>
+                Je kan het netwerk bewegen door op een lege plek te klikken en te
+                slepen. Je kan ook in- en uitzoomen door op een lege plek te
+                klikken en te scrollen. Individuele gebruikers kan je vastklikken
+                en slepen.
+              </p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -124,22 +275,136 @@
       <div class="col-md-6">
         <div class="row">
           <div class="col-md-12">
-            <h2 class="text-center">Foto's</h2>
+            <h3 class="text-center">
+              Foto's
+              <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#picturesModal"></span>
+            </h3>
             <div id="mediaDiv"></div>
           </div>
+
+          <div class="modal fade" id="picturesModal" tabindex="-1" role="dialog" aria-labelledby="picturesModalLabel">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title" id="picturesModalLabel">Foto's</h4>
+                </div>
+                <div class="modal-body">
+                  <p>
+                    Dit onderdeel toont alle foto's die gebruikt worden in het weergegeven verhaal. 
+                    Linksboven de foto's ziet u hoe vaak een foto is getweet. Klik op een foto 
+                    om deze te vergroten.
+                  </p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal fade" id="imgModal" tabindex="-1" role="dialog" aria-labelledby="imgModalLabel">
+            <div class="modal-dialog modal-wide" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title" id="imgModalLabel">Foto</h4>
+                </div>
+                <div id="img-modal-body" class="modal-body text-center"></div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        
         </div>
         <div class="row">
           <div class="col-md-12">
-            <h2 class="text-center">Plaatsen</h2>
+            <h3 class="text-center">
+              Plaatsen
+              <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#locationModal"></span>
+            </h3>
             <div id="mapDiv"></div>
+          </div>
+
+          <div class="modal fade" id="locationModal" tabindex="-1" role="dialog" aria-labelledby="locationModalLabel">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title" id="locationModalLabel">Foto's</h4>
+                </div>
+                <div class="modal-body">
+                  <p>
+                    Dit onderdeel toont alle locaties die gebruikt worden in het weergegeven verhaal.
+                  </p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       <div class="col-md-6">
-        <h2 class="text-center">Tweets</h2>
-        <div id="tweetlist"></div>
+        <h3 class="text-center">
+          Tweets
+          <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#tweetsModal"></span>
+        </h3>
+
+        <div class="text-center">
+          <button type="button" class="btn btn-default" id="sample">willekeurig</button>
+          <button type="button" class="btn btn-default" id="retweets">retweets</button>
+          <button type="button" class="btn btn-default" id="interactions">interacties</button>
+        </div>
+        <div id="tweets">
+          {% for t in range(display_tweets) %}
+            <div id="tweet{{t}}"></div>
+          {% endfor %}
+        </div>
+
+        <div class="modal fade" id="tweetsModal" tabindex="-1" role="dialog" aria-labelledby="tweetsModalLabel">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="tweetsModalLabel">Tweets</h4>
+              </div>
+              <div class="modal-body">
+                <p>
+                  Dit onderdeel toont een selectie van de <span id="numTweets2"></span> tweets 
+                  van het weergegeven verhaal. 
+                </p>
+                <p>
+                  Klik op <b>willekeurig</b> om een willekeurige selectie van tweets
+                  te zien. U krijgt (indien mogelijk) een nieuwe selectie van tweets als u
+                  herhaardelijk op deze knop klikt.
+                </p>
+                <p>
+                  Klik op <b>retweets</b> om een lijst van retweets te zien. De
+                  retweets zijn gesorteerd van meest naar minst aantal retweets.
+                </p>
+                <p>
+                  Klik op <b>interacties</b> om tweets te zien die interacties
+                  aangeven tussen gebruikers. Dit zijn de tweets die mentions
+                  bevatten of antwoorden ("replies") zijn op andere tweets. De tweet
+                  waar op wordt geantwoord, wordt bovenaan de tweet getoond met een
+                  donkerder achtergrond. Als u vaker klikt op "interacties", krijgt
+                  u (indien mogelijk) een ander willekeurige selectie van interactie 
+                  tweets te zien.
+                </p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+  
   </div>
 </div>
 
