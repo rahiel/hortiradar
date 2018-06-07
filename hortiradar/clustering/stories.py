@@ -259,7 +259,8 @@ class Stories:
         return wordcloud
 
     def get_polarity(self):
-        polarity, subjectivity = sentiment(" ".join(self.tokens.elements()))
+        lemmas = [t.lemma.encode('utf-8') for t in self.tokens.elements()]
+        polarity, subjectivity = sentiment(" ".join(lemmas))
         return polarity
 
     def get_interaction_graph(self):
