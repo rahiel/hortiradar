@@ -311,6 +311,9 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         peak_data = {}
         for tw in tweets:
             tweet = tw["tweet"]
+            if "datetime" not in tweet:
+                print("no datetime: ", tweet, tweet.keys(), tweet["created_at"])
+                continue
             if new_peak:
                 p = ts[peaks[peak_index]]
                 dt = datetime(p["year"], p["month"], p["day"], p["hour"])
