@@ -189,6 +189,10 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         texts = [t["text"].lower() for t in tw["tokens"]]  # unlemmatized words
         words = list(set(lemmas + texts))                  # to check for obscene words
 
+        dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
+        tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
+        tweets[i]["tweet"]["datetime"] = datetime(dt.year, dt.month, dt.day, dt.hour)  # round to hour for peak detection
+
         # check for spam
         if any(obscene_words.get(t) for t in words):
             spam_list.append(tweet["id_str"])
@@ -208,10 +212,6 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
             retweet_count = rt["retweet_count"]
             if id_str not in retweets or retweet_count > retweets[id_str]:
                 retweets[id_str] = retweet_count
-
-        dt = datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
-        tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
-        tweets[i]["tweet"]["datetime"] = datetime(dt.year, dt.month, dt.day, dt.hour)  # round to hour for peak detection
 
         user_id_str = tweet["user"]["id_str"]
         if "retweeted_status" in tweet:
@@ -311,9 +311,6 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         peak_data = {}
         for tw in tweets:
             tweet = tw["tweet"]
-            if "datetime" not in tweet:
-                print("no datetime: ", tweet, tweet.keys(), tweet["created_at"])
-                continue
             if new_peak:
                 p = ts[peaks[peak_index]]
                 dt = datetime(p["year"], p["month"], p["day"], p["hour"])
