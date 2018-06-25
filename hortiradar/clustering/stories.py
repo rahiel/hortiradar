@@ -34,10 +34,12 @@ class Stories:
     tweets:                 Set of tweets corresponding to the story
     """
 
-    def __init__(self, c, jt=None, ojt=None, mi=None):
-        now = datetime.utcnow()
-        self.id = dt_to_ts(now)
-        self.created_at = round_time(now)
+    def __init__(self, c, jt=None, ojt=None, mi=None, time=None):
+        if not time:
+            time = datetime.utcnow()
+        
+        self.id = dt_to_ts(time)
+        self.created_at = round_time(time)
         self.origin = c.created_at
         self.last_edited = 0
 
@@ -105,9 +107,11 @@ class Stories:
         """Check if idle time has passed. If function returns true, then call endStory()"""
         return self.last_edited >= self.max_idle
 
-    def end_story(self):
+    def end_story(self,time=None):
         """Add closing time to Story and calculate time series"""
-        self.closed_at = round_time(datetime.utcnow())
+        if not time:
+            time = datetime.utcnow()
+        self.closed_at = round_time(time)
 
     def get_timeseries(self):
         tsDict = Counter()
@@ -167,7 +171,7 @@ class Stories:
         wordcloud = []
         for token in self.tokens:
             if token in self.filt_tokens:
-                wordcloud.append({"text": token.lemma.encode('utf-8'), "weight": self.tokens[token]})
+                wordcloud.append({"text": token.lemma, "weight": self.tokens[token]})
 
         return wordcloud
 
@@ -254,12 +258,12 @@ class Stories:
     def get_original_wordcloud(self):
         wordcloud = []
         for token in self.original_filt_tokens:
-            wordcloud.append({"text": token.lemma.encode('utf-8'), "weight": self.tokens[token]})
+            wordcloud.append({"text": token.lemma, "weight": self.tokens[token]})
 
         return wordcloud
 
     def get_polarity(self):
-        lemmas = [t.lemma.encode('utf-8') for t in self.tokens.elements()]
+        lemmas = [t.lemma for t in self.tokens.elements()]
         polarity, subjectivity = sentiment(" ".join(lemmas))
         return polarity
 
@@ -365,8 +369,14 @@ class Stories:
             if hasattr(tweet,"retweeted_status"):
                 if tweet.retweeted_status.user.id_str:
                     rt = tweet.retweeted_status
-                    if rt.id_str not in retweets or rt.retweet_count > retweets[rt.id_str]:
-                        retweets[id_str] = rt.retweet_count
+                    if hasattr(rt,"retweet_count"):
+                        if rt.id_str not in retweets or rt.retweet_count > retweets[rt.id_str]:
+                            retweets[rt.id_str] = rt.retweet_count
+                    else:
+                        if rt.id_str not in retweets:
+                            retweets[rt.id_str] = 1
+                        else:
+                            retweets[rt.id_str] += 1
 
                     if rt.user.id_str not in nodes:
                         nodes[rt.user.id_str] = rt.user.screen_name
@@ -395,37 +405,29 @@ class Stories:
                     if user_id_str not in nodes:
                         nodes[user_id_str] = tweet.user.screen_name
 
-                    edges.append({"source": user_id_str, "target": tweet["in_reply_to_user_id_str"], "value": "reply"})
+                    edges.append({"source": user_id_str, "target": tweet.in_reply_to_user_id_str, "value": "reply"})
 
-            try:
+            if tweet.entities.get("media"):
                 for obj in tweet.entities["media"]:
                     image_url = obj["media_url_https"]
                     imagesList.append(image_url)
-                    image_tweet_id[url] = ext_tweet.tweet.id_str
-            except KeyError:
-                pass
+                    image_tweet_id[image_url] = tweet.id_str
 
-            try:
+            if tweet.entities.get("urls"):
                 for obj in tweet.entities["urls"]:
                     url = obj["expanded_url"]
                     if url is not None:
                         URLList.append(url)
-            except KeyError:
-                pass
 
-            try:
+            if tweet.entities.get("hashtags"):
                 for obj in tweet.entities["hashtags"]:
                     htlist.append(obj["text"])
-            except AttributeError:
-                pass
 
-            try:
+            if hasattr(tweet,"coordinates"):
                 if tweet.coordinates is not None:
                     if tweet.coordinates.type == "Point":
                         coords = tweet.coordinates.coordinates  
                         mapLocations.append({"lng": coords[0], "lat": coords[1]})
-            except KeyError:
-                pass
 
         jDict["hashtags"] = []
         for (ht, count) in Counter(htlist).most_common():

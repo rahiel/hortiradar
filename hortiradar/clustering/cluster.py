@@ -12,10 +12,12 @@ from .util import cos_sim, round_time, dt_to_ts, get_token_array
 
 class Cluster:
 
-    def __init__(self):
-        now = datetime.utcnow()
-        self.id = dt_to_ts(now)
-        self.created_at = round_time(now)
+    def __init__(self, time=None):
+        if not time:
+            time = datetime.utcnow()
+        
+        self.id = dt_to_ts(time)
+        self.created_at = round_time(time)
         self.tokens = Counter()
         self.filt_tokens = set()
         self.tweets = Counter()

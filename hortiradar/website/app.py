@@ -456,8 +456,7 @@ def filter_story(story, display_tweets):
     story["tagCloud"] = story["tagCloud"][:200]
     story["photos"] = story["photos"][:16]
 
-    story["polarity_face"] = display_polarity(story["polarity"])
-    # story["tweets"] = story["tweets"][:display_tweets]
+    story["polarityface"] = display_polarity(story["polarity"])
     return story
 
 @bp.route("/clustering/<group>")
