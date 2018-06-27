@@ -226,10 +226,10 @@ function renderInformation(data) {
     let medList = $('div#mediaDiv').empty()
     for (let idx=0; idx < data.photos.length; idx++) {
         if (idx%2 == 1) {
-            let li = $('<div id="photoContainer"><img class="twitImage" src="'+data.photos[idx].link+'" /><span class="imgText">'+data.photos[idx].occ+'</span></div><br>')
+            let li = $('<div class="photoContainer"><img class="twitImage" src="'+data.photos[idx].link+'" /><span class="imgText">'+data.photos[idx].occ+'</span></div><br>')
             .appendTo(medList);
         } else {
-            let li = $('<div id="photoContainer"><img class="twitImage" src="'+data.photos[idx].link+'" /><span class="imgText">'+data.photos[idx].occ+'</span></div>')
+            let li = $('<div class="photoContainer"><img class="twitImage" src="'+data.photos[idx].link+'" /><span class="imgText">'+data.photos[idx].occ+'</span></div>')
             .appendTo(medList);
         }
     }
