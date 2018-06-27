@@ -23,6 +23,7 @@ from hortiradar.database import stop_words, obscene_words, blacklist, get_db
 
 db = get_db()
 storiesdb = db.stories
+newsdb = db.news
 
 broker_url = "amqp://guest@localhost:5672/hortiradar"
 app = Celery("tasks", broker=broker_url)
@@ -420,12 +421,22 @@ def process_stories(group, start, end, force_refresh=False, cache_time=CACHE_TIM
 
     return sorted_active, sorted_closed
 
+def process_news(keyword, start, end, force_refresh=False, cache_time=CACHE_TIME):
+    """Load news messages that are tagged with keyword from DB. The news items are returned in anti-choronological order"""
+    items = newsdb.find({"keywords": keyword, "pubdate": {"$gte": start, "$lt": end}}, 
+        projection={ "title": True, "pubdate": True, "description": True, "flag": True
+        , "source": True, "nid": True, "_id": False})
+    news = sorted([it for it in items], key=lambda x: x["pubdate"], reverse=True)
+    return news
+
+
 
 funs = {
     "process_details": process_details,
     "process_top": process_top,
     "process_stories": process_stories,
     "process_tokens": process_tokens,
+    "process_news": process_news,
 }
 for f in dir(tweety):
     attr = eval("tweety.{}".format(f))

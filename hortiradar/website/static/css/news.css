@@ -1,0 +1,42 @@
+body {
+    position: relative;   /* for the scrollspy */
+}
+
+.newsContainer {
+    margin-left: 5%;
+    width: 90%;
+}
+
+.newsInformation {
+    font-size: 8pt;
+}
+
+.newsSummary {
+}
+
+.rule {
+    width: 275px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #CCCCCC;
+}
+
+#toc {
+    position: fixed;
+    bottom: 0;
+    left: 45%;
+    background-color: #FFF;
+    border-style: solid;
+    border-bottom-style: none;
+    border-color: #cccccc;
+    border-width: 1px;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+.offset:before {
+    display: block;
+    content: "";
+    height: 150px;
+    margin-top: -150px;
+    visibility: hidden;
+}

@@ -24,7 +24,7 @@ from hortiradar.clustering import tweet_time_format
 from hortiradar.database import lemmatize
 from hortiradar.website import app, db
 from models import Role, User
-from processing import cache, floor_time, process_details, process_tokens, process_top, process_stories
+from processing import cache, floor_time, process_details, process_tokens, process_top, process_stories, process_news
 
 
 bp = Blueprint("horti", __name__, template_folder="templates", static_folder="static")
@@ -397,6 +397,30 @@ def view_keyword(keyword):
         "gtrends_period": gtrends_period
     }
     return render_template("keyword.html", title=make_title(keyword), **template_data)
+
+@bp.route("/news/<keyword>")
+def view_news(keyword):
+    period, start, end, cache_time = get_period(request, "week")
+    news_data = cache(process_news, keyword, start, end, cache_time=cache_time, path=get_req_path(request))
+    if isinstance(news_data, Response):
+        return news_data
+
+    period_name = {"day": "dag", "week": "week", "month": "maand"}.get(period, "dag")
+    news = []
+    for item in news_data:
+        item["pubdate"] = display_datetime(item["pubdate"])
+        del item["nid"]
+        news.append(item)
+
+    template_data = {
+        "keyword": keyword,
+        "start": display_datetime(start),
+        "end": display_datetime(end),
+        "period": period,
+        "period_name": period_name,
+        "news": news
+    }
+    return render_template("news.html", title=make_title(keyword), **template_data)
 
 @bp.route("/keywords/<keyword>/occurrences")
 def view_token_co_occurrences(keyword):
