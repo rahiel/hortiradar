@@ -114,7 +114,7 @@ export function renderInformation(data) {
 
 }
 
-function renderTweets(tweets, conversation = false) {
+export function renderTweets(tweets, conversation = false) {
     // clear all tweets
     for (let i = 0; i < display_tweets; i++) {
         document.getElementById(`tweet${i}`).innerHTML = "";
@@ -167,7 +167,7 @@ function highlightTweetButton(button: tweetButton) {
     }
 }
 
-function showPictures() {
+export function showPictures() {
     // clicking on pictures shows them in a modal
 
     function click(event: MouseEvent) {
@@ -189,7 +189,7 @@ function showPictures() {
     });
 }
 
-function showLink() {
+export function showLink() {
 
     function click(event: MouseEvent) {
         let url = new URL(this.parentNode.querySelector(".full-link").href);

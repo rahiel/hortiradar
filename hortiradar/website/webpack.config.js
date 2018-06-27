@@ -8,7 +8,6 @@ module.exports = {
         storify: "./storify.ts",
         edit_group: "./edit_group.ts",
         loading: "./loading.ts",
-        timeline: "./timeline.ts",
     },
     output: {
         filename: "[name].js",

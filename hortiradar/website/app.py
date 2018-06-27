@@ -422,7 +422,6 @@ def view_token_co_occurrences(keyword):
     }
     return render_template("occurrences.html", title=make_title(keyword), **template_data)
 
-
 @bp.route("/keywords/<keyword>/tweets")
 def view_tweets_about_keyword(keyword):
     period, start, end, cache_time = get_period(request, "week")
@@ -512,51 +511,7 @@ def view_stories(group):
         "period": period
     }
     return render_template("storify.html", title=make_title(group), **template_data)
-
-@bp.route("/timeline/<group>")
-def view_timeline(group):
-    period, start, end, cache_time = get_period(request, "week")
-    story_data = cache(process_stories, group, start, end, cache_time=cache_time, path=get_req_path(request))
-
-    if isinstance(story_data, Response):
-        return story_data
-
-    active_stories, closed_stories = story_data
-
-    storify_data = []
-    timeline_data = []
-
-    timeline_start = timegm(start.timetuple()) * 1000
-    timeline_end = timegm(end.timetuple()) * 1000
-
-    display_tweets = 11
-    display_active_stories = 10
-    display_closed_stories = 5
-
-    for story in active_stories:
-        if not (len(storify_data) < display_active_stories):
-            break
-        story = filter_story(story, display_tweets)
-        timeline_info = {"label": len(storify_data), "times": story["cluster_details"]}
-        del story["cluster_details"]
-
-        storify_data.append(story)
-        timeline_data.append(timeline_info)
-
-    template_data = {
-        "group": group,
-        "storify_data": json.dumps(storify_data),
-        "timeline_data": json.dumps(timeline_data),
-        "timeline_start_ts": timeline_start,
-        "timeline_end_ts": timeline_end,
-        "display_tweets": display_tweets,
-        "num_stories": min(display_active_stories + display_closed_stories, len(storify_data)),
-        "start": display_datetime(start),
-        "end": display_datetime(end),
-        "period": period
-    }
-    return render_template("timeline.html", title=make_title(group), **template_data)
-
+    
 @bp.route("/about")
 def about():
     stats = json.loads(redis.get("t:stats"))
