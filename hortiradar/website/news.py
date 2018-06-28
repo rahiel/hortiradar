@@ -42,19 +42,13 @@ def find_keywords_and_groups(text):
                 if not t["pos"].startswith(k.pos + "("):
                     continue
 
-            # when the second to last keyword is matched and the very last keyword is "…"
-            # then we have a false match because the second to last keyword was truncated
-            if i == (len(tokens) - 2):
-                if tokens[-1]["text"] == "…":
-                    continue
-
             kw.append(lemma)
             groups += k.groups
     kw, groups = list(set(kw)), list(set(groups))
     return kw, groups
 
 def process_triggers(item,group):
-    """ This function determines all the trigger words that have been tagged by the """
+    """ This function determines all the trigger words that have been tagged by the EMM"""
     categories = item.findall("category")
     for it in categories:
         if it.text == group:
