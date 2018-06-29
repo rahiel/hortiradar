@@ -2,6 +2,7 @@ body {
     position: relative;   /* for the scrollspy */
 }
 
+/* twitter section */
 #splineContainer {
     width: 100%;
     height: 300px;
@@ -21,6 +22,10 @@ body {
   min-width: 200px;
   width: 100%;
   overflow: hidden;
+}
+
+#polarity-face {
+    font-size: 79pt;
 }
 
 .graphDiv {
@@ -70,6 +75,27 @@ body {
     color: red;
 }
 
+/* news section */
+.newsContainer {
+    margin-left: 5%;
+    width: 90%;
+}
+
+.newsSummary {
+    /* Style alterations of the news summary should go here */
+}
+
+.newsInformation {
+    font-size: 8pt;
+}
+
+.rule {
+    width: 275px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #CCCCCC;
+}
+
+/* navigation bar */
 #toc {
     position: fixed;
     bottom: 0;
@@ -114,8 +140,4 @@ text {
     fill: #000;
     font: 10px sans-serif;
     pointer-events: none;
-}
-
-#polarity-face {
-    font-size: 79pt;
 }

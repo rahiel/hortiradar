@@ -11,6 +11,7 @@
   <ul class="nav nav-pills">
     <li role="presentation"><a href="#twitter">Twitter</a></li>
     <li role="presentation"><a href="#google">Google</a></li>
+    <li role="presentation"><a href="#news">Nieuws</a></li>
   </ul>
 </div>
 
@@ -443,6 +444,37 @@
   <div class="col-md-6">
     <script type="text/javascript"> trends.embed.renderExploreWidget("RELATED_QUERIES", {"comparisonItem":[{"keyword": "{{ keyword }}","geo":"NL","time":"{{ gtrends_period }}"}],"category":0,"property":""}, {"exploreQuery":"date={{ gtrends_period }}&geo=NL&q={{ keyword }}","guestPath":"https://trends.google.com:443/trends/embed/"}); </script>
   </div>
+</div>
+
+<div class="row">
+  <h2 id="news" class="offset">Nieuws</h2>
+  <div class="col-md-8">
+    <p>Hieronder een overzicht van de nieuwsberichten over het trefwoord "{{ keyword }}" in de afgelopen {{ period_name }} zijn opgepikt door de Europe Media Monitor <a href="http://emm.newsexplorer.eu/NewsExplorer/home/en/latest.html" target="_blank">(EMM)</a>. Klik op de titel van het nieuwsbericht om het volledige bericht in een nieuw scherm te openen.</p>
+  </div>
+  <div class="col-md-4 text-right">
+    {{ render_button("horti.view_keyword", {"keyword": keyword, "hash": "news"}, period, "day", "Dag") }}
+    {{ render_button("horti.view_keyword", {"keyword": keyword, "hash": "news"}, period, "week", "Week") }}
+    {{ render_button("horti.view_keyword", {"keyword": keyword, "hash": "news"}, period, "month", "Maand") }}
+  </div>
+</div>
+
+<div class="row">
+  {% if news %}
+    <div class="newsContainer"><table class="table table-condensed"><tbody>
+      {% for n in news %}
+        <tr>
+          <td>
+            <a class="full-link" href="{{ n["link"] }}" target="_blank"><b>{{ n["title"] }}</b> <i class="fa fa-external-link" aria-hidden="true"></i></a>
+            <div class="newsInformation"><tt><b><img src="{{ url_for("horti.static",filename=n["flag"]) }}" /> {{ n["source"] }}: {{ n["pubdate"] }}</b></tt></div>
+            <div class="rule"></div>
+            <div class="newsSummary">{{ n["description"] }}....</div>
+        </td></tr>
+      {% endfor %}
+      <tr><td></td></tr>
+    </tbody></table></div>
+  {% else %}
+    <p>Er zijn geen nieuws items gevonden over het trefwoord "{{ keyword }}".</p>
+  {% endif %}
 </div>
 
 <script type="text/javascript">

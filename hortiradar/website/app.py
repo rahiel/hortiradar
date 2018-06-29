@@ -380,6 +380,13 @@ def view_keyword(keyword):
     gtrends_period = {"day": "now 1-d", "week": "now 7-d", "month": "today 1-m"}.get(period, "now 1-d")
     period_name = {"day": "dag", "week": "week", "month": "maand"}.get(period, "dag")
 
+    news = []
+    for item in keyword_data["news"]:
+        item["pubdate"] = display_datetime(item["pubdate"])
+        del item["nid"]
+        news.append(item)
+    del keyword_data["news"]
+
     template_data = {
         "keyword": keyword,
         "keyword_data": json.dumps(keyword_data),
@@ -394,7 +401,8 @@ def view_keyword(keyword):
         "period_name": period_name,
         "polarity": polarity,
         "polarity_face": polarity_face,
-        "gtrends_period": gtrends_period
+        "gtrends_period": gtrends_period,
+        "news": news
     }
     return render_template("keyword.html", title=make_title(keyword), **template_data)
 

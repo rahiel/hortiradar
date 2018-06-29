@@ -377,6 +377,14 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     else:
         retweet_ids = []
 
+    start = datetime.strptime(params["start"],time_format)
+    end = datetime.striptime(params["end"],time_format)
+
+    items = newsdb.find({"keywords": prod, "pubdate": {"$gte": start, "$lt": end}}, 
+        projection={ "title": True, "pubdate": True, "description": True, "flag": True
+        , "source": True, "link": True, "nid": True, "_id": False})
+    news = sorted([it for it in items], key=lambda x: x["pubdate"], reverse=True)
+
     data = {
         "tweets": unique_ids,
         "retweets": retweet_ids,
@@ -390,6 +398,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         "locations": mapLocations,
         "centerloc": avLoc,
         "graph": graph,
+        "news": news,
         "polarity": polarity
     }
     return data
@@ -423,9 +432,14 @@ def process_stories(group, start, end, force_refresh=False, cache_time=CACHE_TIM
 
 def process_news(keyword, start, end, force_refresh=False, cache_time=CACHE_TIME):
     """Load news messages that are tagged with keyword from DB. The news items are returned in anti-choronological order"""
+    if type(start) == str:
+        start = datetime.strptime(start,"%Y-%m-%dT%H:%M:%S") # caching encodes datetimes
+    if type(end) == str:
+        end = datetime.strptime(end,"%Y-%m-%dT%H:%M:%S") # caching encodes datetimes
+
     items = newsdb.find({"keywords": keyword, "pubdate": {"$gte": start, "$lt": end}}, 
         projection={ "title": True, "pubdate": True, "description": True, "flag": True
-        , "source": True, "nid": True, "_id": False})
+        , "source": True, "link": True, "nid": True, "_id": False})
     news = sorted([it for it in items], key=lambda x: x["pubdate"], reverse=True)
     return news
 
