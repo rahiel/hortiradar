@@ -191,7 +191,7 @@ export function showPictures() {
         $("#imgModal").modal("show");
     }
 
-    let images = document.getElementsByClassName("photoContainer");
+    let images = document.getElementsByClassName("photoContainer") as HTMLCollectionOf<HTMLDivElement>;
     for (let image of images) {
         image.onclick = click;
     }
@@ -251,13 +251,14 @@ export function showLink() {
         if (iframe) {
             document.getElementById("iframe-container").appendChild(iframe);
         }
-        document.getElementById("iframe-url").textContent = href;
-        document.getElementById("iframe-url").href = href;
-        document.getElementById("iframe-url").target = "_blank";
+        let iframeURL = <HTMLAnchorElement>document.getElementById("iframe-url");
+        iframeURL.textContent = href;
+        iframeURL.href = href;
+        iframeURL.target = "_blank";
         $("#iframeModal").modal("show");
     }
 
-    let links = document.getElementsByClassName("link");
+    let links = document.getElementsByClassName("link") as HTMLCollectionOf<HTMLAnchorElement>;
     for (let link of links) {
         link.onclick = click;
     }

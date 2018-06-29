@@ -9,7 +9,7 @@ function deleteKeywords() {
     let data = [];
     let keywords = document.getElementsByClassName("keyword");
     for (let keyword of keywords) {
-        let checked = keyword.getElementsByClassName("delete")[0].checked;
+        let checked = (<HTMLInputElement>keyword.getElementsByClassName("delete")[0]).checked;
         if (checked) {
             let lemma = keyword.getElementsByClassName("lemma")[0].textContent;
             let pos = keyword.getElementsByClassName("pos")[0].textContent;
@@ -53,9 +53,9 @@ function addKeywords() {
     let data = [];
     let forms = document.getElementsByClassName("lemma-group");
     for (let form of forms) {
-        let lemma = form.getElementsByClassName("lemma")[0].value;
+        let lemma = (<HTMLInputElement>form.getElementsByClassName("lemma")[0]).value;
         if (lemma.length > 0) {
-            let woordsoort = form.getElementsByClassName("woordsoort")[0].value;
+            let woordsoort = (<HTMLSelectElement>form.getElementsByClassName("woordsoort")[0]).value;
             data.push({"lemma": lemma, "pos": woordsoort});
         }
     }
@@ -76,12 +76,12 @@ function addKeywords() {
             let diff = j.diff;
 
             for (let form of forms) {
-                let lemma = form.getElementsByClassName("lemma")[0].value;
+                let lemma = (<HTMLInputElement>form.getElementsByClassName("lemma")[0]).value;
                 if (diff.hasOwnProperty(lemma)) {
-                    let alert = form.getElementsByClassName("alert")[0];
+                    let alert = <HTMLSpanElement>form.getElementsByClassName("alert")[0];
                     alert.textContent = `Uw lemma is veranderd van ${lemma} naar ${diff[lemma]}`;
                     alert.style.display = "block";
-                    form.getElementsByClassName("lemma")[0].value = diff[lemma];
+                    (<HTMLInputElement>form.getElementsByClassName("lemma")[0]).value = diff[lemma];
                 }
             }
         }
