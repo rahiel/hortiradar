@@ -2,7 +2,7 @@ import * as $ from "jquery";
 import * as d3 from "d3";
 import { renderGraph } from "./interaction_graph";
 import { timelines } from "d3-timelines";
-import { showPictures, showLink, renderTweets } from "./keyword";
+import { showPictures, showLink, renderTweets, renderInformation } from "./keyword";
 
 declare const storify_data: any;
 declare const timeline_data: any;
@@ -74,7 +74,9 @@ function fill_story_information(loc,colorScale) {
         align: "center"
     });
 
+    renderTimeSeries(data);
     renderInformation(data);
+    renderAdditionalInformation(data);
     renderGraph(data.graph);
     renderTweets(data.tweets);
     showPictures();
@@ -169,7 +171,7 @@ function build_timeline(colorScale) {
     .datum(timeline_data).call(tlchart);
 }
 
-function renderInformation(data) {
+function renderTimeSeries(data) {
     
     let timeSeries = [];
     for (let i = 0; i < data.timeSeries.length; i++) {
@@ -200,28 +202,9 @@ function renderInformation(data) {
     });
     chart.render();
 
-    let words = [];
-    $.each(data.tagCloud, function (index) {
-        words.push({ text: data.tagCloud[index].text, weight: data.tagCloud[index].weight });
-    });
-    $("#wordcloudDiv").empty().jQCloud(words, {
-        autoResize: false
-    });
+}
 
-    // Create a map object and specify the DOM element for display.
-    let map = new google.maps.Map(document.getElementById("mapDiv"), {
-        center: {lat: data.centerloc.lat, lng: data.centerloc.lng},
-        disableDefaultUI: true,
-        zoom: 6
-    });
-
-    $.each(data.locations, function (index) {
-        // Create a marker and set its position.
-        let marker = new google.maps.Marker({
-            map: map,
-            position: {lat: data.locations[index].lat, lng: data.locations[index].lng}
-        });
-    });
+function renderAdditionalInformation(data) { 
 
     let medList = $('div#mediaDiv').empty()
     for (let idx=0; idx < data.photos.length; idx++) {
@@ -277,5 +260,4 @@ function renderInformation(data) {
         let nolinks = $('<p>Er zijn geen hashtags gevonden.</p>')
             .appendTo(linkList);
     }
-
 }

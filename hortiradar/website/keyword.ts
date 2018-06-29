@@ -24,6 +24,7 @@ const enum tweetButton {
 };
 
 function main() {
+    renderTimeSeries(keyword_data);
     renderInformation(keyword_data);
     renderGraph(graph);
     renderSampleTweets();
@@ -42,7 +43,7 @@ function main() {
     }
 }
 
-export function renderInformation(data) {
+function renderTimeSeries(data) {
     const peaks = data.peaks;
     const [peaks_i, peaks_summary] = _.unzip(peaks);
     let timeSeries = [];
@@ -81,6 +82,18 @@ export function renderInformation(data) {
     });
     chart.render();
 
+    function onClick(e) {
+        let year = String(e.dataPoint.x.getUTCFullYear())
+        let month = String(e.dataPoint.x.getUTCMonth() + 1)
+        let day = String(e.dataPoint.x.getUTCDate())
+        let hour = String(e.dataPoint.x.getUTCHours())
+        let start = year + "-" + month + "-" + day + "T" + hour + ":00";
+        window.open(window.location.pathname + "?start=" + start + "&period=hour");
+    }
+}
+
+export function renderInformation(data) {
+
     const maxCount = _.maxBy(data.tagCloud, (x) => x["count"])["count"];
     const options = {
         list: data.tagCloud.map(x => [x.text, x.count]),
@@ -110,15 +123,6 @@ export function renderInformation(data) {
             position: {lat: data.locations[index].lat, lng: data.locations[index].lng}
         });
     });
-
-    function onClick(e) {
-        let year = String(e.dataPoint.x.getUTCFullYear())
-        let month = String(e.dataPoint.x.getUTCMonth() + 1)
-        let day = String(e.dataPoint.x.getUTCDate())
-        let hour = String(e.dataPoint.x.getUTCHours())
-        let start = year + "-" + month + "-" + day + "T" + hour + ":00";
-        window.open(window.location.pathname + "?start=" + start + "&period=hour");
-    }
 
 }
 
