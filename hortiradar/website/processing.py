@@ -378,7 +378,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
         retweet_ids = []
 
     start = datetime.strptime(params["start"],time_format)
-    end = datetime.striptime(params["end"],time_format)
+    end = datetime.strptime(params["end"],time_format)
 
     items = newsdb.find({"keywords": prod, "pubdate": {"$gte": start, "$lt": end}}, 
         projection={ "title": True, "pubdate": True, "description": True, "flag": True
@@ -403,30 +403,28 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     }
     return data
 
-def load_stories(group, start, end):
+def process_stories(group, params, force_refresh=False, cache_time=CACHE_TIME):
     """Load active stories from redis and closed stories from DB.
     Since active stories are story objects, they are processed to JSON from here for rendering in the website"""
-    closed = storiesdb.find({"groups": group, "datetime": {"$gte": start, "$lt": end}})
+    
     active = redis.get("s:{gr}".format(gr=group))
-
     if active:
         act = pickle.loads(active)
         active_out = [s.get_jsondict() for s in act]
     else:
         active_out = []
 
+    start = datetime.strptime(params["start"],time_format)
+    end = datetime.strptime(params["end"],time_format)
+    
+    closed = storiesdb.find({"groups": group, "datetime": {"$gte": start, "$lt": end}})
     if closed:
         closed_out = [s for s in closed]
     else:
         closed_out = []
 
-    return active_out, closed_out
-
-def process_stories(group, start, end, force_refresh=False, cache_time=CACHE_TIME):
-    active, closed = load_stories(group, start, end)
-
-    sorted_active = sorted(active, key=lambda x: len(x["tweets"]), reverse=True)
-    sorted_closed = sorted(closed, key=lambda x: len(x["tweets"]), reverse=True)
+    sorted_active = sorted(active_out, key=lambda x: len(x["tweets"]), reverse=True)
+    sorted_closed = sorted(closed_out, key=lambda x: len(x["tweets"]), reverse=True)
 
     return sorted_active, sorted_closed
 

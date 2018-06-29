@@ -493,7 +493,8 @@ def filter_story(story, display_tweets):
 @bp.route("/clustering/<group>")
 def view_stories(group):
     period, start, end, cache_time = get_period(request, "week")
-    story_data = cache(process_stories, group, start, end, cache_time=cache_time, path=get_req_path(request))
+    params = {"start": start.strftime(time_format), "end": end.strftime(time_format)}
+    story_data = cache(process_stories, group, params, cache_time=cache_time, path=get_req_path(request))
 
     if isinstance(story_data, Response):
         return story_data
