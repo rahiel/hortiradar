@@ -280,7 +280,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     word_cloud = []
     for (token, count) in word_cloud_dict.most_common():
         if not is_stop_word(token):
-            word_cloud.append({"text": token, "weight": count})
+            word_cloud.append({"text": token, "count": count})
 
     # sentiment analysis on wordcloud
     polarity, subjectivity = sentiment(" ".join(word_cloud_dict.elements()))

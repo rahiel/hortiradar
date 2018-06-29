@@ -3,6 +3,7 @@ import { renderGraph } from "./interaction_graph";
 
 import * as _ from "lodash";
 const URLSearchParams = require("url-search-params");
+const WordCloud = require("wordcloud");
 
 declare const APP_ROOT: string;
 declare const keyword_data: any;
@@ -80,13 +81,20 @@ export function renderInformation(data) {
     });
     chart.render();
 
-    let words = [];
-    $.each(data.tagCloud, function (index) {
-        words.push({ text: data.tagCloud[index].text, weight: data.tagCloud[index].weight });
-    });
-    $("#wordcloudDiv").empty().jQCloud(words, {
-        autoResize: false
-    });
+    const maxCount = _.maxBy(data.tagCloud, (x) => x["count"])["count"];
+    const options = {
+        list: data.tagCloud.map(x => [x.text, x.count]),
+        gridSize: Math.round(16 * $("#wordCloudDiv").width() / 1024),
+        weightFactor: function (count) {
+            return Math.max(12, Math.round(30 * Math.log(count) / Math.log(maxCount)));
+        },
+        fontFamily: "Times, serif",
+        color: "random-dark",
+        rotateRatio: 0,
+        rotationSteps: 0,
+        backgroundColor: "#fff"
+    }
+    WordCloud(document.getElementById("wordCloudDiv"), options);
 
     // Create a map object and specify the DOM element for display.
     let map = new google.maps.Map(document.getElementById("mapDiv"), {
