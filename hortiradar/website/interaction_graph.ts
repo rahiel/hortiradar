@@ -86,7 +86,7 @@ export function renderGraph(graph) {
         .nodes(graph.nodes)
         .on("tick", ticked);
 
-    simulation.force("link")
+    (<any>simulation.force("link"))
         .links(graph.edges);
 
     function ticked() {

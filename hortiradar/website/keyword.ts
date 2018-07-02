@@ -44,7 +44,7 @@ function main() {
 }
 
 function renderTimeSeries(data) {
-    const peaks = data.peaks;
+    const peaks: Array<[number, Array<string>]> = data.peaks;
     const [peaks_i, peaks_summary] = _.unzip(peaks);
     let timeSeries = [];
     for (let i = 0; i < data.timeSeries.length; i++) {
