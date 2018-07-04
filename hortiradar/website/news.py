@@ -1,7 +1,9 @@
+from collections import Counter
 from configparser import ConfigParser
 from datetime import datetime
-from urllib.request import urlretrieve
+from urllib.request import urlretrieve, urlopen
 from xml.etree import ElementTree as ET
+import re
 
 from googletrans import Translator
 from redis import StrictRedis
@@ -14,7 +16,7 @@ from hortiradar.database import get_keywords, get_db, get_frog
 # tags in the EMM are in English, therefore we need to translate the tags to Duth during processing
 tlr = Translator()
 
-keywords = get_keywords()
+keywords = get_keywords(local=True)
 frog = get_frog()
 
 db = get_db()
@@ -23,6 +25,8 @@ newsdb = db.news
 config = ConfigParser()
 config.read("../database/tasks_workers.ini")
 posprob_minimum = config["workers"].getfloat("posprob_minimum")
+
+pattern = re.compile(b"<td class=\"center_leadin\">Country:</td><td class=\"center_leadin\">([A-Za-z]+)</td>")
 
 def check_if_exists(nid):
     return newsdb.find({"nid": nid}).count() > 0
@@ -71,6 +75,14 @@ def process_item(item,kws,groups):
     # flag is determined by the top level domain of the source url of the news message
     source_url = item.find("source").attrib.get("url")
     flag = source_url.split("/")[2].split(".")[-1]
+    if flag in ["com","org","int"]:
+        # flag is determined by querying medisys for country of source (more reliable but slower, therefore only when necessary)
+        temp = urlopen("http://medisys.newsbrief.eu/medisys/web/jsp/sourcedef.jsp?language=en&option={s}".format(s=source)).read()
+        res = re.findall(p,temp)
+        if res:
+            flag = res[0].lower()
+        else
+            pass
 
     return {
         "nid": nid,
