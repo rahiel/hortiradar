@@ -276,7 +276,8 @@ def view_keywords_in_group(group):
 @bp.route("/groups/<group>/edit", methods=["GET", "POST"])
 @login_required
 def edit_group(group):
-    if ("g:" + group) not in [r.name for r in current_user.roles]:
+    roles = [r.name for r in current_user.roles]
+    if ("g:" + group) not in roles and "admin" not in roles:
         flash("U heeft geen rechten om de groep \"{}\" aan te passen.".format(display_group(group)), "error")
         return redirect(url_for("horti.home"))
     if request.method == "GET":
@@ -450,7 +451,7 @@ def view_token_co_occurrences(keyword):
         "period": period,
         "start": display_datetime(start),
         "end": display_datetime(end),
-        "occurrences": zip(nums,occurrences)
+        "occurrences": zip(nums, occurrences)
     }
     return render_template("occurrences.html", title=make_title(keyword), **template_data)
 
@@ -544,7 +545,7 @@ def view_stories(group):
         "period": period
     }
     return render_template("storify.html", title=make_title(group), **template_data)
-    
+
 @bp.route("/about")
 def about():
     stats = json.loads(redis.get("t:stats"))
@@ -653,7 +654,7 @@ def profile():
     is_admin = "admin" in roles
     has_confirmed_email = current_user.has_confirmed_email()
     template_data = {
-        "groups": [(val,labels[i]) for i,val in enumerate(groups)], # zip(groups, labels), # Removed to fit double loop in template
+        "groups": [(val, labels[i]) for (i, val) in enumerate(groups)],
         "has_group": has_group,
         "has_confirmed_email": has_confirmed_email,
         "is_admin": is_admin
