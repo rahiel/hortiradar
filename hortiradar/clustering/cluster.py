@@ -1,12 +1,10 @@
 from calendar import timegm
 from collections import Counter
-from datetime import datetime
-import random
+from datetime import datetime, timedelta
 
 import numpy as np
-import ujson as json
 
-from hortiradar.clustering import Config, tweet_time_format
+from hortiradar.clustering import tweet_time_format
 from .util import cos_sim, round_time, dt_to_ts, get_token_array
 
 
@@ -15,7 +13,7 @@ class Cluster:
     def __init__(self, time=None):
         if not time:
             time = datetime.utcnow()
-        
+
         self.id = dt_to_ts(time)
         self.created_at = round_time(time)
         self.tokens = Counter()
@@ -23,16 +21,16 @@ class Cluster:
         self.tweets = Counter()
         self.retweets = {}
 
-    def __eq__(self,other):
+    def __eq__(self, other):
         if type(other) == Cluster:
             return self.id == other.id
         else:
             return False
 
-    def add_tweet(self,ext_tweet):
+    def add_tweet(self, ext_tweet):
         self.tokens.update(ext_tweet.tokens)
         self.filt_tokens.update(ext_tweet.filt_tokens)
-        if hasattr(ext_tweet.tweet,"retweeted_status"):
+        if hasattr(ext_tweet.tweet, "retweeted_status"):
             rtid = ext_tweet.tweet.retweeted_status.id_str
             if rtid not in self.retweets:
                 self.retweets[rtid] = []
@@ -41,15 +39,15 @@ class Cluster:
             self.tweets.update([ext_tweet])
 
     def get_best_tweet(self):
-        cluster_array = get_token_array(self.tokens,self.filt_tokens)
+        cluster_array = get_token_array(self.tokens, self.filt_tokens)
         ext_tweets = [tweet for tweet in self.tweets]
         similarities = []
         for tw in ext_tweets:
             tweet_tokens = Counter(tw.tokens)
-            tweet_array = get_token_array(tweet_tokens,self.filt_tokens)
-            sim_value = cos_sim(cluster_array,tweet_array)
+            tweet_array = get_token_array(tweet_tokens, self.filt_tokens)
+            sim_value = cos_sim(cluster_array, tweet_array)
             if tw.tweet.id_str in self.retweets:
-                sim_value *= np.sqrt( len( self.retweets[tw.tweet.id_str] ) )
+                sim_value *= np.sqrt(len(self.retweets[tw.tweet.id_str]))
             similarities.append(sim_value)
 
         if similarities:
@@ -58,20 +56,20 @@ class Cluster:
             return None
 
     def get_timeseries(self):
-        tsDict = Counter()
-        for tw in get_tweet_list():
+        tsdict = Counter()
+        for tw in self.get_tweet_list():
             tweet = tw.tweet
             dt = tweet.created_at
-            tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
+            tsdict.update([(dt.year, dt.month, dt.day, dt.hour)])
 
         ts = []
         if self.tweets:
-            tsStart = sorted(tsDict)[0]
-            tsEnd = sorted(tsDict)[-1]
+            tsStart = sorted(tsdict)[0]
+            tsEnd = sorted(tsdict)[-1]
             temp = datetime(tsStart[0], tsStart[1], tsStart[2], tsStart[3], 0, 0)
             while temp <= datetime(tsEnd[0], tsEnd[1], tsEnd[2], tsEnd[3], 0, 0):
-                if (temp.year, temp.month, temp.day, temp.hour) in tsDict:
-                    ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": tsDict[(temp.year, temp.month, temp.day, temp.hour)]})
+                if (temp.year, temp.month, temp.day, temp.hour) in tsdict:
+                    ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": tsdict[(temp.year, temp.month, temp.day, temp.hour)]})
                 else:
                     ts.append({"year": temp.year, "month": temp.month, "day": temp.day, "hour": temp.hour, "count": 0})
 
@@ -89,7 +87,7 @@ class Cluster:
 
     def get_locations(self):
         mapLocations = []
-        for ext_tweet in get_tweet_list():
+        for ext_tweet in self.get_tweet_list():
             try:
                 if ext_tweet.tweet.coordinates is not None:
                     if ext_tweet.tweet.coordinates.type == "Point":
@@ -112,7 +110,7 @@ class Cluster:
 
     def get_images(self):
         imagesList = []
-        for ext_tweet in get_tweet_list():
+        for ext_tweet in self.get_tweet_list():
             try:
                 for obj in ext_tweet.tweet.entities["media"]:
                     imagesList.append(obj["media_url_https"])
@@ -127,7 +125,7 @@ class Cluster:
 
     def get_URLs(self):
         URLList = []
-        for ext_tweet in get_tweet_list():
+        for ext_tweet in self.get_tweet_list():
             try:
                 for obj in ext_tweet.tweet.entities["urls"]:
                     url = obj["expanded_url"]
@@ -144,7 +142,7 @@ class Cluster:
 
     def get_hashtags(self):
         htlist = []
-        for ext_tweet in get_tweet_list():
+        for ext_tweet in self.get_tweet_list():
             try:
                 for obj in ext_tweet.tweet.entities["hashtags"]:
                     htlist.append(obj["text"])
@@ -160,7 +158,7 @@ class Cluster:
     def get_interaction_graph(self):
         nodes = {}
         edges = []
-        for ext_tweet in get_tweet_list():
+        for ext_tweet in self.get_tweet_list():
             tweet = ext_tweet.tweet
             user_id_str = tweet.user.id_str
             try:
@@ -225,20 +223,20 @@ class Cluster:
     def get_jsondict(self):
         jDict = {}
 
-        jDict["cluster_time"] = datetime.strftime(self.created_at,tweet_time_format)
+        jDict["cluster_time"] = datetime.strftime(self.created_at, tweet_time_format)
 
-        jDict["tweets"] = [tw.tweet.id_str for tw in get_tweet_list()]
+        jDict["tweets"] = [tw.tweet.id_str for tw in self.get_tweet_list()]
         jDict["summary_tweet"] = self.get_best_tweet()
 
         jDict["tokens"] = self.get_tokens()
-        
+
         jDict["timeSeries"] = self.get_timeseries()
-        
+
         jDict["photos"] = self.get_images()
         jDict["URLs"] = self.get_URLs()
         jDict["tagCloud"] = self.get_wordcloud()
         jDict["hashtags"] = self.get_hashtags()
-        
+
         loc_result = self.get_locations()
         jDict["locations"] = loc_result["locs"]
         jDict["centerloc"] = loc_result["avLoc"]

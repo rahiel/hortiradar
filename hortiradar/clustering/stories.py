@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import random
 
 import numpy as np
-import ujson as json
 from pattern.nl import sentiment
 
 from hortiradar.clustering import Config, tweet_time_format
@@ -11,9 +10,9 @@ from .util import cos_sim, round_time, dt_to_ts, get_token_array
 from hortiradar.database import obscene_words
 from hortiradar.website import get_nsfw_prob, mark_as_spam
 
-max_idle = Config.getint('storify:parameters','max_idle')
-threshold = Config.getfloat('storify:parameters','cluster_threshold')
-original_threshold = Config.getfloat('storify:parameters','cluster_original_threshold')
+max_idle = Config.getint('storify:parameters', 'max_idle')
+threshold = Config.getfloat('storify:parameters', 'cluster_threshold')
+original_threshold = Config.getfloat('storify:parameters', 'cluster_original_threshold')
 
 
 class Stories:
@@ -37,7 +36,7 @@ class Stories:
     def __init__(self, c, jt=None, ojt=None, mi=None, time=None):
         if not time:
             time = datetime.utcnow()
-        
+
         self.id = dt_to_ts(time)
         self.created_at = round_time(time)
         self.origin = c.created_at
@@ -67,17 +66,16 @@ class Stories:
     def is_similar(self, c):
         """Calculate if the cluster matches to the story"""
         all_current = self.filt_tokens & c.filt_tokens
-        story_array = get_token_array(self.tokens,all_current)
-        cluster_array = get_token_array(c.tokens,all_current)
-        current = cos_sim(story_array,cluster_array)
+        story_array = get_token_array(self.tokens, all_current)
+        cluster_array = get_token_array(c.tokens, all_current)
+        current = cos_sim(story_array, cluster_array)
 
-        all_original = self.original_filt_tokens & c.filt_tokens
-        story_array = get_token_array(self.original_tokens,all_current)
-        cluster_array = get_token_array(c.tokens,all_current)
-        original = cos_sim(story_array,cluster_array)
+        story_array = get_token_array(self.original_tokens, all_current)
+        cluster_array = get_token_array(c.tokens, all_current)
+        original = cos_sim(story_array, cluster_array)
 
         return current >= self.threshold and original >= self.original_threshold, current
-        
+
     def add_cluster(self, c):
         self.tokens.update(c.tokens)
         self.filt_tokens.update(c.filt_tokens)
@@ -90,8 +88,8 @@ class Stories:
                 self.retweets[rid] = c.retweets[rid]
         self.first_tweet_time = min([tw.tweet.created_at for tw in self.tweets])
 
-    def add_tweet(self,ext_tweet):
-        if hasattr(ext_tweet.tweet,"retweeted_status"):
+    def add_tweet(self, ext_tweet):
+        if hasattr(ext_tweet.tweet, "retweeted_status"):
             rtid = ext_tweet.tweet.retweeted_status.id_str
             if rtid not in self.retweets:
                 self.retweets[rtid] = []
@@ -101,13 +99,13 @@ class Stories:
 
     def add_delay(self):
         """Update idle time counter"""
-        self.last_edited+=1
+        self.last_edited += 1
 
     def close_story(self):
         """Check if idle time has passed. If function returns true, then call endStory()"""
         return self.last_edited >= self.max_idle
 
-    def end_story(self,time=None):
+    def end_story(self, time=None):
         """Add closing time to Story and calculate time series"""
         if not time:
             time = datetime.utcnow()
@@ -151,17 +149,17 @@ class Stories:
         return filt_tweets
 
     def get_best_tweet(self):
-        story_array = get_token_array(self.tokens,self.filt_tokens)
+        story_array = get_token_array(self.tokens, self.filt_tokens)
         ext_tweets = [tw for tw in self.tweets]
         similarities = []
         for tw in ext_tweets:
             tweet_tokens = Counter(tw.tokens)
-            tweet_array = get_token_array(tweet_tokens,self.filt_tokens)
-            sim_value = cos_sim(story_array,tweet_array)
+            tweet_array = get_token_array(tweet_tokens, self.filt_tokens)
+            sim_value = cos_sim(story_array, tweet_array)
             if tw.tweet.id_str in self.retweets:
-                sim_value *= np.sqrt( len( self.retweets[tw.tweet.id_str] ) )
+                sim_value *= np.sqrt(len(self.retweets[tw.tweet.id_str]))
             similarities.append(sim_value)
-        
+
         if similarities:
             return ext_tweets[np.argmax(similarities)]
         else:
@@ -273,7 +271,7 @@ class Stories:
         for ext_tweet in self.get_tweet_list():
             tweet = ext_tweet.tweet
             user_id_str = tweet.user.id_str
-            if hasattr(tweet,"retweeted_status"):
+            if hasattr(tweet, "retweeted_status"):
                 if tweet.retweeted_status.user.id_str:
                     rt_user_id_str = tweet.retweeted_status.user.id_str
 
@@ -293,7 +291,7 @@ class Stories:
 
                     edges.append({"source": user_id_str, "target": obj["id_str"], "value": "mention"})
 
-            if hasattr(tweet,"in_reply_to_user_id_str"):
+            if hasattr(tweet, "in_reply_to_user_id_str"):
                 if tweet.in_reply_to_user_id_str:
                     if tweet.in_reply_to_user_id_str not in nodes:
                         nodes[tweet.in_reply_to_user_id_str] = tweet.in_reply_to_screen_name
@@ -332,11 +330,11 @@ class Stories:
         """Builds the dict for output to JSON"""
         jDict = {}
 
-        jDict["startStory"] = datetime.strftime(self.created_at,tweet_time_format)
+        jDict["startStory"] = datetime.strftime(self.created_at, tweet_time_format)
         try:
-            jDict["endStory"] = datetime.strftime(self.closed_at+timedelta(hours=1),tweet_time_format)
+            jDict["endStory"] = datetime.strftime(self.closed_at+timedelta(hours=1), tweet_time_format)
         except AttributeError:
-            jDict["endStory"] = datetime.strftime(round_time(datetime.utcnow())+timedelta(hours=1),tweet_time_format)
+            jDict["endStory"] = datetime.strftime(round_time(datetime.utcnow())+timedelta(hours=1), tweet_time_format)
 
         jDict["summarytweet"] = self.get_best_tweet().tweet.id_str
 
@@ -361,15 +359,15 @@ class Stories:
             tweet = tw.tweet
 
             tweetList.append(tweet.id_str)
-            
+
             dt = tweet.created_at
             tsDict.update([(dt.year, dt.month, dt.day, dt.hour)])
 
             user_id_str = tweet.user.id_str
-            if hasattr(tweet,"retweeted_status"):
+            if hasattr(tweet, "retweeted_status"):
                 if tweet.retweeted_status.user.id_str:
                     rt = tweet.retweeted_status
-                    if hasattr(rt,"retweet_count"):
+                    if hasattr(rt, "retweet_count"):
                         if rt.id_str not in retweets or rt.retweet_count > retweets[rt.id_str]:
                             retweets[rt.id_str] = rt.retweet_count
                     else:
@@ -396,7 +394,7 @@ class Stories:
 
                     edges.append({"source": user_id_str, "target": obj["id_str"], "value": "mention"})
 
-            if hasattr(tweet,"in_reply_to_user_id_str"):
+            if hasattr(tweet, "in_reply_to_user_id_str"):
                 if tweet.in_reply_to_user_id_str:
                     interaction_tweets.append(tweet.id_str)
 
@@ -423,10 +421,10 @@ class Stories:
                 for obj in tweet.entities["hashtags"]:
                     htlist.append(obj["text"])
 
-            if hasattr(tweet,"coordinates"):
+            if hasattr(tweet, "coordinates"):
                 if tweet.coordinates is not None:
                     if tweet.coordinates.type == "Point":
-                        coords = tweet.coordinates.coordinates  
+                        coords = tweet.coordinates.coordinates
                         mapLocations.append({"lng": coords[0], "lat": coords[1]})
 
         jDict["hashtags"] = []
@@ -436,7 +434,7 @@ class Stories:
 
         jDict["tweets"] = list(set(tweetList))
         jDict["num_tweets"] = len(jDict["tweets"])
-        
+
         jDict["timeSeries"] = []
         tsStart = sorted(tsDict)[0]
         tsEnd = sorted(tsDict)[-1]

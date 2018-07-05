@@ -1,4 +1,3 @@
-import ujson as json
 from tweepy.api import API
 from tweepy.models import Status
 
@@ -6,9 +5,9 @@ from hortiradar.database import stop_words
 
 
 class ExtendedTweet:
-    
-    def __init__(self,tweetDict):
-        self.tweet = Status.parse(API(),tweetDict["tweet"])
+
+    def __init__(self, tweetDict):
+        self.tweet = Status.parse(API(), tweetDict["tweet"])
         try:
             self.keywords = tweetDict["keywords"]
         except KeyError:
@@ -28,15 +27,16 @@ class ExtendedTweet:
     def __hash__(self):
         return hash(self.tweet.id_str)
 
-    def __eq__(self,other):
+    def __eq__(self, other):
         if type(other) == ExtendedTweet:
             return self.tweet.id_str == other.tweet.id_str
         else:
             return False
 
+
 class Token:
 
-    def __init__(self,tokenDict):
+    def __init__(self, tokenDict):
         self.lemma = tokenDict["lemma"]
         self.pos = tokenDict["pos"]
         self.posprob = tokenDict["posprob"]
@@ -44,11 +44,11 @@ class Token:
     def __hash__(self):
         return hash(self.lemma)
 
-    def __eq__(self,other):
+    def __eq__(self, other):
         return self.lemma == other.lemma
 
     def filter_token(self):
-        pos_to_filter = ["BW","LET","LID","VG","TSW","VZ","VNW"] # ["LET", "BW", "WW"] # previous version
+        pos_to_filter = ["BW", "LET", "LID", "VG", "TSW", "VZ", "VNW"]
         match = False
         for ptag in pos_to_filter:
             if ptag in self.pos:
