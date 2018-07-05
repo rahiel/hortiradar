@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
+from getopt import getopt, GetoptError
 import pickle
+import sys
 
 import gensim
 import numpy as np
@@ -9,13 +11,15 @@ import ujson as json
 
 from hortiradar.clustering import Config, ExtendedTweet, Cluster, Stories, tweet_time_format
 from hortiradar.clustering.util import round_time
-from hortiradar.database import get_db
+from hortiradar.database import get_db, get_keywords
 
 
 db = get_db()
 groups = [g["name"] for g in db.groups.find({}, projection={"name": True, "_id": False})]
 storiesdb = db.stories
 tweetsdb = db.tweets
+
+keywords = get_keywords(local=True)
 
 redis = StrictRedis()
 
@@ -28,9 +32,9 @@ def is_spam(t):
 def get_filt_tokens(tweet):
     return [t.lemma for t in tweet.tokens if not t.filter_token()]
 
-def get_tweets(start,end,group):
+def get_tweets(start,end,key,keytype):
     jsontweets = tweetsdb.find({
-        "groups": group,
+        keytype: key,
         "datetime": {"$gte": start, "$lt": end}
     },projection={
         "tweet.id_str": True, "tokens": True, "tweet.entities": True, "tweet.created_at": True,
@@ -47,7 +51,7 @@ def get_tweets(start,end,group):
 
     return tweets
 
-def perform_clustering(tweets,stories,group):
+def perform_clustering(tweets,stories,key):
     retweets = []
     non_retweets = []
     for tw in tweets:
@@ -62,17 +66,17 @@ def perform_clustering(tweets,stories,group):
             non_retweets.append(tw)
 
     if non_retweets:
-        clusters = perform_clustering_tweets(non_retweets,group)
+        clusters = perform_clustering_tweets(non_retweets,key)
     else:
         clusters = []
 
     return clusters, stories
 
-def perform_clustering_tweets(tweets,group):
+def perform_clustering_tweets(tweets,key):
     texts = [get_filt_tokens(tw) for tw in tweets]
     dictionaries = gensim.corpora.Dictionary(texts)
     corpus = [dictionaries.doc2bow(text) for text in texts]
-    sims = gensim.similarities.Similarity('/tmp/clustering_{g}'.format(g=group),corpus,num_features=len(dictionaries))
+    sims = gensim.similarities.Similarity('/tmp/clustering_{g}'.format(g=key),corpus,num_features=len(dictionaries))
 
     mat = []
     for j,tw in enumerate(tweets):
@@ -128,43 +132,63 @@ def find_finished_stories(stories):
 
     return active_stories,finished_stories
 
-def output_stories(stories,group):
+def output_stories(stories,key,keytype):
     for story in stories:
         storydict = story.get_jsondict()
 
-        storydict["groups"] = group
+        storydict[keytype] = key
         storydict["datetime"] = story.closed_at
 
         storiesdb.insert_one(storydict)
 
-def run_storify(stories,group):
+def run_storify(stories,key,keytpe):
     end = round_time(datetime.utcnow())
     start = end - timedelta(hours=1)
-    tweets = get_tweets(start,end,group)
+    tweets = get_tweets(start,end,key,keytype)
     
     if tweets:
-        clusters, stories = perform_clustering(tweets,stories,group)
+        clusters, stories = perform_clustering(tweets,stories,key)
 
         stories = storify_clusters(stories,clusters)
         stories,finished_stories = find_finished_stories(stories)
         
         if finished_stories:
-            output_stories(finished_stories,group)
+            output_stories(finished_stories,key,keytype)
 
     return stories
 
+def process_key(key,keytype):
+    k = "s:{k}".format(k=key)
+    v = redis.get(k)
+    if v:
+        stories = pickle.loads(v)
+    else:
+        stories = []
+
+    stories = run_storify(stories,key,keytype)
+
+    stories_out = pickle.dumps(stories)
+    redis.set(k,stories_out,ex=60*90)
+
+def main(argv):
+    try:
+        opts, args = getopt(argv,"ht:",["type="])
+    except GetoptError:
+        print ('test.py -t <processing type>')
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == "-h":
+            print ('test.py -t <processing type>')
+            sys.exit()
+        elif opt in ["-t","--type"]:
+            if arg == "groups":
+                for group in groups:
+                    process_key(group,arg)
+            elif arg == "keywords":
+                for keyword in keywords:
+                    process_key(keyword,arg)
+            else:
+                raise(NotImplementedError)
 
 if __name__ == "__main__":
-    stories = {}
-    for group in groups:
-        k = "s:{gr}".format(gr=group)
-        v = redis.get(k)
-        if v:
-            stories[group] = pickle.loads(v)
-        else:
-            stories[group] = []
-
-        stories[group] = run_storify(stories[group],group)
-
-        stories_out = pickle.dumps(stories[group])
-        redis.set(k,stories_out,ex=60*90)
+    main(sys.argv[1:])
