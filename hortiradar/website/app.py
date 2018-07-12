@@ -20,7 +20,6 @@ from wtforms import SelectField, StringField
 from wtforms.validators import AnyOf, DataRequired, NoneOf
 
 from hortiradar import TOKEN, Tweety, time_format
-from hortiradar.clustering import tweet_time_format
 from hortiradar.database import lemmatize
 from hortiradar.website import app, db
 from models import Role, User

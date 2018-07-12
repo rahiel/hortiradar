@@ -26,12 +26,12 @@ const enum tweetButton {
 };
 
 function main() {
-    pickPeriod();
     renderTimeSeries(keyword_data);
     renderInformation(keyword_data);
     renderGraph(graph);
     renderSampleTweets();
     $("body").scrollspy({ target: "#toc" });
+    pickPeriod();
     showPictures();
     showLink();
 
