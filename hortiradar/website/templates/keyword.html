@@ -15,6 +15,32 @@
   </ul>
 </div>
 
+{% if deluxe %}
+  <div id="customPeriod" class="row" style="display:none">
+    <div class="col-md-12">
+      <h4>Periode Instellen</h4>
+      <p>
+        Hier kunt u uw eigen periode voor de analyse instellen. Na het selecteren van de datum, kunt u onder de kalender de tijd kiezen. Uw periode mag niet langer zijn dan één maand. Klik op "Analyseer" om de uitgekozen analyse uit te voeren.
+      </p>
+
+      <link rel="stylesheet" href="{{ url_for("horti.static", filename="css/flatpickr.min.css") }}">
+      <label for="start">
+        Start
+        <input id="start" class="flatpickr" type="text" placeholder="Selecteer Start..">
+      </label>
+      <label for="end">
+        Eind
+        <input id="end" class="flatpickr" type="text" placeholder="Selecteer Eind..">
+      </label>
+
+      <button type="button" id="analyseCustomPeriodButton" class="btn btn-primary">Analyseer</button>
+
+      <div id="periodWarning" class="alert alert-danger"></div>
+
+    </div>
+  </div>
+{% endif %}
+
 <div class="row">
   <h2 id="twitter" class="offset">Twitter</h2>
   <div class="col-md-8">
@@ -24,6 +50,11 @@
     {{ render_button("horti.view_keyword", {"keyword": keyword, "hash": "twitter"}, period, "day", "Dag") }}
     {{ render_button("horti.view_keyword", {"keyword": keyword, "hash": "twitter"}, period, "week", "Week") }}
     {{ render_button("horti.view_keyword", {"keyword": keyword, "hash": "twitter"}, period, "month", "Maand") }}
+    {% if deluxe %}
+      <button type="button" id="addPeriodButton" class="btn btn-default text-right">
+        <i class="fa fa-plus" aria-hidden="true"></i>
+      </button>
+    {% endif %}
   </div>
 </div>
 

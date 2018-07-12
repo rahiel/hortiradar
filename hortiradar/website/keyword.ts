@@ -1,9 +1,11 @@
 import * as $ from "jquery";
-import { renderGraph } from "./interaction_graph";
-
 import * as _ from "lodash";
+const flatpickr = require("flatpickr");
+const fp_Dutch = require("flatpickr/dist/l10n/nl.js").default.nl;
 const URLSearchParams = require("url-search-params");
 const WordCloud = require("wordcloud");
+
+import { renderGraph } from "./interaction_graph";
 
 declare const APP_ROOT: string;
 declare const keyword_data: any;
@@ -24,6 +26,7 @@ const enum tweetButton {
 };
 
 function main() {
+    pickPeriod();
     renderTimeSeries(keyword_data);
     renderInformation(keyword_data);
     renderGraph(graph);
@@ -83,13 +86,20 @@ function renderTimeSeries(data) {
     chart.render();
 
     function onClick(e) {
-        let year = String(e.dataPoint.x.getUTCFullYear())
-        let month = String(e.dataPoint.x.getUTCMonth() + 1)
-        let day = String(e.dataPoint.x.getUTCDate())
-        let hour = String(e.dataPoint.x.getUTCHours())
-        let start = year + "-" + month + "-" + day + "T" + hour + ":00";
+        let start = dateToString(e.dataPoint.x)
         window.open(window.location.pathname + "?start=" + start + "&period=hour");
     }
+}
+
+function dateToString(date) {
+    // this function was copied with permission from the author from: https://github.com/rahiel/archiveror/blob/aef7d9afe7ac5612bd4f8f27a42694fa33e9649c/src/utils.js#L56
+    let y = date.getUTCFullYear();
+    let m = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+    let d = date.getUTCDate().toString().padStart(2, "0");
+    let H = date.getUTCHours().toString().padStart(2, "0");
+    let M = date.getUTCMinutes().toString().padStart(2, "0");
+    let timestamp = `${y}-${m}-${d}T${H}:${M}`;
+    return timestamp;
 }
 
 export function renderInformation(data) {
@@ -267,4 +277,41 @@ export function showLink() {
         document.getElementById("iframe-container").innerHTML = "";
     });
 
+}
+
+function pickPeriod() {
+    let addPeriodButton = document.getElementById("addPeriodButton");
+    if (addPeriodButton == undefined) return;
+    addPeriodButton.onclick = function () {
+        document.getElementById("customPeriod").style.display = "block";
+    };
+
+    const options = {
+        enableTime: true,
+        locale: fp_Dutch,
+        time_24hr: true,
+        weekNumbers: true,
+    };
+    let startPick = flatpickr("#start", options);
+    let endPick = flatpickr("#end", options);
+
+    document.getElementById("analyseCustomPeriodButton").onclick = function () {
+        let startDate = startPick.selectedDates[0];
+        let endDate = endPick.selectedDates[0]
+
+        let warning = document.getElementById("periodWarning");
+        if ((endDate - startDate) < 0) {
+            warning.textContent = "De einddatum moet na de begindatum zijn.";
+            warning.style.display = "block";
+            return;
+        } else if ((endDate - startDate) / (1000 * 60 * 60 * 24) > 31) {
+            warning.textContent = "Uw periode is langer dan een maand, verkort uw periode.";
+            warning.style.display = "block";
+            return;
+        } else warning.style.display = "none";
+
+        let start = dateToString(startPick.selectedDates[0]);
+        let end = dateToString(endPick.selectedDates[0]);
+        window.open(window.location.pathname + `?start=${start}&end=${end}&period=custom`);
+    };
 }

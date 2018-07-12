@@ -18,7 +18,7 @@ groups = db.groups
 KEYWORDS = get_keywords(local=True)
 keywords_sync_time = time()
 
-spam_level = Config.getfloat('database:parameters',"spam_level")
+spam_level = Config.getfloat("database:parameters", "spam_level")
 
 def get_dates(req, resp, resource, params):
     """Parse the `start` and `end` datetime parameters."""

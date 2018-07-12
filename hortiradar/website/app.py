@@ -84,6 +84,7 @@ def get_req_path(request):
     return request.url[len(request.url_root) - 1:]
 
 def get_period(request, default_period=""):
+    time_format = "%Y-%m-%dT%H:%M"
     period = request.args.get("period", default_period, type=str)
     if period in ["day", "week", "month"]:
         if period == "day":
@@ -101,8 +102,14 @@ def get_period(request, default_period=""):
     elif period == "hour":
         # when clicking on data points in the time series
         start = request.args.get("start", "", type=str)
-        start = floor_time(datetime.strptime(start, "%Y-%m-%dT%H:%M"), hour=True)
+        start = floor_time(datetime.strptime(start, time_format), hour=True)
         end = start + timedelta(hours=1)
+        cache_time = 60 * 60 * 12
+    elif period == "custom":
+        start = request.args.get("start", "", type=str)
+        start = datetime.strptime(start, time_format)
+        end = request.args.get("end", "", type=str)
+        end = datetime.strptime(end, time_format)
         cache_time = 60 * 60 * 12
     else:
         period = "day"
@@ -159,6 +166,9 @@ display_pos.p = {
 def parse_pos(text: str) -> str:
     return parse_pos.p.get(text, text)
 parse_pos.p = {v: k for (k, v) in display_pos.p.items()}
+
+def get_roles(current_user):
+    return [r.name for r in current_user.roles]
 
 @bp.route("/")
 def home():
@@ -276,7 +286,7 @@ def view_keywords_in_group(group):
 @bp.route("/groups/<group>/edit", methods=["GET", "POST"])
 @login_required
 def edit_group(group):
-    roles = [r.name for r in current_user.roles]
+    roles = get_roles(current_user)
     if ("g:" + group) not in roles and "admin" not in roles:
         flash("U heeft geen rechten om de groep \"{}\" aan te passen.".format(display_group(group)), "error")
         return redirect(url_for("horti.home"))
@@ -345,7 +355,23 @@ def edit_group(group):
 
 @bp.route("/keywords/<keyword>")
 def view_keyword(keyword):
+    if current_user.is_authenticated:  # users in the "deluxe" group can specify their own time period
+        roles = get_roles(current_user)
+        deluxe = "deluxe" in roles or "admin" in roles
+    else:
+        deluxe = False
+
     period, start, end, cache_time = get_period(request, "week")
+    if period == "custom":
+        if not deluxe:
+            flash("Deze functionaliteit is alleen beschikbaar voor goedgekeurde gebruikers.", "error")
+            return redirect(url_for("horti.home"))
+        if (end - start).days > 31:
+            flash("Periode langer dan een maand is niet toegestaan", "error")
+            return redirect(url_for("horti.home"))
+        if start > end:
+            flash("De einddatum moet na de begindatum zijn.", "error")
+            return redirect(url_for("horti.home"))
     params = {"start": start.strftime(time_format), "end": end.strftime(time_format)}
     keyword_data = cache(process_details, keyword, params, cache_time=cache_time, path=get_req_path(request))
     if isinstance(keyword_data, Response):
@@ -391,6 +417,7 @@ def view_keyword(keyword):
     template_data = {
         "keyword": keyword,
         "keyword_data": json.dumps(keyword_data),
+        "deluxe": deluxe,
         "num_tweets": display_number(num_tweets),
         "urls": urls,
         "graph": json.dumps(graph),
@@ -647,7 +674,7 @@ def admin():
 @bp.route("/profile")
 @login_required
 def profile():
-    roles = [r.name for r in current_user.roles]
+    roles = get_roles(current_user)
     groups = [n[2:] for n in roles if n.startswith("g:")]
     labels = [display_group(g) for g in groups]
     has_group = len(groups) > 0

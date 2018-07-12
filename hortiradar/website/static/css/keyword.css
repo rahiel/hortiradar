@@ -141,3 +141,8 @@ text {
     font: 10px sans-serif;
     pointer-events: none;
 }
+
+#periodWarning {
+    display: none;
+    margin-top: 15px;
+}
