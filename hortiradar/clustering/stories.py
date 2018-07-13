@@ -8,7 +8,6 @@ from pattern.nl import sentiment
 from hortiradar.clustering import Config, tweet_time_format
 from .util import cos_sim, round_time, dt_to_ts, get_token_array
 from hortiradar.database import obscene_words
-from hortiradar.website import get_nsfw_prob, mark_as_spam
 
 max_idle = Config.getint('storify:parameters', 'max_idle')
 threshold = Config.getfloat('storify:parameters', 'cluster_threshold')
@@ -145,7 +144,6 @@ class Stories:
             else:
                 filt_tweets.append(tw)
 
-        mark_as_spam.apply_async((spam_list,), queue="web")
         return filt_tweets
 
     def get_best_tweet(self):
@@ -209,15 +207,8 @@ class Stories:
                 pass
 
         images = []
-        nsfw_list = []
         for (url, count) in Counter(imagesList).most_common():
-            nsfw_prob, status = get_nsfw_prob(url)
-            if status == 200 and nsfw_prob > 0.8:
-                nsfw_list.append(image_tweet_id[url])
-            elif status == 200:
-                images.append({"link": url, "occ": count})
-
-        mark_as_spam.apply_async((nsfw_list,), queue="web")
+            images.append({"link": url, "occ": count})
 
         return images
 
@@ -459,15 +450,8 @@ class Stories:
             jDict["centerloc"] = {"lng": 5, "lat": 52}
 
         jDict["photos"] = []
-        nsfw_list = []
         for (url, count) in Counter(imagesList).most_common():
-            nsfw_prob, status = get_nsfw_prob(url)
-            if status == 200 and nsfw_prob > 0.8:
-                nsfw_list.append(image_tweet_id[url])
-            elif status == 200:
-                jDict["photos"].append({"link": url, "occ": count})
-
-        mark_as_spam.apply_async((nsfw_list,), queue="web")
+            jDict["photos"].append({"link": url, "occ": count})
 
         jDict["URLs"] = []
         for (url, count) in Counter(URLList).most_common():
