@@ -50,14 +50,14 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Bloemen en Planten <span class="caret"></span></a>
               <ul class="dropdown-menu">
                 {{ render_nav(active_page, "horti.view_group(bloemen)", "horti.view_group", {"group": "bloemen"}, "Trefwoorden") }}
-                {{ render_nav(active_page, "horti.view_stories(bloemen)", "horti.view_stories", {"group": "bloemen"}, "Verhalen") }}
+                {#{ render_nav(active_page, "horti.view_stories(bloemen)", "horti.view_stories", {"group": "bloemen"}, "Verhalen") }#}
               </ul>
             </li>
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Groente en Fruit <span class="caret"></span></a>
               <ul class="dropdown-menu">
                 {{ render_nav(active_page, "horti.view_group(groente_en_fruit)", "horti.view_group", {"group": "groente_en_fruit"}, "Trefwoorden") }}
-                {{ render_nav(active_page, "horti.view_stories(groente_en_fruit)", "horti.view_stories", {"group": "groente_en_fruit"}, "Verhalen") }}
+                {#{ render_nav(active_page, "horti.view_stories(groente_en_fruit)", "horti.view_stories", {"group": "groente_en_fruit"}, "Verhalen") }#}
               </ul>
             </li>
             {{ render_nav(active_page, "horti.api", "horti.api", {}, "API") }}
