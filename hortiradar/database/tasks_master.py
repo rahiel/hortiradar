@@ -13,12 +13,15 @@ db = get_db()
 # the "created_at" field, example: 'Tue Jun 28 15:01:54 +0000 2016'
 tweet_time_format = "%a %b %d %H:%M:%S +0000 %Y"
 
-
 @app.task
 def insert_tweet(id_str, keywords, groups, tokens):
     """Task to insert tweet into MongoDB."""
     key = "t:" + id_str
-    j = json.loads(redis.get(key))
+    data = redis.get(key)
+    if data is None:
+        # the tweet was already inserted
+        return
+    j = json.loads(data)
     tweet = {
         "tweet": j,
         "keywords": keywords,
