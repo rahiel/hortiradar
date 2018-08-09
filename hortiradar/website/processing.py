@@ -377,12 +377,12 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
     else:
         retweet_ids = []
 
-    start = datetime.strptime(params["start"],time_format)
-    end = datetime.strptime(params["end"],time_format)
+    start = datetime.strptime(params["start"], time_format)
+    end = datetime.strptime(params["end"], time_format)
 
-    items = newsdb.find({"keywords": prod, "pubdate": {"$gte": start, "$lt": end}}, 
-        projection={ "title": True, "pubdate": True, "description": True, "flag": True
-        , "source": True, "link": True, "nid": True, "_id": False})
+    items = newsdb.find({"keywords": prod, "pubdate": {"$gte": start, "$lt": end}},
+                        projection={"title": True, "pubdate": True, "description": True, "flag": True,
+                                    "source": True, "link": True, "nid": True, "_id": False})
     news = sorted([it for it in items], key=lambda x: x["pubdate"], reverse=True)
 
     data = {
@@ -406,7 +406,7 @@ def process_details(prod, params, force_refresh=False, cache_time=CACHE_TIME):
 def process_stories(group, params, force_refresh=False, cache_time=CACHE_TIME):
     """Load active stories from redis and closed stories from DB.
     Since active stories are story objects, they are processed to JSON from here for rendering in the website"""
-    
+
     active = redis.get("s:{gr}".format(gr=group))
     if active:
         act = pickle.loads(active)
@@ -414,9 +414,9 @@ def process_stories(group, params, force_refresh=False, cache_time=CACHE_TIME):
     else:
         active_out = []
 
-    start = datetime.strptime(params["start"],time_format)
-    end = datetime.strptime(params["end"],time_format)
-    
+    start = datetime.strptime(params["start"], time_format)
+    end = datetime.strptime(params["end"], time_format)
+
     closed = storiesdb.find({"groups": group, "datetime": {"$gte": start, "$lt": end}})
     if closed:
         closed_out = [s for s in closed]
@@ -431,16 +431,15 @@ def process_stories(group, params, force_refresh=False, cache_time=CACHE_TIME):
 def process_news(keyword, start, end, force_refresh=False, cache_time=CACHE_TIME):
     """Load news messages that are tagged with keyword from DB. The news items are returned in anti-choronological order"""
     if type(start) == str:
-        start = datetime.strptime(start,"%Y-%m-%dT%H:%M:%S") # caching encodes datetimes
+        start = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S")  # caching encodes datetimes
     if type(end) == str:
-        end = datetime.strptime(end,"%Y-%m-%dT%H:%M:%S") # caching encodes datetimes
+        end = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S")  # caching encodes datetimes
 
-    items = newsdb.find({"keywords": keyword, "pubdate": {"$gte": start, "$lt": end}}, 
-        projection={ "title": True, "pubdate": True, "description": True, "flag": True
-        , "source": True, "link": True, "nid": True, "_id": False})
+    items = newsdb.find({"keywords": keyword, "pubdate": {"$gte": start, "$lt": end}},
+                        projection={"title": True, "pubdate": True, "description": True, "flag": True,
+                                    "source": True, "link": True, "nid": True, "_id": False})
     news = sorted([it for it in items], key=lambda x: x["pubdate"], reverse=True)
     return news
-
 
 
 funs = {
