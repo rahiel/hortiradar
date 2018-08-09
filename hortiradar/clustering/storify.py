@@ -93,7 +93,7 @@ def storify_clusters(stories, clusters):
         for c in clusters:
             stories.append(Stories(c))
     else:
-        matched_boolean = [False]*len(stories)
+        matched_boolean = [False] * len(stories)
 
         for c in clusters:
             sim, vals = zip(*[s.is_similar(c) for s in stories])
@@ -166,17 +166,17 @@ def process_key(key, keytype):
     stories = run_storify(stories, key, keytype)
 
     stories_out = pickle.dumps(stories)
-    redis.set(k, stories_out, ex=60*90)
+    redis.set(k, stories_out, ex=60 * 90)
 
 def main(argv):
     try:
         opts, args = getopt(argv, "ht:", ["type="])
     except GetoptError:
-        print ('test.py -t <processing type>')
+        print("test.py -t <processing type>")
         sys.exit(2)
     for opt, arg in opts:
         if opt == "-h":
-            print ('test.py -t <processing type>')
+            print("test.py -t <processing type>")
             sys.exit()
         elif opt in ["-t", "--type"]:
             if arg == "groups":
@@ -187,6 +187,7 @@ def main(argv):
                     process_key(keyword, arg)
             else:
                 raise(NotImplementedError)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
