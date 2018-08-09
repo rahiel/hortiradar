@@ -256,7 +256,19 @@ class KeywordTimeSeriesResource:
         except (ValueError, TypeError):
             msg = "Invalid step: step is an integer of the number of seconds."
             raise falcon.HTTPBadRequest("Bad request", msg)
-        first = tw[0]["datetime"]
+        try:
+            first = tw[0]["datetime"]
+        except IndexError:
+            # empty time series
+            data = {
+                "start": start.strftime(time_format),
+                "end": end.strftime(time_format),
+                "step": int(step),
+                "bins": 0,
+                "series": {}
+            }
+            resp.body = json.dumps(data)
+            return
         steps_until_first = int((first - start).total_seconds() // dt.total_seconds())
         start = start + steps_until_first * dt
         i = 0
@@ -270,8 +282,11 @@ class KeywordTimeSeriesResource:
             series[i] += 1
         last = max(series.keys())
         data = {
-            "start": start.strftime(time_format), "end": (start + (last + 1) * dt).strftime(time_format),
-            "step": int(step), "bins": len(series), "series": series
+            "start": start.strftime(time_format),
+            "end": (start + (last + 1) * dt).strftime(time_format),
+            "step": int(step),
+            "bins": len(series),
+            "series": series
         }
         resp.body = json.dumps(data)
 
