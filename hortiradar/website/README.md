@@ -26,7 +26,9 @@ sudo cp open_nsfw-supervisor.conf /etc/supervisor/conf.d/open_nsfw.conf
 sudo apt install nginx
 sudo cp nginx.conf /etc/nginx/sites-enabled/hortiradar.conf
 sudo systemctl restart nginx.service
+
 sudo cp caching.cron /etc/cron.d/hortiradar-cache
+sudo cp news.cron /etc/cron.d/hortiradar-news
 
 sudo apt install nodejs-legacy npm
 echo "prefix = ~/.npm-global" > ~/.npmrc
