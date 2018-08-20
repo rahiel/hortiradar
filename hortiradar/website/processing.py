@@ -417,7 +417,8 @@ def process_stories(group, params, force_refresh=False, cache_time=CACHE_TIME):
     start = datetime.strptime(params["start"], time_format)
     end = datetime.strptime(params["end"], time_format)
 
-    closed = storiesdb.find({"groups": group, "datetime": {"$gte": start, "$lt": end}})
+    closed = storiesdb.find({"groups": group, "datetime": {"$gte": start, "$lt": end}},
+                            projection={"_id": False})
     if closed:
         closed_out = [s for s in closed]
     else:
