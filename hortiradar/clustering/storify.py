@@ -79,6 +79,7 @@ def perform_clustering_tweets(tweets, key):
     mat = []
     for j, tw in enumerate(tweets):
         mat.append([1 if x > tweet_threshold else 0 for x in sims[dictionaries.doc2bow(get_filt_tokens(tw))]])
+    mat = np.array(mat)
 
     n_clusters, cluster_labels = csgraph.connected_components(mat, directed=False)
     clusters = [Cluster() for _ in range(n_clusters)]
