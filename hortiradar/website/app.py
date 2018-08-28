@@ -457,6 +457,25 @@ def view_news(keyword):
     }
     return render_template("news.html", title=make_title(keyword), **template_data)
 
+@bp.route("/peaks/<group>")
+def view_peaks(group):
+    # period, start, end, cache_time = get_period(request, "week")
+    # news_data = cache(process_news, keyword, start, end, cache_time=cache_time, path=get_req_path(request))
+    # if isinstance(news_data, Response):
+    #     return news_data
+
+    with open("./static/peak_new.json", encoding="utf-8") as doc:
+        peaks = json.loads(doc.read())
+
+    dt = datetime(2018, 7, 24, 10)
+
+    template_data = {
+        "peaks": peaks,
+        "text_dt": display_datetime(dt),
+        "num_peaks": len(peaks)
+    }
+    return render_template("peak.html", title=make_title("Piekdetectie"), **template_data)
+
 @bp.route("/keywords/<keyword>/occurrences")
 def view_token_co_occurrences(keyword):
     period, start, end, cache_time = get_period(request, "week")

@@ -93,7 +93,7 @@ def process_item(item, kws, groups):
         "pubdate": pubdate,
         "description": description,
         "source": source,
-        "flag": "flags/{f}.gif".format(f=flag),
+        "flag": "flags/{f}.gif".format(f=str(flag)),
     }
 
 

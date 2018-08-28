@@ -4,13 +4,21 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-def round_time(dt, interval="hour"):
-    if interval == "hour":
-        dt = dt.replace(minute=0, second=0, microsecond=0)
-    elif interval == "minute":
-        dt = dt.replace(second=0, microsecond=0)
-    elif interval == "day":
-        dt = dt.replace(hour=0, minute=0, second=0, microsecond=0)
+def round_time(dt, interval="hour", rounding="floor"):
+    if rounding == "ceil":
+        if interval == "hour":
+            dt = dt.replace(hour=dt.hour+1, minute=0, second=0, microsecond=0)
+        elif interval == "minute":
+            dt = dt.replace(minute=dt.minute+1, second=0, microsecond=0)
+        elif interval == "day":
+            dt = dt.replace(day=dt.day+1, hour=0, minute=0, second=0, microsecond=0)
+    else:
+        if interval == "hour":
+            dt = dt.replace(minute=0, second=0, microsecond=0)
+        elif interval == "minute":
+            dt = dt.replace(second=0, microsecond=0)
+        elif interval == "day":
+            dt = dt.replace(hour=0, minute=0, second=0, microsecond=0)
     return dt
 
 
