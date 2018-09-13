@@ -1,39 +1,38 @@
 from datetime import datetime, timedelta
 import json
 
-import matplotlib as mpl
+import matplotlib as mpl; mpl.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import squarify
 import wikipedia
 from scipy.interpolate import interp1d
 from statsmodels.tsa.seasonal import seasonal_decompose
 
 from hortiradar import Tweety, TOKEN
-from hortiradar.database import get_db, get_keywords, stop_words
+from hortiradar.database import get_db, get_keywords
 from hortiradar.clustering.util import round_time
 
-mpl.use('Agg')
-mpl.rcParams['text.usetex'] = True
-mpl.rcParams['text.latex.preamble'] = [r'\usepackage{amsmath,amssymb,amsthm,bbm}']
+
+mpl.rcParams["text.usetex"] = True
+mpl.rcParams["text.latex.preamble"] = [r"\usepackage{amsmath,amssymb,amsthm,bbm}"]
 wikipedia.set_lang("nl")
 
 time_format = "%Y-%m-%d-%H-%M-%S"
 
-tweety = Tweety("https://acba.labs.vu.nl/hortiradar/api/", TOKEN)
+tweety = Tweety("http://127.0.0.1:8888", TOKEN)
 db = get_db()
 groups = [g["name"] for g in db.groups.find({}, projection={"name": True, "_id": False})]
 keywords = get_keywords(local=True)
 
 num_colors = 10
-cm = plt.get_cmap('tab10')
+cm = plt.get_cmap("tab10")
 cNorm = mpl.colors.Normalize(vmin=0, vmax=num_colors-1)
 scalarMap = mpl.cm.ScalarMappable(norm=cNorm, cmap=cm)
 tab10 = [scalarMap.to_rgba(i) for i in range(num_colors)]
 
 num_colors2 = 20
-cm2 = plt.get_cmap('tab20')
+cm2 = plt.get_cmap("tab20")
 cNorm2 = mpl.colors.Normalize(vmin=0, vmax=num_colors2-1)
 scalarMap2 = mpl.cm.ScalarMappable(norm=cNorm2, cmap=cm2)
 tab20 = [scalarMap2.to_rgba(i) for i in range(num_colors2)]
@@ -216,5 +215,5 @@ def main():
         plot_peak_data(dfs[g], peaks[g], begin, now, g)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

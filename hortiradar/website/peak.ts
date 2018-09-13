@@ -39,12 +39,12 @@ function main() {
     for (let j = 0; j < peaks.length; j++){
         renderPeak(j,peaks[j][0],peaks[j][1],colorScale(j % 10));
     }
-    
+
 }
 
 function renderPeak(loc, kw, data, color) {
     let title = d3.select("#title"+loc).text(kw);
-    
+
     const format = d3.format(",d")
 
     let test = d3.select("div#treemapContainer"+loc).node();
@@ -200,7 +200,7 @@ function atClick(d) {
         .html(d.data.summary)
         .style("left", (d3.event.pageX ) + "px")
         .style("top", (d3.event.pageY) + "px");
-  
+
         infobox
         .transition()
         .duration(100)

@@ -9,8 +9,11 @@ flask-wtf
 gevent
 gunicorn
 hiredis
+matplotlib
 numpy
 peakutils
 redis
 requests
+statsmodels
 ujson
+wikipedia
