@@ -1,41 +1,26 @@
 from datetime import datetime, timedelta
 import json
 
-import matplotlib as mpl; mpl.use("Agg")
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import wikipedia
+from redis import StrictRedis
 from scipy.interpolate import interp1d
 from statsmodels.tsa.seasonal import seasonal_decompose
 
 from hortiradar import Tweety, TOKEN
-from hortiradar.database import get_db, get_keywords
+from hortiradar.database import get_keywords
 from hortiradar.clustering.util import round_time
 
 
-mpl.rcParams["text.usetex"] = True
-mpl.rcParams["text.latex.preamble"] = [r"\usepackage{amsmath,amssymb,amsthm,bbm}"]
 wikipedia.set_lang("nl")
 
 time_format = "%Y-%m-%d-%H-%M-%S"
 
 tweety = Tweety("http://127.0.0.1:8888", TOKEN)
-db = get_db()
-groups = [g["name"] for g in db.groups.find({}, projection={"name": True, "_id": False})]
 keywords = get_keywords(local=True)
 
-num_colors = 10
-cm = plt.get_cmap("tab10")
-cNorm = mpl.colors.Normalize(vmin=0, vmax=num_colors-1)
-scalarMap = mpl.cm.ScalarMappable(norm=cNorm, cmap=cm)
-tab10 = [scalarMap.to_rgba(i) for i in range(num_colors)]
-
-num_colors2 = 20
-cm2 = plt.get_cmap("tab20")
-cNorm2 = mpl.colors.Normalize(vmin=0, vmax=num_colors2-1)
-scalarMap2 = mpl.cm.ScalarMappable(norm=cNorm2, cmap=cm2)
-tab20 = [scalarMap2.to_rgba(i) for i in range(num_colors2)]
+redis = StrictRedis()
 
 
 def rescale_time(values):
@@ -88,13 +73,17 @@ class Redistributor:
 
 def get_wordcloud(kw, s):
     jstr = tweety.get_keyword_wordcloud(kw, start=datetime.strftime(s-timedelta(hours=1), time_format), end=datetime.strftime(s, time_format)).decode("utf-8")
-    terms = json.loads(jstr)
-    for term in terms:
+    tokens = json.loads(jstr)
+    terms = []
+    for token in tokens:
+        term = {"size": token["count"], "name": token["word"]}
         try:
-            page = wikipedia.page(term["word"])
+            page = wikipedia.page(token["word"])
             term["summary"] = page.summary
         except Exception:
             term["summary"] = ""
+            
+        terms.append(term)
     return terms
 
 
@@ -151,69 +140,67 @@ def check_for_peak(kw, now, begin):
         df["{kw}_circ_std".format(kw=kw)] = circ_std_long
 
         peak = yvals_circ_std[now.hour-1] < df[kw].loc[now-timedelta(hours=1)] and yvals_circ_std[now.hour-1] > np.maximum(3.0, np.nanmean(df[kw].values))
-        difference = (df[kw] - df["{kw}_circ".format(kw=kw)]).loc[now-timedelta(hours=1)]
 
-        return df, peak, difference
+        return df, peak
     else:
-        return None, None, None
+        return None, None
 
 
-def plot_peak_data(df, kws, begin, now, group):
-    s = round_time(begin, "day")
-    e = round_time(now, "day", rounding="ceil")
+def output_ts(pdseries):
+    ts = []
+    for pdts,tw in pdseries.dropna().iteritems():
+        dt = pdts.to_pydatetime()
+        md = {"hour": dt.hour, "day": dt.day, "year": dt.year, "month": dt.month, "count": tw}
 
-    modval = 20
-    colors = tab20
+        ts.append(md)
+    return ts
 
-    fig, axarr = plt.subplots(len(kws), 1, figsize=(11.7, 8.3))
 
-    for i, kw in enumerate(kws):
-        ax = axarr[i]
-        col = colors[2*i % modval]
-        col2 = colors[2*i % modval + 1]
-        ax.plot(df.index, df[kw].values, lw=3, color=col, label="Hortiradar: {kw}".format(kw=kw))
-        # ax.plot(df["{kw}_circ".format(kw=kw)].loc[now-timedelta(hours=1):], lw=3, color=col, linestyle="dashed")
-        ax.plot(df["{kw}_circ".format(kw=kw)].loc[:], lw=3, color=col2, linestyle="dashed", label="Average daily cycle")
-        ax.plot(df["{kw}_circ_std".format(kw=kw)].loc[now-timedelta(hours=1):], lw=1, color='k', linestyle="dashed", label="Threshold line")
-        ax.plot(now-timedelta(hours=1), df[kw].loc[now-timedelta(hours=1)], "o", color=col, ms=10)
-
-        ylims = ax.get_ylim()
-        ax.vlines(now-timedelta(hours=1), *ylims, lw=3, color="0.6", linestyle="dashed")
-        ax.set_xlim(s, e)
-        ax.set_ylim(*ylims)
-
-        ax.legend()
-    # fig.savefig("{g}_{dt}h.pdf".format(g=group, dt=datetime.strftime(now, "%Y_%m_%d_%H")), dpi=600, orientation="landscape", papertype="a4")
+def output_peaks(peaks,peak_df,terms):
+    peaks_json = []
+    for peak in peaks:
+        print(peak)
+        peak_dict = {}
+        peak_dict["threshold"] = output_ts(peak_df[peak+"_circ_std"])
+        peak_dict["actual"] = output_ts(peak_df[peak])
+        peak_dict["circadian"] = output_ts(peak_df[peak+"_circ"])
+        peak_dict["treemap"] = {"name": peak, "children": terms[peak]}
+        peaks_json.append([peak, peak_dict])
+        
+    return peaks_json
 
 
 def main():
+    # now = datetime(2018, 7, 24, 10) ## @RAHIEL: dit is het tijdstip dat gebruikt is bij de huidige demo.
     now = round_time(datetime.utcnow())
     begin = now - timedelta(hours=7*24)
 
     s = round_time(begin, "day")
     e = round_time(now, "day", rounding="ceil")
 
-    dfs = {}
-    differences = {}
-    peaks = {}
-    for g in groups:
-        dfs[g] = pd.DataFrame()
-        peaks[g] = []
-        dfs[g]["hours"] = [s + timedelta(hours=x) for x in range(num_hours(e-s))]
-        dfs[g].set_index("hours", inplace=True)
+    peak_df = pd.DataFrame()
+    peak_df["hours"] = [s + timedelta(hours=x) for x in range(num_hours(e-s))]
+    peak_df.set_index("hours", inplace=True)
+    peaks = []
+    terms = {}
 
     for kw in keywords:
         try:
-            df_kw, peak, diff = check_for_peak(kw, now, begin)
-            differences[kw] = diff
-            for gr in keywords[kw].groups:
-                dfs[g] = pd.concat([dfs[g], df_kw], axis=1)
+            df_kw, peak = check_for_peak(kw, now, begin)
+            if peak:
+                peaks.append(kw)
+                peak_df = pd.concat([peak_df, df_kw], axis=1)
+                terms[kw] = get_wordcloud(kw, now)
         except json.JSONDecodeError:
             pass
 
-    for g in groups:
-        plot_peak_data(dfs[g], peaks[g], begin, now, g)
+    if peaks:
+        peaks_json = output_peaks(peaks, peak_df, terms)
+    else:
+        peaks_json = []
 
+    jdict = json.dumps(peaks_json)
+    redis.set("peaks", jdict, ex=60 * 90)
 
 if __name__ == "__main__":
     main()
