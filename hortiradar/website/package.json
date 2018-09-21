@@ -29,9 +29,9 @@
     "es6-promise": "^4.2.4",
     "flatpickr": "^4.5.1",
     "lodash-es": "^4.17.10",
-    "url-search-params": "^0.10.0",
+    "url-search-params": "^1.1.0",
     "waypoints": "^4.0.1",
-    "whatwg-fetch": "^2.0.4",
+    "whatwg-fetch": "^3.0.0",
     "wordcloud": "^1.1.0"
   }
 }

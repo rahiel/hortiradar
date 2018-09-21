@@ -25,7 +25,7 @@ function main() {
     // TODO: instead of tooltip, set Wikipedia summary and maybe in the future Google results in a modal!
 
     for (let j = 0; j < peaks.length; j++){
-        renderPeak(j,peaks[j][0],peaks[j][1],colorScale(j % 10));
+        renderPeak(j, peaks[j][0], peaks[j][1], colorScale(j % 10));
     }
 }
 
@@ -34,9 +34,9 @@ function renderPeak(loc, kw, data, color) {
 
     const format = d3.format(",d")
 
-    let test = d3.select("div#treemapContainer"+loc).node();
-    let width = test.getBoundingClientRect().width;
-    let height = test.getBoundingClientRect().height;
+    let container = <HTMLDivElement>d3.select("div#treemapContainer"+loc).node();
+    let width = container.getBoundingClientRect().width;
+    let height = container.getBoundingClientRect().height;
 
     let treemap = d3.treemap()
         .tile(d3.treemapResquarify)
@@ -58,12 +58,12 @@ function renderPeak(loc, kw, data, color) {
     let cell = svg.selectAll("g")
         .data(root.leaves())
         .enter().append("g")
-            .attr("transform", function(d) { return "translate(" + d.x0 + "," + d.y0 + ")"; });
+        .attr("transform", function(d: any) { return "translate(" + d.x0 + "," + d.y0 + ")"; });
 
     cell.append("rect")
         .attr("id", function(d) { return d.data.id; })
-        .attr("width", function(d) { return d.x1 - d.x0; })
-        .attr("height", function(d) { return d.y1 - d.y0; })
+        .attr("width", function(d: any) { return d.x1 - d.x0; })
+        .attr("height", function(d: any) { return d.y1 - d.y0; })
         .attr("fill", color);
 
     cell.append("clipPath")
@@ -78,7 +78,7 @@ function renderPeak(loc, kw, data, color) {
         .enter().append("tspan")
         .attr("x", 4)
         .attr("y", function(d, i) { return 13 + i * 10; })
-        .text(function(d) { return d; });
+        .text(function(d: any) { return d; });
 
     cell.append("title")
         .text(function(d) { return d.data.id + "\n" + format(d.value); });
@@ -129,9 +129,9 @@ function renderPeak(loc, kw, data, color) {
             interval: 12,
             intervalType: "hour",
             stripLines: [{
-              value: stripLineDate,
-              lineDashType: "dash",
-              color: "#CCCCCC"
+                value: stripLineDate,
+                lineDashType: "dash",
+                color: "#CCCCCC"
             }],
             labelAngle: 50
         },
@@ -148,14 +148,14 @@ function renderPeak(loc, kw, data, color) {
             dataPoints: timeSeries,
             color: color,
             click: onClickSpline
-        },{
+        }, {
             name: "Daily rhythm ("+kw+")",
             type: "line",
             lineDashType: "dash",
             markerType: null,
             dataPoints: timeSeries2,
             color: color,
-        },{
+        }, {
             name: "Threshold ("+kw+")",
             type: "line",
             markerType: null,
@@ -166,12 +166,10 @@ function renderPeak(loc, kw, data, color) {
     });
     chart.render();
 
-    function onClickSpline(e, kw) {
+    function onClickSpline(e) {
         let start = dateToString(e.dataPoint.x);
-        // TODO: kw is undefined
         window.open(APP_ROOT + "keywords/" + kw + "?start=" + start + "&period=hour");
     }
-
 }
 
 function sumBySize(d) {
