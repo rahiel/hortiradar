@@ -457,24 +457,25 @@ def view_news(keyword):
     }
     return render_template("news.html", title=make_title(keyword), **template_data)
 
-@bp.route("/peaks/<group>")
-def view_peaks(group):
-    # period, start, end, cache_time = get_period(request, "week")
-    # news_data = cache(process_news, keyword, start, end, cache_time=cache_time, path=get_req_path(request))
-    # if isinstance(news_data, Response):
-    #     return news_data
+@bp.route("/anomalies/<group>")
+def view_anomalies(group):
+    keywords = cache(tweety.get_group, group, cache_time=60 * 60, path=get_req_path(request))
+    if isinstance(keywords, Response):
+        return keywords
 
-    with open("./static/peak_new.json", encoding="utf-8") as doc:
-        peaks = json.loads(doc.read())
-
-    dt = datetime(2018, 7, 24, 10)
+    keywords = [k["lemma"] for k in keywords]
+    anomalies = json.loads(redis.get("anomalies"))
+    anomalies = [a for a in anomalies if a[0] in keywords]
+    start = datetime.strptime(json.loads(redis.get("anomalies_start")), time_format)
+    end = datetime.strptime(json.loads(redis.get("anomalies_end")), time_format)
 
     template_data = {
-        "peaks": peaks,
-        "text_dt": display_datetime(dt),
-        "num_peaks": len(peaks)
+        "peaks": anomalies,
+        "start": display_datetime(start),
+        "end": display_datetime(end),
+        "num_peaks": len(anomalies)
     }
-    return render_template("peak.html", title=make_title("Piekdetectie"), **template_data)
+    return render_template("anomaly.html", title=make_title("Piekdetectie"), **template_data)
 
 @bp.route("/keywords/<keyword>/occurrences")
 def view_token_co_occurrences(keyword):

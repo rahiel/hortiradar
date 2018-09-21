@@ -1,10 +1,16 @@
+.peakTitle {
+    margin-bottom: 5px;
+}
+
 .peakContainer {
-    border: 1px ridge black;
+    margin-bottom: 30px;
+    padding: 15px;
+    border: 1px solid #777;
 }
 
 .splineContainer {
     width: 100%;
-    height: 200px;
+    height: 280px;
 }
 
 #summaryTab {
@@ -12,12 +18,11 @@
     height: 375;
 }
 
-#treemapContainer {
+.treemap {
     width: 100%;
-    height: 175px;
+    height: 250px;
 }
 
-/* tooltip */
 .tooltip {
     position: absolute;
     background: #fff;

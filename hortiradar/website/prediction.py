@@ -1,32 +1,28 @@
 from datetime import datetime, timedelta
-import json
 
 import numpy as np
 import pandas as pd
+import ujson as json
 import wikipedia
 from redis import StrictRedis
 from scipy.interpolate import interp1d
 from statsmodels.tsa.seasonal import seasonal_decompose
 
-from hortiradar import Tweety, TOKEN
+from hortiradar import TOKEN, Tweety, time_format
 from hortiradar.database import get_keywords
 from hortiradar.clustering.util import round_time
 
 
 wikipedia.set_lang("nl")
-
-time_format = "%Y-%m-%d-%H-%M-%S"
-
 tweety = Tweety("http://127.0.0.1:8888", TOKEN)
 keywords = get_keywords(local=True)
-
 redis = StrictRedis()
 
 
 def rescale_time(values):
     # switch from t to t*
     x = range(25)
-    y = [0]+[i/sum(values)*24 for i in np.cumsum(values).tolist()]
+    y = [0] + [i/sum(values)*24 for i in np.cumsum(values).tolist()]
 
     xtick = interp1d(y, x)(range(25))
     return xtick.tolist()
@@ -61,8 +57,8 @@ class Redistributor:
         else:
             raise(NotImplementedError)
 
-        xdata = [0]+ticks
-        ydata = [0]+np.cumsum(views).tolist()
+        xdata = [0] + ticks
+        ydata = [0] + np.cumsum(views).tolist()
 
         ynew = interp1d(range(len(ydata)), ydata, bounds_error=False, fill_value=np.nan)(xdata)
 
@@ -82,7 +78,7 @@ def get_wordcloud(kw, s):
             term["summary"] = page.summary
         except Exception:
             term["summary"] = ""
-            
+
         terms.append(term)
     return terms
 
@@ -91,14 +87,14 @@ def get_ts(kw, s, e):
     jstr = tweety.get_keyword_series(kw, step=3600, start=datetime.strftime(s, time_format), end=datetime.strftime(e, time_format)).decode("utf-8")
     if "Internal Server Error" not in jstr:
         res = json.loads(jstr)
-        nh = num_hours(datetime.strptime(res["end"], time_format)-datetime.strptime(res["start"], time_format))
+        nh = num_hours(datetime.strptime(res["end"], time_format) - datetime.strptime(res["start"], time_format))
         ts = np.transpose([res["series"][str(k)] if str(k) in res["series"] else 0 for k in range(nh)])
         ans_s = datetime.strptime(res["start"], time_format)
         ans_e = datetime.strptime(res["end"], time_format)
         if ans_s != s:
-            ts = np.append(np.ones(num_hours(ans_s-s)), ts)
+            ts = np.append(np.ones(num_hours(ans_s - s)), ts)
         if ans_e != e:
-            ts = np.append(ts, np.ones(num_hours(e-ans_e)))
+            ts = np.append(ts, np.ones(num_hours(e - ans_e)))
     else:
         ts = []
     return ts
@@ -148,7 +144,7 @@ def check_for_peak(kw, now, begin):
 
 def output_ts(pdseries):
     ts = []
-    for pdts,tw in pdseries.dropna().iteritems():
+    for pdts, tw in pdseries.dropna().iteritems():
         dt = pdts.to_pydatetime()
         md = {"hour": dt.hour, "day": dt.day, "year": dt.year, "month": dt.month, "count": tw}
 
@@ -156,7 +152,7 @@ def output_ts(pdseries):
     return ts
 
 
-def output_peaks(peaks,peak_df,terms):
+def output_peaks(peaks, peak_df, terms):
     peaks_json = []
     for peak in peaks:
         print(peak)
@@ -166,17 +162,15 @@ def output_peaks(peaks,peak_df,terms):
         peak_dict["circadian"] = output_ts(peak_df[peak+"_circ"])
         peak_dict["treemap"] = {"name": peak, "children": terms[peak]}
         peaks_json.append([peak, peak_dict])
-        
     return peaks_json
 
 
 def main():
-    # now = datetime(2018, 7, 24, 10) ## @RAHIEL: dit is het tijdstip dat gebruikt is bij de huidige demo.
-    now = round_time(datetime.utcnow())
-    begin = now - timedelta(hours=7*24)
+    end = round_time(datetime.utcnow())
+    start = end - timedelta(hours=7*24)
 
-    s = round_time(begin, "day")
-    e = round_time(now, "day", rounding="ceil")
+    s = round_time(start, "day")
+    e = round_time(end, "day", rounding="ceil")
 
     peak_df = pd.DataFrame()
     peak_df["hours"] = [s + timedelta(hours=x) for x in range(num_hours(e-s))]
@@ -186,11 +180,11 @@ def main():
 
     for kw in keywords:
         try:
-            df_kw, peak = check_for_peak(kw, now, begin)
+            df_kw, peak = check_for_peak(kw, end, start)
             if peak:
                 peaks.append(kw)
                 peak_df = pd.concat([peak_df, df_kw], axis=1)
-                terms[kw] = get_wordcloud(kw, now)
+                terms[kw] = get_wordcloud(kw, end)
         except json.JSONDecodeError:
             pass
 
@@ -200,7 +194,11 @@ def main():
         peaks_json = []
 
     jdict = json.dumps(peaks_json)
-    redis.set("peaks", jdict, ex=60 * 90)
+    cache_time = 60 * 60 * 2
+    redis.set("anomalies", jdict, ex=cache_time)
+    redis.set("anomalies_start", json.dumps(start.strftime(time_format)), ex=cache_time)
+    redis.set("anomalies_end", json.dumps(end.strftime(time_format)), ex=cache_time)
+
 
 if __name__ == "__main__":
     main()

@@ -9,7 +9,6 @@ flask-wtf
 gevent
 gunicorn
 hiredis
-matplotlib
 numpy
 peakutils
 redis

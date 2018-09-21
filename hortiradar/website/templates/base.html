@@ -51,6 +51,7 @@
               <ul class="dropdown-menu">
                 {{ render_nav(active_page, "horti.view_group(bloemen)", "horti.view_group", {"group": "bloemen"}, "Trefwoorden") }}
                 {{ render_nav(active_page, "horti.view_stories(bloemen)", "horti.view_stories", {"group": "bloemen"}, "Verhalen") }}
+                {{ render_nav(active_page, "horti.view_anomalies(bloemen)", "horti.view_anomalies", {"group": "bloemen"}, "Piekdetectie") }}
               </ul>
             </li>
             <li class="dropdown">
@@ -58,6 +59,7 @@
               <ul class="dropdown-menu">
                 {{ render_nav(active_page, "horti.view_group(groente_en_fruit)", "horti.view_group", {"group": "groente_en_fruit"}, "Trefwoorden") }}
                 {{ render_nav(active_page, "horti.view_stories(groente_en_fruit)", "horti.view_stories", {"group": "groente_en_fruit"}, "Verhalen") }}
+                {{ render_nav(active_page, "horti.view_anomalies(groente_en_fruit)", "horti.view_anomalies", {"group": "groente_en_fruit"}, "Piekdetectie") }}
               </ul>
             </li>
             {{ render_nav(active_page, "horti.api", "horti.api", {}, "API") }}

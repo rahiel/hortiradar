@@ -91,7 +91,7 @@ function renderTimeSeries(data) {
     }
 }
 
-function dateToString(date) {
+export function dateToString(date) {
     // this function was copied with permission from the author from: https://github.com/rahiel/archiveror/blob/aef7d9afe7ac5612bd4f8f27a42694fa33e9649c/src/utils.js#L56
     let y = date.getUTCFullYear();
     let m = (date.getUTCMonth() + 1).toString().padStart(2, "0");

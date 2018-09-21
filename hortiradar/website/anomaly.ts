@@ -2,10 +2,11 @@ import * as $ from "jquery";
 import * as d3 from "d3";
 import * as _ from "lodash";
 
+import { dateToString } from "./keyword";
+
 declare const APP_ROOT: string;
 declare const peaks: any;
 declare const num_peaks: number;
-declare const text_dt: string;
 
 
 if (typeof peaks !== "undefined") {
@@ -13,20 +14,7 @@ if (typeof peaks !== "undefined") {
 }
 
 
-function dateToString(date) {
-    // this function was copied with permission from the author from: https://github.com/rahiel/archiveror/blob/aef7d9afe7ac5612bd4f8f27a42694fa33e9649c/src/utils.js#L56
-    let y = date.getUTCFullYear();
-    let m = (date.getUTCMonth() + 1).toString().padStart(2, "0");
-    let d = date.getUTCDate().toString().padStart(2, "0");
-    let H = date.getUTCHours().toString().padStart(2, "0");
-    let M = date.getUTCMinutes().toString().padStart(2, "0");
-    let timestamp = `${y}-${m}-${d}T${H}:${M}`;
-    return timestamp;
-}
-
-
 function main() {
-
     let colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
     // Add tooltip div
@@ -39,7 +27,6 @@ function main() {
     for (let j = 0; j < peaks.length; j++){
         renderPeak(j,peaks[j][0],peaks[j][1],colorScale(j % 10));
     }
-
 }
 
 function renderPeak(loc, kw, data, color) {
@@ -179,8 +166,9 @@ function renderPeak(loc, kw, data, color) {
     });
     chart.render();
 
-    function onClickSpline(e,kw) {
-        let start = dateToString(e.dataPoint.x)
+    function onClickSpline(e, kw) {
+        let start = dateToString(e.dataPoint.x);
+        // TODO: kw is undefined
         window.open(APP_ROOT + "keywords/" + kw + "?start=" + start + "&period=hour");
     }
 
@@ -204,9 +192,9 @@ function atClick(d) {
         infobox
         .transition()
         .duration(100)
-        .style("opacity",1);
+        .style("opacity", 1);
     } else {
         infobox.transition()
-        .style("opacity",1e-6);
+        .style("opacity", 1e-6);
     }
 }

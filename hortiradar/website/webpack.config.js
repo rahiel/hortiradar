@@ -1,14 +1,15 @@
 module.exports = {
     entry: {
-        home: "./home.ts",
-        top: "./top.ts",
-        keyword: "./keyword.ts",
-        tweets: "./tweets.ts",
-        interaction_graph: "./interaction_graph.ts",
-        storify: "./storify.ts",
+        anomaly: "./anomaly.ts",
         edit_group: "./edit_group.ts",
+        home: "./home.ts",
+        interaction_graph: "./interaction_graph.ts",
+        keyword: "./keyword.ts",
         loading: "./loading.ts",
         news: "./news.ts",
+        storify: "./storify.ts",
+        top: "./top.ts",
+        tweets: "./tweets.ts",
     },
     output: {
         filename: "[name].js",

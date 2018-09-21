@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% from "_helpers.html" import render_button %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for("horti.static", filename="css/anomaly.css") }}">
+
+<h1>Piekdetectie</h1>
+
+<div class="row">
+    <div class="col-md-12">
+      <p>
+        Op deze pagina worden de trefwoorden weergegeven waarbij een piek in de activiteit is ontdekt van {{ start }} tot {{ end }}. Van deze pieken worden vervolgens alle termen met betrekking tot deze pieken weergegeven.
+      </p>
+    </div>
+</div>
+
+{% if peaks %}
+  {% for p in range(num_peaks) %}
+    <div class="row">
+      <div class="col-md-12">
+        <h2 class="peakTitle" id="title{{p}}"></h2>
+      </div>
+    </div>
+
+    <div id="peakContainer{{p}}" class="peakContainer">
+      <div class="row">
+        <div class="col-md-12">
+          <h3 class="text-center">
+            Tijdreeks <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#tijdreeksModal"></span>
+          </h3>
+          <div id="splineContainer{{p}}" class="splineContainer"></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <h3 class="text-center">
+            Termen <span class="small glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="modal" data-target="#treemapModal"></span>
+          </h3>
+          <div id="treemapContainer{{p}}"><svg id="treemap{{p}}" class="treemap"></svg></div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <div class="row">
+    <div class="col-md-12"><p>Er zijn geen pieken in activiteit gedetecteerd.</p></div>
+  </div>
+{% endif %}
+
+<div class="modal fade" id="tijdreeksModal" tabindex="-1" role="dialog" aria-labelledby="tijdreeksModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="tijdreeksModalLabel">Tijdreeks</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Dit onderdeel toont het aantal tweets dat per uur geplaatst wordt voor het
+                    weergegeven trefwoord in de afgelopen week. De gestippelde lijn geeft het gemiddelde
+                    dagelijkse patroon van tweets aan, de doorgetrokken lijn zijn de ontvangen tweets en
+                    de zwarte gestippelde lijn geeft de drempelwaarde aan waarboven de activiteit tot een
+                    piek bestempeld wordt. De precieze waarden van de tijdreeksen kunnen per uur afgelezen
+                    worden in een tooltip door de muis over de grafiek te bewegen.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="treemapModal" tabindex="-1" role="dialog" aria-labelledby="treemapModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="treemapModalLabel">Termen overzicht</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Dit onderdeel toont een visualisatie van de termen die gebruikt worden over het
+                    weergegeven trefwoord. Het precieze aantal keer dat een term gebruikt is kan
+                    afgelezen worden in een tooltip door de muis over de grafiek te bewegen.
+                </p>
+                <p>
+                    Door te klikken op een term wordt extra informatie over deze term weergegeven
+                    in een tooltip. Deze extra informatie is een samenvatting die van Wikipedia
+                    verworven is.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var peaks = {{ peaks|safe }};
+    var num_peaks = {{ num_peaks|safe }};
+</script>
+
+<script src="{{ url_for("horti.static", filename="anomaly.js") }}"></script>
+{% endblock %}

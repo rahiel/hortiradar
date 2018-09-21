@@ -27,6 +27,7 @@ sudo apt install nginx
 sudo cp nginx.conf /etc/nginx/sites-enabled/hortiradar.conf
 sudo systemctl restart nginx.service
 
+sudo cp anomaly.cron /etc/cron.d/hortiradar-anomaly
 sudo cp caching.cron /etc/cron.d/hortiradar-cache
 sudo cp news.cron /etc/cron.d/hortiradar-news
 
