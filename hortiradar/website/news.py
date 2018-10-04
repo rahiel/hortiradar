@@ -51,13 +51,13 @@ def find_keywords_and_groups(text):
 
 
 def process_triggers(item, group):
-    """ This function determines all the trigger words that have been tagged by the EMM"""
+    """This function determines all the trigger words that have been tagged by the EMM"""
     categories = item.findall("category")
     for it in categories:
         if it.text == group:
             attr = it.attrib
             for k in attr:
-                if 'trigger' in k:
+                if "trigger" in k:
                     kws = [kw.lower().split("[")[0] for kw in attr[k].split("; ") if len(kw) > 0]
                     return kws
     return []
@@ -119,5 +119,6 @@ def main():
                     newsdict = process_item(item, kws, groups)
                     newsdb.insert_one(newsdict)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

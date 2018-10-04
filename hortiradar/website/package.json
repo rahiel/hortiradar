@@ -1,9 +1,9 @@
 {
   "name": "hortiradar",
   "scripts": {
-    "build": "webpack --optimize-minimize --display-optimization-bailout",
-    "webpack": "webpack",
-    "start": "webpack --watch",
+    "build": "webpack --mode=production --optimize-minimize",
+    "webpack": "webpack --mode=development",
+    "start": "webpack --watch --mode=development",
     "postinstall": "./postinstall.bash",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,8 +20,9 @@
     "awesome-typescript-loader": "^3.4.1",
     "font-awesome": "^4.7.0",
     "source-map-loader": "^0.2.3",
-    "typescript": "^2.9.2",
-    "webpack": "^3.10.0"
+    "typescript": "^3.1.1",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2"
   },
   "dependencies": {
     "d3": "^4.12.2",

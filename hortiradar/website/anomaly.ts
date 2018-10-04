@@ -149,7 +149,7 @@ function renderPeak(loc, kw, data, color) {
             color: color,
             click: onClickSpline
         }, {
-            name: "Daily rhythm ("+kw+")",
+            name: "Gemiddeld dagelijks patroon ("+kw+")",
             type: "line",
             lineDashType: "dash",
             markerType: null,
