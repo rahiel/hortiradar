@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
@@ -7,11 +7,14 @@ from sklearn.metrics.pairwise import cosine_similarity
 def round_time(dt, interval="hour", rounding="floor"):
     if rounding == "ceil":
         if interval == "hour":
-            dt = dt.replace(hour=dt.hour+1, minute=0, second=0, microsecond=0)
+            dt = dt + timedelta(hours=1)
+            dt = dt.replace(minute=0, second=0, microsecond=0)
         elif interval == "minute":
-            dt = dt.replace(minute=dt.minute+1, second=0, microsecond=0)
+            dt = dt + timedelta(minutes=1)
+            dt = dt.replace(second=0, microsecond=0)
         elif interval == "day":
-            dt = dt.replace(day=dt.day+1, hour=0, minute=0, second=0, microsecond=0)
+            dt = dt + timedelta(days=1)
+            dt = dt.replace(hour=0, minute=0, second=0, microsecond=0)
     else:
         if interval == "hour":
             dt = dt.replace(minute=0, second=0, microsecond=0)
@@ -33,7 +36,7 @@ def get_token_array(tokens, filt_tokens):
 
 
 def jac(a, b):
-    """ return the Jaccard similarity of two sets"""
+    """return the Jaccard similarity of two sets"""
     if type(a) != set:
         a = set(a)
     if type(b) != set:
