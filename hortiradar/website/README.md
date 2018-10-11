@@ -30,6 +30,7 @@ sudo systemctl restart nginx.service
 sudo cp anomaly.cron /etc/cron.d/hortiradar-anomaly
 sudo cp caching.cron /etc/cron.d/hortiradar-cache
 sudo cp news.cron /etc/cron.d/hortiradar-news
+sudo cp reload-nginx.cron /etc/cron.d/reload-nginx
 
 sudo apt install nodejs-legacy npm
 echo "prefix = ~/.npm-global" > ~/.npmrc
