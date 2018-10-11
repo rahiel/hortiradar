@@ -2,4 +2,4 @@ SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # m h dom mon dow user  command
-36 4 * * * root certbot renew --pre-hook "systemctl stop nginx" --post-hook "systemctl start nginx"
+@weekly root nginx -s reload
