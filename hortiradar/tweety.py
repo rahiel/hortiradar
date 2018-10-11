@@ -1,7 +1,7 @@
 import requests
 
 
-time_format = "%Y-%m-%d-%H-%M-%S"
+time_format = "%Y-%m-%dT%H:%M:%S"
 
 
 class Tweety:

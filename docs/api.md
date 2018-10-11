@@ -46,8 +46,6 @@ Tweety method names are mentioned at the corresponding API resources.
 means that the database is working, as it has to analyze a lot of tweets! Please
 be patient and do not prematurely cancel your request to retry.
 
-**The API is still in beta and subject to change.**
-
 ## Resources
 
 ### `/keywords`
@@ -65,8 +63,8 @@ groups are `bloemen` and `groente_en_fruit`.
 
 All resources under `/keywords` take the optional `start` and `end` GET
 parameters. With these you can specify the range of time you're interested in.
-They are strings using the time format `%Y-%m-%d-%H-%M-%S`, so for example
-`2016-11-24-14-01-26` is 24th November 2016 at 14:01:26. If you don't specify
+They are strings using the time format `%Y-%m-%dT%H:%M:%S`, so for example
+`2016-11-24T14:01:26` is 24th November 2016 at 14:01:26. If you don't specify
 `start` or `get` you will get all matching tweets in the database. The time
 format is available in our `hortiradar` library, please use
 `hortiradar.time_format` instead of hardcoding the format.
@@ -74,7 +72,7 @@ format is available in our `hortiradar` library, please use
 For example, to get an overview of all keyword counts in the "bloemen" group
 from 2016-10-15 to 2016-11-15:
 ``` shell
-GET https://acba.labs.vu.nl/hortiradar/api/keywords?token=123456abcd&group=bloemen&start=2016-10-15-00-00-00&end=2016-11-15-00-00-00
+GET https://acba.labs.vu.nl/hortiradar/api/keywords?token=123456abcd&group=bloemen&start=2016-10-15T00:00:00&end=2016-11-15T00:00:00
 ```
 
 Example output:
@@ -182,7 +180,7 @@ Returns an object where:
 For example to get a time series of the keyword "ananas" for the whole day of
 October 1st 2016 with a bin size of an hour:
 ``` shell
-GET https://acba.labs.vu.nl/hortiradar/api/keywords/ananas/series?token=123456abcd&start=2016-10-01-00-00-00&end=2016-10-02-00-00-00&step=2600
+GET https://acba.labs.vu.nl/hortiradar/api/keywords/ananas/series?token=123456abcd&start=2016-10-01T00:00:00&end=2016-10-02T00:00:00&step=2600
 ```
 
 With as output:
@@ -201,9 +199,9 @@ With as output:
     "0": 1
   },
   "bins": 10,
-  "end": "2016-10-01-22-00-00",
+  "end": "2016-10-01T22:00:00",
   "step": 3600,
-  "start": "2016-10-01-06-00-00"
+  "start": "2016-10-01T06:00:00"
 }
 ```
 The `series` key holds the time series object. It is represented with bin
