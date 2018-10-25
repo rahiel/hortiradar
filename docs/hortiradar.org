@@ -1,0 +1,121 @@
+#+TITLE: Hortiradar
+
+This document gives an overview of the architecture of the Hortiradar.
+
+* defining keywords/groups
+=database/keywords.py=:
+The Hortiradar tracks groups of keywords in tweets.
+
+A Keyword is an object with
+- the lemma
+- intended part-of-speech
+- list of groups that the keyword is in (so a Keyword can be a part of multiple groups)
+
+A list of all Keywords then defines what the Hortiradar should detect. This list
+is generated in the =get_keywords= function.
+
+The keywords are saved and managed in MongoDB in the document collection called
+=groups=. A document in this collection represents a group with as properties:
+- name: a string of the group_name
+- keywords: a list of keyword objects, where a keyword object has the keys
+  "lemma" and "pos" with strings of the lemma and part-of-speech.
+
+* tweet -> database
+We get a constant stream of tweets from Twitter's [[https://developer.twitter.com/en/docs/tweets/filter-realtime/api-reference/post-statuses-filter.html][Streaming API]]. We receive a
+tweet as JSON data. Every tweet goes through the following process:
+
+=database/streamer.py=:
+- The JSON data contains a lot of extra information we don't need. These are
+  deleted to save disk space when we save the tweet.
+- The tweet is saved in Redis (with its id_str as key)
+- The tweet's id_str, text and possible retweet_id_str are sent to the
+  messagequeue to be processed by the workers. The tweets are not immediately
+  processed by the streamer, because it is busy receiving all the tweets. If it
+  would process the tweets right there, it would miss many other tweets because
+  it would be too busy to receive them. So the tweets are processed
+  asynchronously by the workers.
+
+=database/tasks_workers.py=:
+- one of the workers receives the tweet's (id_str, text, retweet_id_str) from
+  the messagequeue.
+- the text is processed by Frog NLP, tokenizing the tweet and inferring the
+  part-of-speech (pos) and lemma of each token.
+- The NLP results are checked to see if a token matches a keyword from one of
+  the groups. Both the token's lemma and pos are checked. This results in a list
+  of keywords the tweet relates to and the associated groups.
+- The id_str, keywords, groups and Frog's NLP output (tokens) are sent back to
+  the master server
+- Then the worker saves these results in Redis with as key the id_str with an
+  expiration time. This is to check for retweets: if a worker receives a
+  retweet, it may have already processed that tweet.
+- Before processing a tweet with Frog, the worker first checks to see if Redis
+  contains the retweet_id_str, if so then this data is retrieved, sent to the
+  master and the expiration time of this data in Redis is reset. The tweet is
+  not reprocessed with Frog and the worker is done.
+
+=database/tasks_master.py=:
+- The master receives the =(id_str, keywords, groups, tokens)= from a worker.
+- It retrieves the full tweet data from Redis with the key =id_str= saved
+  earlier in the streamer.
+- The tweet together with the results from the worker are saved in the =tweets=
+  collection in MongoDB.
+- The tweet's data is deleted from Redis.
+
+* API
+=database/api.py=:
+Tweets and other data in the database are not queried directly, all requests go
+to a HTTP API instead. The benefits of this are:
+- By only using API calls to retrieve data from the database, we can ensure all
+  queries are indexed by creating indexes for the queries the API performs.
+- The API automatically becomes the way to share data with others.
+
+* processing
+=website/processing.py=:
+The raw tweet data is not what we eventually show to users. We apply some
+analysis and processing on the data. The analysis for a keyword is done in the
+=process_details= function:
+- check all tweet texts for "obscene_words" if a tweet contains any of them, the
+  tweet is marked as spam (by setting the spam property on the tweet in the
+  database) and not used for analysis
+- build the interaction graph of users tweeting about the keyword
+- the tweet times are parsed and a time series is built
+- all tweet tokens are used to build a wordcloud
+- the images are tallied and sorted from most tweeted to least. The images are
+  then fed to a local API running Yahoo's open_nsfw neural network to check if
+  an image is NSFW of not. Because the neural net is CPU expensive, we cache
+  the nsfw probability for image URLs in Redis with some cache time. If an image
+  was already tested by the neural net, the result from Redis is returned and
+  the cache time is reset.
+- etc.
+
+The function =process_top= checks to see what the top k most tweeted keywords
+are for a group.
+
+* hourly processing
+Because the processing costs time, we have to do it before a user requests the
+analysis, otherwise they'll have to wait and web users lack patience.
+
+Every hour the top 10 keywords per group are determined, and these 20 keywords
+have their =process_details= run and saved in the cache (Redis).
+
+* on demand processing
+Keywords outside of these 20 have to be processed on-demand. Whenever there is a
+request for data in the web app, it uses the =cache= function in =processing.py=
+to retrieve it. The =cache= function can cache arbitrary function calls in
+Redis. It constructs a unique key from the function name and its arguments. If
+it is in cache the data is returned immediately, otherwise it sends the
+requested function and arguments to a web worker. We then redirect the user to a
+loading page with a loading_id derived from the cache key. This loading_id is
+placed in Redis as key with as value "loading". In the meantime the web worker
+(the =cache_request= function in =processing.py=) runs the function and sets the
+result in Redis with the unique key made by the cache, it also sets the
+loading_id to "done" in Redis. On the loading page on the user's side there is
+some JavaScript checking to see if the data is already in Redis or not. This
+JavaScript queries the web app for the loading_id, and it instructs the user to
+redirect to the page it originally wanted to see if the loading_id is "done".
+
+* web app
+=app.py=:
+Here is the front-end of the Hortiradar. All views that have data to show,
+request the data from aforementioned cache, sending users to the loading page if
+the data is not available yet.

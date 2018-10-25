@@ -5,6 +5,8 @@ cooperation with [BIGt&u][]. The main goal is providing the Dutch horticulture
 and floriculture industries with valuable insights from social media. To this
 end we're building an analytics platform for Twitter data.
 
+See `docs/hortiradar.org` for an overview of the design of the Hortiradar.
+
 [hortiradar]: https://acba.labs.vu.nl/hortiradar/
 [VU]: https://vu.nl/en/
 [BIGt&u]: http://bigtu.nl
