@@ -2,9 +2,14 @@
 *.log
 *secret*
 *.egg-info
-streamer.ini
+dist
+streamer*.ini
 translations
 worker_settings.py
 hortiradar.sqlite
 node_modules
 *.js*
+flatpickr.min.css
+font-awesome.min.css
+hortiradar/website/static/fonts/
+update*.bash
