@@ -20,6 +20,7 @@ from pattern.nl import sentiment
 from hortiradar import Tweety, TOKEN, time_format
 from hortiradar.clustering import Token
 from hortiradar.database import stop_words, obscene_words, blacklist, get_db
+from utils import floor_time
 
 db = get_db()
 storiesdb = db.stories
@@ -111,14 +112,6 @@ def get_nsfw_prob(image_url: str):
         return 0, r.status_code
     else:
         return 0, r.status_code
-
-def floor_time(dt, *, hour=False, day=False):
-    if hour:
-        return dt - timedelta(minutes=dt.minute, seconds=dt.second, microseconds=dt.microsecond)
-    elif day:
-        return dt - timedelta(hours=dt.hour, minutes=dt.minute, seconds=dt.second, microseconds=dt.microsecond)
-    else:
-        return Exception("Missing keyword argument")
 
 
 def get_process_top_params(group):
