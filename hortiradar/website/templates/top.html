@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% set active_page = "horti.top" %}
+{% block content %}
+
+{% from "_helpers.html" import render_button %}
+
+<div class="row">
+  <div class="col-md-8">
+    <p>
+      Hieronder de top {{ max_amount }} meest besproken trefwoorden op Twitter in de groep <a href="{{ url_for("horti.view_group", group=group) }}">{{ disp_group }}</a> van {{ start }} tot {{ end }}.
+    </p>
+  </div>
+  <div class="col-md-4 text-right">
+    {{ render_button("horti.top", {"group": group}, period, "day", "Dag") }}
+    {{ render_button("horti.top", {"group": group}, period, "week", "Week") }}
+    {{ render_button("horti.top", {"group": group}, period, "month", "Maand") }}
+  </div>
+</div>
+
+<br>
+
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+<br>
+<br>
+
+<script type="text/javascript">
+ var data = {{ data|safe }};
+ var max_amount = "{{ max_amount|safe }}";
+ var group = "{{ group|safe }}";
+</script>
+<script src="{{ url_for("horti.static", filename="top.js") }}"></script>
+{% endblock %}
