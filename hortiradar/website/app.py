@@ -12,17 +12,16 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_babel import Babel
 from flask_mail import Mail
 from flask_user import SQLAlchemyAdapter, UserManager, current_user, login_required, roles_required
-from flask_wtf import FlaskForm
 from redis import StrictRedis
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.wrappers import Response
-from wtforms import SelectField, StringField
-from wtforms.validators import AnyOf, DataRequired, NoneOf
+from wtforms.validators import AnyOf
 
 from hortiradar import TOKEN, Tweety, time_format
 from hortiradar.database import lemmatize
 from hortiradar.website import app, db
 from models import Role, User
+from forms import GroupForm, RoleForm
 from processing import cache, floor_time, process_details, process_tokens, process_top, process_stories, process_news
 
 
@@ -616,15 +615,6 @@ def loading(loading_id):
 @app.errorhandler(404)
 def page_not_found(error):
     return render_template("page_not_found.html"), 404
-
-class RoleForm(FlaskForm):
-    username = StringField("username", validators=[DataRequired()])
-    role = StringField("role", validators=[DataRequired(), NoneOf(["admin"])])
-    action = SelectField("action", choices=[("add", "add"), ("remove", "remove")], validators=[DataRequired()])
-
-class GroupForm(FlaskForm):
-    name = StringField("group name", validators=[DataRequired()])
-    action = SelectField("action", choices=[("add", "add"), ("remove", "remove")], validators=[DataRequired()])
 
 @bp.route("/admin", methods=("GET", "POST"))
 @roles_required("admin")
