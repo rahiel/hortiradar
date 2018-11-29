@@ -23,7 +23,7 @@ from models import Role, User
 from processing import cache, process_details, process_news, process_stories, process_tokens, process_top
 from utils import (
     display_datetime, display_group, display_number, display_polarity, display_pos, get_period, get_req_path, get_roles,
-    jsonify, make_title, parse_pos, render_markdown, shorten)
+    is_deluxe, jsonify, make_title, parse_pos, render_markdown, shorten)
 
 
 bp = Blueprint("horti", __name__, template_folder="templates", static_folder="static")
@@ -225,11 +225,7 @@ def edit_group(group):
 
 @bp.route("/keywords/<keyword>")
 def view_keyword(keyword):
-    if current_user.is_authenticated:  # users in the "deluxe" group can specify their own time period
-        roles = get_roles(current_user)
-        deluxe = "deluxe" in roles or "admin" in roles
-    else:
-        deluxe = False
+    deluxe = is_deluxe(current_user)  # users in the "deluxe" group can specify their own time period
 
     period, start, end, cache_time = get_period(request, "week")
     if period == "custom":
@@ -303,6 +299,12 @@ def view_keyword(keyword):
         "news": news
     }
     return render_template("keyword.html", title=make_title(keyword), **template_data)
+
+@bp.route("/query")
+def view_query(keyword):
+    if not is_deluxe(current_user):
+        flash("Deze functionaliteit is alleen beschikbaar voor goedgekeurde gebruikers.", "error")
+        return redirect(url_for("horti.home"))
 
 @bp.route("/news/<keyword>")
 def view_news(keyword):

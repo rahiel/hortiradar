@@ -5,6 +5,7 @@ body {
 #footer {
     color: #777;
     padding-top: 20px;
+    padding-bottom: 50px;
 }
 
 @media (min-width: 1300px) {

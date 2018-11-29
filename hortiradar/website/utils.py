@@ -1,15 +1,15 @@
 import re
 from datetime import datetime, timedelta
 
-import CommonMark
+import commonmark
 import ujson as json
 from babel.dates import format_datetime, get_timezone
 from werkzeug.wrappers import Response
 
 
 def render_markdown(filename):
-    parser = CommonMark.Parser()
-    renderer = CommonMark.HtmlRenderer()
+    parser = commonmark.Parser()
+    renderer = commonmark.HtmlRenderer()
     with open(filename) as f:
             doc = f.read()
     ast = parser.parse(doc)
@@ -143,3 +143,12 @@ def get_roles(current_user):
 
 def make_title(page):
     return page + " — Hortiradar"
+
+def is_deluxe(user):
+    """Check if `user` is in the `deluxe` group."""
+    if user.is_authenticated:
+        roles = get_roles(user)
+        deluxe = "deluxe" in roles or "admin" in roles
+    else:
+        deluxe = False
+    return deluxe
