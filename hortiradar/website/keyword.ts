@@ -292,8 +292,7 @@ function pickPeriod() {
         time_24hr: true,
         weekNumbers: true,
     };
-    let startPick = flatpickr("#start", options);
-    let endPick = flatpickr("#end", options);
+    let [startPick, endPick] = flatpickr(".flatpickr", options);
 
     document.getElementById("analyseCustomPeriodButton").onclick = function () {
         let startDate = startPick.selectedDates[0];
