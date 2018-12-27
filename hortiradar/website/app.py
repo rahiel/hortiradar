@@ -300,12 +300,6 @@ def view_keyword(keyword):
     }
     return render_template("keyword.html", title=make_title(keyword), **template_data)
 
-@bp.route("/query")
-def view_query(keyword):
-    if not is_deluxe(current_user):
-        flash("Deze functionaliteit is alleen beschikbaar voor goedgekeurde gebruikers.", "error")
-        return redirect(url_for("horti.home"))
-
 @bp.route("/news/<keyword>")
 def view_news(keyword):
     period, start, end, cache_time = get_period(request, "week")
