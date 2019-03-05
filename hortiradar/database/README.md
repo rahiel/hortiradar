@@ -168,7 +168,7 @@ sudo cp restart-workers.cron /etc/cron.d/hortiradar-restart-workers
 Monitor Workers in real-time with [flower][]:
 
 ``` shell
-pip install flowers
+pip install flower
 sudo rabbitmq-plugins enable rabbitmq_management
 sudo rabbitmqctl set_user_tags guest management
 
